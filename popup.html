@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>V-Train Dashboard</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div id="lockScreen" style="display: none;">
+        <div class="lock-icon">🔒</div>
+        <h3 data-i18n="securityLock">Security Lock</h3>
+        <p class="lock-desc" data-i18n="enterPass">Enter passcode to access history</p>
+        <input type="password" id="passwordInput" placeholder="Passcode" maxlength="10">
+        <button id="btnUnlock" class="btn-unlock" data-i18n="unlockBtn">Unlock</button>
+
+        <p style="margin-top: 15px; font-size: 12px; color: #666;">
+            <span id="btnForgotPassword" style="cursor: pointer; text-decoration: underline;"
+                data-i18n="forgotPass">Forgot Passcode? (Pro Only)</span>
+        </p>
+
+        <p id="loginMsg" class="error-msg"></p>
+    </div>
+
+    <div id="controlPanel" class="hidden">
+        <div class="header"
+            style="justify-content: space-between; flex-direction: column; align-items: flex-start; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <h3 data-i18n="t1">V-Train: Adaptive Engine</h3>
+                <select id="langSelect"
+                    style="background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 2px 5px; font-size: 13px;">
+                    <option value="en">English</option>
+                    <option value="zh-TW">繁體中文</option>
+                    <option value="zh-CN">简体中文</option>
+                    <option value="ja">日本語</option>
+                    <option value="ko">한국어</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                </select>
+            </div>
+            <button id="btnAuthorizeCurrentSite" class="btn-authorize-site" data-i18n="authorizeSite">Authorize & Enable
+                Current Site</button>
+        </div>
+        <div class="content">
+            <div class="dashboard-grid">
+                <div class="grid-col-left">
+
+                    <div class="control-panel-box">
+                        <div class="status-row">
+                            <div class="status-info">
+                                <span class="status-label">
+                                    <span class="status-dot" id="statusDot"></span>
+                                    <span id="statusText">Monitoring</span>
+                                </span>
+                                <span class="status-sub" data-i18n="autoHide">Auto-hide & Lock on exit</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="toggleVisibility" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="status-row" style="margin-bottom:16px; padding-bottom:16px;">
+                            <div class="status-info"><span class="status-label" style="font-size:15px; margin-bottom:0;"
+                                    data-i18n="showMonitor">Show Monitor Panel</span></div>
+                            <label class="switch"><input type="checkbox" id="toggleMonitorPanel" checked><span
+                                    class="slider"></span></label>
+                        </div>
+                        <div class="status-row" style="margin-bottom:16px; padding-bottom:16px;">
+                            <div class="status-info"><span class="status-label" style="font-size:15px; margin-bottom:0;"
+                                    data-i18n="barColor">Progress Bar Color</span></div>
+                            <input type="color" id="progressBarColor" class="color-picker-input" value="#ff0000">
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <button id="btnOpenRules" class="btn-action"
+                                style="width:100%;background:#388e3c;border-color:#2e7d32;"><i>⚙️</i> <span
+                                    data-i18n="trainedSites">已訓練網站
+                                    (規則管理)</span></button>
+                        </div>
+                        <div class="stats-compact" style="margin-bottom: 6px;">
+                            <span data-i18n="trackedVideos">Tracked Videos:</span>
+                            <span class="stats-val" id="videoCount">0</span>
+                        </div>
+                        <div id="limitNote" data-i18n="limitNoteTxt"
+                            style="font-size: 14px; color: #ccc; font-weight: bold; text-align: center; margin-bottom: 15px; display: none;">
+                            💡 達到 20 萬部上限時，將自動替換最舊的 100 部紀錄</div>
+
+                        <div class="actions-row">
+                            <button id="btnSetupPass" class="btn-action"><i>🔐</i> <span data-i18n="setPasscode">Set
+                                    Passcode</span></button>
+                            <button id="btnClearData" class="btn-action"><i>🗑️</i> <span data-i18n="clearData">Clear
+                                    Data</span></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-divider"></div>
+                <div class="grid-col-right">
+                    <div style="margin-bottom: 15px;"><a href="https://v-train-extension.netlify.app/" target="_blank"
+                            style="display: flex; justify-content: center; align-items: center; gap: 8px; background: rgba(79, 195, 247, 0.1); border: 1px solid rgba(79, 195, 247, 0.3); border-radius: 10px; padding: 12px; color: #4fc3f7; text-decoration: none; font-size: 15px; font-weight: bold;"><span
+                                style="font-size: 18px;">📖</span> <span data-i18n="officialSite">Official Website &
+                                Tutorial</span></a></div>
+                    <div class="backup-section">
+                        <div class="backup-title">
+                            <span data-i18n="localBackup">💾 Local Backup</span>
+                        </div>
+                        <div class="backup-btns">
+                            <button id="btnExport" class="btn-backup" data-i18n="exportJson">📥 Export JSON</button>
+                            <button id="btnImport" class="btn-restore" data-i18n="importJson">📤 Import JSON</button>
+                        </div>
+                        <input type="file" id="fileInput" accept=".json">
+                    </div>
+
+                    <div class="info-section">
+                        <div class="privacy-box">
+                            <div class="privacy-header" data-i18n="policyTitle">Privacy & Data Policy</div>
+                            <ul class="privacy-list">
+                                <li><i>💾</i> <span data-i18n="policy1"><b>Local Storage:</b> Data stored on device
+                                        only.</span></li>
+                                <li><i>⚠️</i> <span data-i18n="policy2"><b>No Cloud:</b> Uninstalling = Data
+                                        Loss.</span></li>
+                                <li><i>🔑</i> <span data-i18n="policy3"><b>Device Binding:</b> Local storage only (no
+                                        sync). To avoid data fragmentation, one active device per license is
+                                        recommended.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="donate-section" style="margin-top: 20px;"><button id="btnDonateUpgrade" class="btn-donate"><span
+                                class="donate-icon">⚡</span> <span data-i18n="unlockPro">Unlock V-Train Pro</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="incognitoWarning" class="hidden"
+            style="background: #ff9800; color: #000; padding: 12px; text-align: center; font-weight: bold; font-size: 14px; border-top: 2px solid #e65100;">
+            <span data-i18n="incognitoWarn1">⚠️ 偵測到未開啟無痕模式權限！</span><br>
+            <a href="#" id="btnOpenExtPage"
+                style="color: #000; text-decoration: underline; display: inline-block; margin-top: 5px;"
+                data-i18n="incognitoWarnBtn">點此前往設定</a>
+            <span data-i18n="incognitoWarn2"> 並開啟「在無痕模式中允許」</span>
+        </div>
+    </div>
+
+    <div id="rulesPanel" class="hidden">
+        <div class="header" style="justify-content: flex-start; gap: 10px;">
+            <button id="btnBackToControl"
+                style="background:none;border:none;color:white;font-size:18px;cursor:pointer;">◀</button>
+            <h3 style="flex:1;text-align:center;color:#4fc3f7;" data-i18n="ruleMgmt">規則管理</h3>
+        </div>
+        <div class="content">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <button id="btnExportRules" class="btn-action" style="flex:1;background:#1565c0;font-size:14px;"
+                    data-i18n="exportRules">📥 匯出規則</button>
+                <button id="btnImportRules" class="btn-action" style="flex:1;background:#f57c00;font-size:14px;"
+                    data-i18n="importRules">📤 匯入規則</button>
+            </div>
+            <div style="margin-bottom:10px;">
+                <button id="btnCommunityRules" class="btn-action" style="width:100%;background:#444;font-size:14px;"
+                    data-i18n="communityRules">🌐 瀏覽社群共享規則 (GitHub)</button>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="text" id="inlineRuleInput" placeholder="VT-RULE-..."
+                    style="flex:1; padding:10px; border-radius:6px; border:1px solid #6a1b9a; background:#1a1a1a; color:#fff; font-family:monospace; font-size:13px; outline:none;">
+                <button id="btnPasteRule" class="btn-action"
+                    style="width:100px; background:#8e24aa; border-color:#6a1b9a; font-size:14px; padding:0; height:40px; margin-bottom:0;"
+                    data-i18n="serialImport">序號導入</button>
+            </div>
+            <input type="text" id="ruleSearchInput" data-i18n="searchRules"
+                style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #444; background:#2a2a2a; color:#fff; box-sizing:border-box;"
+                placeholder="🔍 Search rules...">
+            <div id="rulesListContainer"
+                style="background:#252525; border:1px solid #444; border-radius:8px; padding:10px; max-height:300px; overflow-y:auto;">
+            </div>
+        </div>
+    </div>
+    <input type="file" id="ruleFileInput" accept=".json" style="display:none;">
+
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title" id="mTitle">Title</div>
+            <div class="modal-desc" id="mDesc">Description...</div>
+
+            <input type="text" id="mInput" class="modal-input hidden" placeholder="">
+
+            <div id="mWarning" class="hidden" style="background:rgba(255,152,0,0.1); border:1px dashed #ff9800; padding:12px; border-radius:8px; margin-bottom:15px; font-size:14px; color:#ffb74d; line-height:1.4; text-align:left;"></div>
+
+            <a href="#" id="mBtnBuy" class="buy-link hidden" target="_blank" data-i18n="buyLink">No license key? Buy now
+                ($4.99)</a>
+
+            <div class="modal-btns">
+                <button id="mBtnCancel" class="btn-modal btn-cancel" data-i18n="cancel">Cancel</button>
+                <button id="mBtnConfirm" class="btn-modal btn-confirm" data-i18n="confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="shared_i18n.js"></script>
+    <script src="popup.js"></script>
+</body>
+
+</html>

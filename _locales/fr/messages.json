@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "V-Train: Barre de Vidéo Adaptative"
+  },
+  "extDesc": {
+    "message": "Configuration manuelle pour la plupart des plateformes VOD avec miniatures ; supporte les couleurs personnalisées."
+  },
+  "contextMenuTrack": {
+    "message": "🎯 V-Train: Démarrer l'entraînement"
+  },
+  "toastAuthSuccess": {
+    "message": "☑️ Succès ! Faites un clic droit sur la miniature à nouveau"
+  }
+}

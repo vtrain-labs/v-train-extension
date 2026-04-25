@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "V-Train: Adaptive Video Bar"
+  },
+  "extDesc": {
+    "message": "Manually configure rules to support most thumbnail-based VOD platforms; supports custom bar colors."
+  },
+  "contextMenuTrack": {
+    "message": "🎯 V-Train: Start Training Engine"
+  },
+  "toastAuthSuccess": {
+    "message": "☑️ Success! Right-click thumbnail again."
+  }
+}

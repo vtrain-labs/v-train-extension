@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "V-Train: アダプティブ動画シーカー"
+  },
+  "extDesc": {
+    "message": "手動設定で多くのサムネイル形式VODサイトに対応。プログレスバーの色もカスタマイズ可能。"
+  },
+  "contextMenuTrack": {
+    "message": "🎯 V-Train: トレーニングエンジン起動"
+  },
+  "toastAuthSuccess": {
+    "message": "☑️ 承認成功！再度右クリック"
+  }
+}

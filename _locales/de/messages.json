@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "V-Train: Adaptive Videoleiste"
+  },
+  "extDesc": {
+    "message": "Manuelle Konfiguration für die meisten VOD-Plattformen mit Vorschaubildern; unterstützt anpassbare Farben."
+  },
+  "contextMenuTrack": {
+    "message": "🎯 V-Train: Trainings-Engine starten"
+  },
+  "toastAuthSuccess": {
+    "message": "☑️ Erfolg! Klicken Sie erneut mit der rechten Maustaste auf die Miniaturansicht"
+  }
+}

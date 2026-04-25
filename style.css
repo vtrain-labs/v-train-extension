@@ -1,0 +1,31 @@
+/* V-Train Adaptive Engine Style V6.2 (Direct Body Mount) */
+
+/* 1. 軌道 (透明灰底, 全域懸浮) */
+/* [架構師重構] 不再使用 #vt-global-overlay 容器。
+   每個進度條直接掛在 document.body，z-index 由 JS 依縮圖容器動態計算（容器值 + 1）。
+   CSS 不設定任何 z-index，確保頁面上較高層的 UI（語言選單、導覽列等）可自然遮擋進度條。
+   不設 overflow:hidden，避免意外建立孤立的 Stacking Context。 */
+.vt-progress-container {
+    position: fixed !important;
+    height: 6px !important;
+
+    background-color: rgba(255, 255, 255, 0.35) !important; /* 半透明冰透白 */
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.6) !important;   /* 增加立體感 */
+    pointer-events: none;
+
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    overflow: visible !important; /* 允許黃色 ID 標籤破框顯示 */
+    display: block !important;
+    visibility: visible !important;
+    /* z-index: 由 JS 動態設定，CSS 不干預，讓頁面高層 UI 可自然遮擋 */
+}
+
+/* 2. 進度 (科技青條) */
+.vt-progress-bar {
+    height: 100% !important;
+    background-color: #ff0000; /* [架構師解鎖] 移除 !important，讓 JS 能夠覆寫 */
+    width: 0%;
+    transition: width 0.3s ease;
+    display: block !important;
+}

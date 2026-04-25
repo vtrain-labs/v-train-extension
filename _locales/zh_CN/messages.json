@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "V-Train: 视频进度适应器"
+  },
+  "extDesc": {
+    "message": "手动配置规则即可兼容多数具备缩略图清单的随选影音平台，支持自定义进度条颜色。"
+  },
+  "contextMenuTrack": {
+    "message": "🎯 V-Train: 启动训练引擎"
+  },
+  "toastAuthSuccess": {
+    "message": "☑️ 授权成功！请再次对着缩略图按右键"
+  }
+}
