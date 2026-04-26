@@ -227,6 +227,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     
                     const count = await vtDB.count();
                     chrome.storage.local.set({ vt_video_count: count });
+                    
+                    // [進度同步修復] 廣播進度給所有分頁，模擬過去 chrome.storage.onChanged 的全域跨分頁同步效果
+                    chrome.tabs.query({}, (tabs) => {
+                        tabs.forEach(tab => {
+                            chrome.tabs.sendMessage(tab.id, {
+                                action: "VT_PROGRESS_UPDATE",
+                                id: id,
+                                progress: data.progress
+                            }).catch(() => {});
+                        });
+                    });
+
                     const limit = _swCache.isPro ? 200000 : 200;
                     if (count > limit) {
                         await runOptimizedGCInsideLock();

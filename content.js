@@ -59,6 +59,11 @@ if (!window._vtInjected) {
     );
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === "VT_PROGRESS_UPDATE") {
+            _vtProgressCache.set(request.id, request.progress);
+            return;
+        }
+
         if (request.action === "START_MARKING") {
             chrome.storage.local.get(
                 ["isStealthMode", "userLang", "barColor"],
@@ -2014,6 +2019,7 @@ if (!window._vtInjected) {
             chrome.runtime
                 .sendMessage({ action: "VT_SAVE_RECORD", id: id, data: data })
                 .catch(() => { });
+        _vtProgressCache.set(id, data.progress); // [效能優化] 本機直接更新快取，確保同一個分頁即使沒有廣播也能立刻重繪
     }
     function checkAndSave(video, id, force = false) {
         if (!sysState.isDataLoaded || (video.seeking && !force)) return;
