@@ -192,6 +192,16 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'VT_GET_RECORDS') {
+        globalThis.vtDB.getRecords(request.ids || [])
+            .then(data => sendResponse(data))
+            .catch(err => {
+                console.error('[VT] Get Records Error:', err);
+                sendResponse({});
+            });
+        return true;
+    }
+
     if (request.action === 'VT_SAVE_RECORD') {
         const { id, data } = request;
 
@@ -216,6 +226,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     await vtDB.putRecord(id, data);
                     
                     const count = await vtDB.count();
+                    chrome.storage.local.set({ vt_video_count: count });
                     const limit = _swCache.isPro ? 200000 : 200;
                     if (count > limit) {
                         await runOptimizedGCInsideLock();

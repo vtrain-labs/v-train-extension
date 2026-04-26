@@ -1806,7 +1806,8 @@ if (!window._vtInjected) {
                         };
                         if (uncachedIds.length > 0) {
                             if (!chrome.runtime?.id) return;
-                            window.vtDB.getRecords(uncachedIds).then((d) => {
+                            new Promise(resolve => chrome.runtime.sendMessage({ action: "VT_GET_RECORDS", ids: uncachedIds }, resolve)).then((d) => {
+                                if (!d) d = {};
                                 uncachedIds.forEach((id) => {
                                     if (d[id]?.progress !== undefined) _vtProgressCache.set(id, d[id].progress);
                                 });
@@ -1881,7 +1882,8 @@ if (!window._vtInjected) {
                 });
             };
             if (uncachedIds.length > 0) {
-                window.vtDB.getRecords(uncachedIds).then((d) => {
+                new Promise(resolve => chrome.runtime.sendMessage({ action: "VT_GET_RECORDS", ids: uncachedIds }, resolve)).then((d) => {
+                    if (!d) d = {};
                     uncachedIds.forEach((id) => {
                         if (d[id]?.progress !== undefined) _vtProgressCache.set(id, d[id].progress);
                     });
@@ -1951,7 +1953,8 @@ if (!window._vtInjected) {
                 sysState.activeVideoId = sysState._cachedId;
                 sysState.isDataLoaded = false;
                 const _loadTarget = sysState._cachedId; // [BUG 修復] 快取 ID 避免閉包跟蹤競態
-                window.vtDB.getRecords([_loadTarget]).then((res) => {
+                new Promise(resolve => chrome.runtime.sendMessage({ action: "VT_GET_RECORDS", ids: [_loadTarget] }, resolve)).then((res) => {
+                    if (!res) res = {};
                     if (sysState.activeVideoId === _loadTarget) {
                         if (res[_loadTarget]?.progress !== undefined)
                             _vtProgressCache.set(_loadTarget, res[_loadTarget].progress); // [效能優化] 預充進度快取
