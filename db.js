@@ -139,5 +139,6 @@ class VTDatabase {
     }
 }
 
+const _global = typeof window !== 'undefined' ? window : self;
 // 全域單例
-window.vtDB = new VTDatabase();
+_global.vtDB = new VTDatabase();
