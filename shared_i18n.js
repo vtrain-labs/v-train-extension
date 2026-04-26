@@ -3,10 +3,8 @@
  * 整合 Dashboard 與適應引擎的全域多國語言字典
  */
 
-const _global = typeof window !== 'undefined' ? window : self;
-
-if (typeof _global._vt_i18n_loaded === 'undefined') {
-    _global._vt_i18n_loaded = true;
+if (typeof globalThis._vt_i18n_loaded === 'undefined') {
+    globalThis._vt_i18n_loaded = true;
 
     const VT_I18N = {
         "en": {
@@ -566,7 +564,7 @@ if (typeof _global._vt_i18n_loaded === 'undefined') {
      * @param {object} params - (選填) 需要替換的動態變數，例如 { idx: "3" }
      * @returns {string} 翻譯完成並替換完變數的字串
      */
-    _global.getLangText = function getLangText(lang, key, params = {}) {
+    globalThis.getLangText = function getLangText(lang, key, params = {}) {
         // 1. 取得目標語系的字串，若找不到則回退 (Fallback) 至英文，再找不到則顯示 Key 本身
         let text = (VT_I18N[lang] && VT_I18N[lang][key]) ||
             (VT_I18N['en'] && VT_I18N['en'][key]) ||
