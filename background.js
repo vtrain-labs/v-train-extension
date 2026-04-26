@@ -1,5 +1,6 @@
 // V-Train (VT) Core Implementation V1.0
 // background.js - 確保所有網域都在白名單，並支援多國語言錯誤代碼傳遞
+importScripts("db.js", "shared_i18n.js");
 
 let _vtSaveLock = Promise.resolve(); // [架構師注入] 全域存檔隊列鎖，確保非同步存取順序性
 
@@ -57,7 +58,7 @@ function injectScriptToExistingTabs() {
 
                 await chrome.scripting.executeScript({
                     target: { tabId: tab.id, allFrames: true },
-                    files: ["shared_i18n.js", "content.js"]
+                    files: ["db.js", "shared_i18n.js", "content.js"]
                 }).catch(() => { });
             }));
 
@@ -78,6 +79,28 @@ chrome.runtime.onInstalled.addListener((details) => {
         const lang = nav.includes('zh-cn') ? 'zh-CN' : nav.includes('zh') ? 'zh-TW' : nav.startsWith('ja') ? 'ja' : nav.startsWith('ko') ? 'ko' : nav.startsWith('es') ? 'es' : nav.startsWith('fr') ? 'fr' : nav.startsWith('de') ? 'de' : 'en';
         chrome.storage.local.set({ userLang: lang });
     }
+
+    // [架構師注入] 資料遷移腳本：從 chrome.storage.local 轉移海量資料到 IndexedDB
+    chrome.storage.local.get(null, async (res) => {
+        if (res.vt_index && Array.isArray(res.vt_index)) {
+            console.log('[VT Migration] Found vt_index, starting migration to IndexedDB...');
+            let index = res.vt_index;
+            for (let i = 0; i < index.length; i++) {
+                const vid = index[i].id;
+                if (res[vid]) {
+                    await vtDB.putRecord(vid, res[vid]);
+                }
+            }
+            // 清除舊資料
+            const toRemove = index.map(item => item.id);
+            toRemove.push('vt_index');
+            toRemove.push('vt_video_count');
+            chrome.storage.local.remove(toRemove, () => {
+                console.log('[VT Migration] Completed and cleaned up local storage.');
+            });
+        }
+    });
+
     injectScriptToExistingTabs();
 
     // 這裡原本就正確使用了原生 i18n
@@ -104,8 +127,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             chrome.storage.local.set({ isStealthMode: false }, () => {
                 chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ["style.css"] }).catch(() => { });
 
-                // [架構師修改] 確保點擊右鍵注入時，也帶上 shared_i18n.js
-                chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["shared_i18n.js", "content.js"] }).then(() => {
+                // [架構師修改] 確保點擊右鍵注入時，也帶上 db.js 和 shared_i18n.js
+                chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["db.js", "shared_i18n.js", "content.js"] }).then(() => {
                     if (!isNewGrant) return setTimeout(() => chrome.tabs.sendMessage(tab.id, { action: "START_MARKING" }).catch(() => { }), 100);
 
                     // [架構師重構] 移除寫死的多國語言物件，改用原生 chrome.i18n.getMessage
@@ -139,7 +162,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             chrome.permissions.contains({ origins: [origin] }, (hasPerm) => {
                 if (hasPerm) {
                     chrome.scripting.insertCSS({ target: { tabId, allFrames: true }, files: ["style.css"] }).catch(() => { });
-                    chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["shared_i18n.js", "content.js"] }).catch(() => { });
+                    chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["db.js", "shared_i18n.js", "content.js"] }).catch(() => { });
                 }
             });
         }
@@ -147,35 +170,25 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 // [架構師升級] 執行優化版索引垃圾回收 (同步鎖定版)
-function runOptimizedGCInsideLock() {
+async function runOptimizedGCInsideLock() {
     return new Promise((resolve) => {
-        chrome.storage.local.get(['vt_index', 'isProVersion', 'vt_video_count'], (items) => {
-            let index = items.vt_index || [];
-            if (index.length === 0) return resolve();
-
+        chrome.storage.local.get(['isProVersion'], async (items) => {
             let maxLimit = items.isProVersion ? 200000 : 200;
-            if (index.length <= maxLimit) return resolve();
-
-            index.sort((a, b) => (a.t || 0) - (b.t || 0));
             let dropCount = items.isProVersion ? 100 : 10;
-            let toRemove = index.slice(0, dropCount).map(item => item.id);
-            let newIndex = index.slice(dropCount);
-
-            chrome.storage.local.remove(toRemove, () => {
-                chrome.storage.local.set({
-                    vt_index: newIndex,
-                    vt_video_count: newIndex.length
-                }, resolve);
-            });
+            try {
+                await vtDB.runGC(maxLimit, dropCount);
+            } catch (e) {
+                console.error('[VTDatabase] GC Error:', e);
+            }
+            resolve();
         });
     });
 }
 
 // [架構師升級] 建立 RAM 快取，攔截磁碟 I/O，解決頻繁存檔時的效能瓶頸
-let _swCache = { isLoaded: false, isPro: false, count: 0 };
+let _swCache = { isLoaded: false, isPro: false };
 chrome.storage.onChanged.addListener((changes) => {
     if (changes.isProVersion) _swCache.isPro = !!changes.isProVersion.newValue;
-    if (changes.vt_video_count) _swCache.count = changes.vt_video_count.newValue || 0;
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -192,42 +205,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         _vtSaveLockDepth++;
 
         _vtSaveLock = _vtSaveLock.then(() => new Promise((resolve) => {
-            const keysToFetch = [id, 'vt_index'];
-            if (!_swCache.isLoaded) keysToFetch.push('vt_video_count', 'isProVersion');
-
-            chrome.storage.local.get(keysToFetch, (res) => {
-                if (chrome.runtime.lastError) return resolve();
-
-                if (!_swCache.isLoaded) {
-                    _swCache.isPro = !!res.isProVersion;
-                    _swCache.count = res.vt_video_count || 0;
-                    _swCache.isLoaded = true;
-                }
-
-                const updates = { [id]: data };
-                const isNew = !res[id];
-                let index = res.vt_index || [];
-
-                let existingIdx = index.findIndex(item => item.id === id);
-                if (existingIdx !== -1) index.splice(existingIdx, 1);
-
-                index.push({ id: id, t: data.lastUpdated });
-                updates.vt_index = index;
-                if (isNew) {
-                    _swCache.count += 1;
-                    updates.vt_video_count = _swCache.count;
-                }
-
-                chrome.storage.local.set(updates, () => {
-                    if (chrome.runtime.lastError) return resolve();
-                    const limit = _swCache.isPro ? 200000 : 200;
-                    if (_swCache.count > limit) {
-                        runOptimizedGCInsideLock().then(resolve).catch(resolve);
-                    } else {
-                        resolve();
+            const checkAndSave = async () => {
+                try {
+                    if (!_swCache.isLoaded) {
+                        const res = await new Promise(r => chrome.storage.local.get(['isProVersion'], r));
+                        _swCache.isPro = !!res.isProVersion;
+                        _swCache.isLoaded = true;
                     }
-                });
-            });
+
+                    await vtDB.putRecord(id, data);
+                    
+                    const count = await vtDB.count();
+                    const limit = _swCache.isPro ? 200000 : 200;
+                    if (count > limit) {
+                        await runOptimizedGCInsideLock();
+                    }
+                } catch (e) {
+                    console.error('[VTDatabase] Save Record Error:', e);
+                }
+                resolve();
+            };
+            checkAndSave();
         }))
         // [MV3 修復] 存檔完成後呼叫 sendResponse 正式關閉 message channel。
         // 搭配下方的 return true，Chrome 會在整個 storage 操作鏈完成前讓 SW 保持活躍，
@@ -244,35 +242,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === "VT_TRIGGER_GC") {
         runOptimizedGC();
     } else if (request.action === "VT_REBUILD_INDEX") {
-        // [架構師優化] 大規模索引重建：改用分批與迭代器模式，防止 Service Worker 因執行過久被強行終止
-        chrome.storage.local.get(null, async (res) => {
-            const sysKeys = new Set(['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_index', 'vt_instance_id', 'vt_instance_id']);
-            const allKeys = Object.keys(res);
-            const newIndex = [];
-            const batchSize = 5000;
-            
-            for (let i = 0; i < allKeys.length; i += batchSize) {
-                const batchKeys = allKeys.slice(i, i + batchSize);
-                batchKeys.forEach(key => {
-                    if (!sysKeys.has(key)) {
-                        const item = res[key];
-                        if (item && item.lastUpdated) newIndex.push({ id: key, t: item.lastUpdated });
-                    }
-                });
-                // 讓出執行緒，避免阻塞
-                await new Promise(r => setTimeout(r, 0));
-            }
-            res = null;
-
-            chrome.storage.local.set({
-                vt_index: newIndex,
-                vt_video_count: newIndex.length
-            }, () => {
-                // [修正] 手動同步快取，避免 racing condition
-                _swCache.count = newIndex.length;
-                runOptimizedGC();
-            });
-        });
+        // [架構師優化] 改用 IndexedDB 後不再需要手動重建本地記憶體索引，直接執行 GC 即可
+        runOptimizedGC();
     } else if (request.action === "VERIFY_LICENSE") {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);

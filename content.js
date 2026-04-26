@@ -1806,12 +1806,12 @@ if (!window._vtInjected) {
                         };
                         if (uncachedIds.length > 0) {
                             if (!chrome.runtime?.id) return;
-                            chrome.storage.local.get(uncachedIds, (d) => {
+                            window.vtDB.getRecords(uncachedIds).then((d) => {
                                 uncachedIds.forEach((id) => {
                                     if (d[id]?.progress !== undefined) _vtProgressCache.set(id, d[id].progress);
                                 });
                                 _redrawBars();
-                            });
+                            }).catch(() => _redrawBars());
                         } else {
                             _redrawBars();
                         }
@@ -1881,12 +1881,12 @@ if (!window._vtInjected) {
                 });
             };
             if (uncachedIds.length > 0) {
-                chrome.storage.local.get(uncachedIds, (d) => {
+                window.vtDB.getRecords(uncachedIds).then((d) => {
                     uncachedIds.forEach((id) => {
                         if (d[id]?.progress !== undefined) _vtProgressCache.set(id, d[id].progress);
                     });
                     _redrawBars();
-                });
+                }).catch(() => _redrawBars());
             } else {
                 _redrawBars();
             }
@@ -1951,13 +1951,14 @@ if (!window._vtInjected) {
                 sysState.activeVideoId = sysState._cachedId;
                 sysState.isDataLoaded = false;
                 const _loadTarget = sysState._cachedId; // [BUG 修復] 快取 ID 避免閉包跟蹤競態
-                chrome.storage.local.get([_loadTarget], (res) => {
-                    if (chrome.runtime.lastError) return; // [BUG 修復] 處理 Storage 錯誤
+                window.vtDB.getRecords([_loadTarget]).then((res) => {
                     if (sysState.activeVideoId === _loadTarget) {
                         if (res[_loadTarget]?.progress !== undefined)
                             _vtProgressCache.set(_loadTarget, res[_loadTarget].progress); // [效能優化] 預充進度快取
                         sysState.isDataLoaded = true;
                     }
+                }).catch(() => {
+                    if (sysState.activeVideoId === _loadTarget) sysState.isDataLoaded = true;
                 });
                 if (!video.dataset.vtBound) {
                     video.addEventListener("ended", () => {

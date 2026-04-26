@@ -675,10 +675,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnClearData.addEventListener('click', async () => {
         const confirm = await showModal(getLangText(currentLang, 'modalClearData'), getLangText(currentLang, 'modalClearDesc'));
         if (confirm) {
-            chrome.storage.local.get(['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_instance_id'], (config) => {
+            chrome.storage.local.get(['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_instance_id'], async (config) => {
+                await window.vtDB.clearRecords();
                 chrome.storage.local.clear(() => {
                     config.vt_video_count = 0;
-                    config.vt_index = [];
                     chrome.storage.local.set(config, () => {
                         videoCountLabel.textContent = "0";
                         showToast(btnClearData, getLangText(currentLang, 'msgCleared'));
@@ -697,11 +697,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btnExport.textContent = getLangText(currentLang, 'exporting');
         btnExport.disabled = true;
 
-        const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_index'];
+        const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
 
-        chrome.storage.local.get(sysKeys, (sysData) => {
-            const index = sysData.vt_index || [];
-            const allVideoIds = index.map(item => item.id);
+        chrome.storage.local.get(sysKeys, async (sysData) => {
             let chunks = ["{"];
             let isFirst = true;
 
@@ -712,38 +710,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const batchSize = 10000;
-            let currentIdx = 0;
-
-            const processNextBatch = () => {
-                const batchKeys = allVideoIds.slice(currentIdx, currentIdx + batchSize);
-                if (batchKeys.length === 0) {
-                    chunks.push("}");
-                    const blob = new Blob(chunks, { type: "application/json" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `VTrain_Backup_${new Date().toISOString().split('T')[0]}.json`;
-                    a.click();
-                    setTimeout(() => URL.revokeObjectURL(url), 60000); // [CWS BUG 修復] 從 5s 延長至 60s，防止使用者選擇儲存路徑超時導致下載失敗
-
-                    btnExport.innerHTML = oldTxt;
-                    btnExport.disabled = false;
-                    return;
+            try {
+                const records = await window.vtDB.getAllRecords();
+                for (const item of records) {
+                    const k = item.id;
+                    const val = { ...item };
+                    delete val.id;
+                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify(k)}:${JSON.stringify(val)}`);
+                    isFirst = false;
                 }
+            } catch (e) {
+                console.error('[VT Export] IndexedDB error:', e);
+            }
 
-                chrome.storage.local.get(batchKeys, (batchData) => {
-                    for (const k of batchKeys) {
-                        if (batchData[k] !== undefined) {
-                            chunks.push(`${isFirst ? "" : ","}${JSON.stringify(k)}:${JSON.stringify(batchData[k])}`);
-                            isFirst = false;
-                        }
-                    }
-                    currentIdx += batchSize;
-                    setTimeout(processNextBatch, 15);
-                });
-            };
-            processNextBatch();
+            chunks.push("}");
+            const blob = new Blob(chunks, { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `VTrain_Backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 60000); // [CWS BUG 修復] 從 5s 延長至 60s，防止使用者選擇儲存路徑超時導致下載失敗
+
+            btnExport.innerHTML = oldTxt;
+            btnExport.disabled = false;
         });
     });
 
@@ -823,27 +813,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     chrome.storage.local.clear(async () => {
-                        const mergedData = { ...data, ...config };
-                        const finalKeys = Object.keys(mergedData);
-                        let saveIdx = 0;
+                        const mergedData = { ...config };
+                        for (const k of sysKeys) {
+                            if (data[k] !== undefined) mergedData[k] = data[k];
+                        }
 
-                        const processSaveBatch = () => {
-                            return new Promise((resolve) => {
-                                const batchKeys = finalKeys.slice(saveIdx, saveIdx + batchSize);
-                                if (batchKeys.length === 0) return resolve();
+                        await new Promise(r => chrome.storage.local.set(mergedData, r));
+                        await window.vtDB.clearRecords();
 
-                                const chunkData = {};
-                                for (const k of batchKeys) chunkData[k] = mergedData[k];
-
-                                chrome.storage.local.set(chunkData, () => {
-                                    saveIdx += batchSize;
-                                    setTimeout(resolve, 15);
-                                });
-                            });
-                        };
-
-                        while (saveIdx < finalKeys.length) {
-                            await processSaveBatch();
+                        const finalKeys = Object.keys(data).filter(k => !sysKeys.includes(k) && !licenseKeys.includes(k));
+                        for (const k of finalKeys) {
+                            await window.vtDB.putRecord(k, data[k]);
                         }
 
                         showToast(btnImport, getLangText(currentLang, 'msgImportSuccess'));
