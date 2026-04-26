@@ -1258,6 +1258,9 @@ if (!window._vtInjected) {
             return false;
         }
 
+        // [新增] 嚴格拒絕包含網址結構的垃圾字串
+        if (/[/?=&]/.test(id)) return false; 
+
         if (!guard) return true; // 舊規則相容模式
 
         // 2. 長度過濾
