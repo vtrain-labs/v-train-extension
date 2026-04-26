@@ -106,7 +106,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 No split', o_rec: 'Rec.', l_ok: '✓ Location:',
             vt: '🎯 Visual Capture Mode',
             v1: 'Press <b><span style="color:#ff5252">Up/Down</span></b> to resize frame<br>Frame the <b>thumbnail itself</b> (avoid text)<br>Press <b><span style="color:#10b981">Enter to Confirm</span></b> (or Esc)',
-            ve1: '⛔ Cannot insert bar in image. Press ↑ to expand', ve2: '⛔ Element too small. Press ↑ to expand', vok: '✅ Valid Container',
+            ve1: '⛔ Cannot insert bar in image. Press ↑ to expand', ve2: '⛔ Element too small. Press ↑ to expand', ve3: '⛔ Already tracked by another module', vok: '✅ Valid Container',
             warn_id_mismatch: '⚠️ Mismatch: This ID was not found in the selected thumbnail. Progress tracking might fail.',
 
             // --- Parameterized String Templates (To fix content.js hardcoding) ---
@@ -168,7 +168,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 不需切割', o_rec: '推薦', l_ok: '✓ 位置：',
             vt: '🎯 視覺化容器捕捉模式',
             v1: '按下方向鍵 <b><span style="color:#ff5252">↑ / ↓</span></b> 擴張或縮小框線<br>讓方框剛好包覆住<b>縮圖本身</b> (請留意不要選到不相干的文字區塊)<br>調整好後，按下 <b><span style="color:#10b981">Enter 確認</span></b> (或 Esc 取消)',
-            ve1: '⛔ 此為圖片本身無法安插進度條，請按 ↑ 往外層選取容器', ve2: '⛔ 此元素缺乏實體大小，進度條會看不見，請按 ↑ 往外選', vok: '✅ 可用的容器',
+            ve1: '⛔ 此為圖片本身無法安插進度條，請按 ↑ 往外層選取容器', ve2: '⛔ 此元素缺乏實體大小，進度條會看不見，請按 ↑ 往外選', ve3: '⛔ 衝突：此容器已被其他模組追蹤中', vok: '✅ 可用的容器',
             warn_id_mismatch: '⚠️ 偵測到 ID 不匹配：此 ID 未能在選定的縮圖容器中找到，規則可能無法生效。',
 
             // --- Parameterized String Templates ---
@@ -230,7 +230,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 不需切割', o_rec: '推荐', l_ok: '✓ 位置：',
             vt: '🎯 视觉化容器捕捉模式',
             v1: '按下方向键 <b><span style="color:#ff5252">↑ / ↓</span></b> 扩张或缩小框线<br>让方框刚好包覆住<b>缩图本身</b> (请留意不要选到不相干的文字区块)<br>调整好后，按下 <b><span style="color:#10b981">Enter 确认</span></b> (或 Esc 取消)',
-            ve1: '⛔ 图片本体无法插入进度条，请按 ↑ 往外層选取容器', ve2: '⛔ 元素过小进度条會隐形，请按 ↑ 往外选', vok: '✅ 可用的容器',
+            ve1: '⛔ 图片本体无法插入进度条，请按 ↑ 往外層选取容器', ve2: '⛔ 元素过小进度条會隐形，请按 ↑ 往外选', ve3: '⛔ 冲突：此容器已被其他模块追踪中', vok: '✅ 可用的容器',
             warn_id_mismatch: '⚠️ 检测到 ID 不匹配：此 ID 未能在选定的缩图容器中找到，规则可能无法生效。',
 
             // --- Parameterized String Templates ---
@@ -292,7 +292,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 分割なし', o_rec: '推奨', l_ok: '✓ 位置:',
             vt: '🎯 視覚的キャプチャモード',
             v1: '方向キー <b><span style="color:#ff5252">↑ / ↓</span></b> で枠をリサイズ<br><b>サムネイル自体</b>を囲む (テキストは避ける)<br><b><span style="color:#10b981">Enter で確認</span></b> (または Esc)',
-            ve1: '⛔ 画像にバーを挿入できません。↑ で拡大', ve2: '⛔ 要素が小さすぎます。↑ で拡大', vok: '✅ 有効なコンテナ',
+            ve1: '⛔ 画像にバーを挿入できません。↑ で拡大', ve2: '⛔ 要素が小さすぎます。↑ で拡大', ve3: '⛔ 既に追跡されています。', vok: '✅ 有効なコンテナ',
             warn_id_mismatch: '⚠️ IDの不一致：このIDは選択したサムネイルコンテナで見つかりませんでした。ルールの適用に失敗する可能性があります。',
 
             // --- Parameterized String Templates ---
@@ -354,7 +354,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 분할 안 함', o_rec: '추천', l_ok: '✓ 위치:',
             vt: '🎯 시각적 캡처 모드',
             v1: '방향키 <b><span style="color:#ff5252">↑ / ↓</span></b> 로 프레임 크기 조절<br><b>썸네일 자체</b>를 감싸기 (텍스트 제외)<br><b><span style="color:#10b981">Enter 로 확인</span></b> (또는 Esc)',
-            ve1: '⛔ 이미지에 바를 삽입할 수 없습니다. ↑ 로 확대', ve2: '⛔ 요소가 너무 작습니다. ↑ 로 확대', vok: '✅ 유효한 컨테이너',
+            ve1: '⛔ 이미지에 바를 삽입할 수 없습니다. ↑ 로 확대', ve2: '⛔ 요소가 너무 작습니다. ↑ 로 확대', ve3: '⛔ 이미 다른 모듈에 의해 추적 중입니다', vok: '✅ 유효한 컨테이너',
             warn_id_mismatch: '⚠️ ID 불일치 감지: 선택한 썸네일 컨테이너에서 이 ID를 찾을 수 없습니다. 규칙이 적용되지 않을 수 있습니다.',
 
             // --- Parameterized String Templates ---
@@ -416,7 +416,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 Sin división', o_rec: 'Rec.', l_ok: '✓ Ubicación:',
             vt: '🎯 Modo Capture Visual',
             v1: 'Presione <b><span style="color:#ff5252">Arriba/Abajo</span></b> para cambiar tamaño<br>Enmarque la <b>miniatura</b> (evite texto)<br>Presione <b><span style="color:#10b981">Enter para Confirmar</span></b> (o Esc)',
-            ve1: '⛔ No se puede insertar barra. Presione ↑', ve2: '⛔ Elemento muy pequeño. Presione ↑', vok: '✅ Contenedor Válido',
+            ve1: '⛔ No se puede insertar barra. Presione ↑', ve2: '⛔ Elemento muy pequeño. Presione ↑', ve3: '⛔ Ya está siendo rastreado por otro módulo', vok: '✅ Contenedor Válido',
             warn_id_mismatch: '⚠️ Discrepancia de ID: Este ID no se encontró en la miniatura seleccionada. El seguimiento del progreso podría fallar.',
 
             // --- Parameterized String Templates ---
@@ -478,7 +478,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 Pas de division', o_rec: 'Rec.', l_ok: '✓ Lieu:',
             vt: '🎯 Mode Capture Visuelle',
             v1: 'Appuyez <b><span style="color:#ff5252">Haut/Bas</span></b> pour redimensionner<br>Encadrez la <b>miniature</b> (évitez texte)<br><b><span style="color:#10b981">Entrée pour Confirmer</span></b> (ou Esc)',
-            ve1: '⛔ Impossible insérer barra. Appuyez ↑', ve2: '⛔ Élément trop petit. Appuyez ↑', vok: '✅ Conteneur Valide',
+            ve1: '⛔ Impossible insérer barra. Appuyez ↑', ve2: '⛔ Élément trop petit. Appuyez ↑', ve3: '⛔ Déjà suivi par un autre module', vok: '✅ Conteneur Valide',
             warn_id_mismatch: "⚠️ Non-concordance ID : Cet ID n'a pas été trouvé dans la miniature sélectionnée. Le suivi de la progression pourrait échouer.",
 
             // --- Parameterized String Templates ---
@@ -540,7 +540,7 @@ if (typeof window._vt_i18n_loaded === 'undefined') {
             o_no: '🚫 Keine Teilung', o_rec: 'Empf.', l_ok: '✓ Ort:',
             vt: '🎯 Visueller Erfassungsmodus',
             v1: '<b><span style="color:#ff5252">Auf/Ab</span></b> zum Skalieren drücken<br><b>Miniaturbild</b> einrahmen (Text meiden)<br><b><span style="color:#10b981">Enter zum Bestätigen</span></b> (oder Esc)',
-            ve1: '⛔ Balken kann nicht in das Bild eingefügt werden. ↑ drücken zum Erweitern', ve2: '⛔ Element zu klein. ↑ drücken zum Erweitern', vok: '✅ Gültiger Container',
+            ve1: '⛔ Balken kann nicht in das Bild eingefügt werden. ↑ drücken zum Erweitern', ve2: '⛔ Element zu klein. ↑ drücken zum Erweitern', ve3: '⛔ Bereits von einem anderen Modul verfolgt', vok: '✅ Gültiger Container',
             warn_id_mismatch: '⚠️ ID-Diskrepanz: Diese ID wurde im ausgewählten Miniaturbild nicht gefunden. Die Fortschrittsverfolgung könnte fehlschlagen.',
 
             // --- Parameterized String Templates ---

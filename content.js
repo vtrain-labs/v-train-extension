@@ -89,6 +89,9 @@ if (!window._vtInjected) {
                         res.isStealthMode === undefined ? true : res.isStealthMode;
                     if (isStealth) return showToast(txt.sw);
 
+                    // [新增] 進入訓練模式時：將既有進度條設為半透明 (不呼叫 removeAllBars)
+                    document.querySelectorAll(".vt-progress-container").forEach(el => el.classList.add("vt-ghost"));
+
                     let target = lastRightClickedEl;
                     if (!target || !document.contains(target)) {
                         let hovers = document.querySelectorAll(":hover");
@@ -243,6 +246,9 @@ if (!window._vtInjected) {
                             ) {
                                 isValid = false;
                                 invalidReason = txt.ve2;
+                            } else if (activeOverlayBars && activeOverlayBars.has(targetEl)) {
+                                isValid = false;
+                                invalidReason = txt.ve3 || "ALREADY TRACKED";
                             }
 
                             let borderColor = isValid ? "#00F0FF" : "#FF3333";
@@ -305,6 +311,15 @@ if (!window._vtInjected) {
                     let ui = null;
 
                     const closeVisualMode = () => {
+                        // [新增] 離開視覺模式時，清除滾動監聽
+                        if (window._vtScrollHandler) {
+                            window.removeEventListener("scroll", window._vtScrollHandler, true);
+                            window._vtScrollHandler = null;
+                        }
+
+                        // [新增] 離開視覺模式時：恢復進度條
+                        document.querySelectorAll(".vt-progress-container").forEach(el => el.classList.remove("vt-ghost"));
+
                         if (visualUpdateLoop) {
                             cancelAnimationFrame(visualUpdateLoop);
                             visualUpdateLoop = null;
@@ -1092,6 +1107,20 @@ if (!window._vtInjected) {
 
                     const startVisualMode = () => {
                         document.addEventListener("keydown", keydownHandler, true);
+                        
+                        // [新增] 實作防抖的滾動監聽器
+                        window._vtScrollHandler = () => {
+                            if (window._vtScrollTimer) clearTimeout(window._vtScrollTimer);
+                            window._vtScrollTimer = setTimeout(() => {
+                                // 重新依照目前的焦點元素更新框線 (捕捉新載入的 DOM)
+                                if (currentFocusEl && document.contains(currentFocusEl)) {
+                                    updateFocus(currentFocusEl);
+                                }
+                            }, 200); // 停止滾動 200ms 後重新計算
+                        };
+                        // 使用 capture: true 確保能捕捉到內部 div 的滾動
+                        window.addEventListener("scroll", window._vtScrollHandler, true); 
+
                         updateFocus(currentFocusEl);
                         overlayUi = document.createElement("div");
                         overlayUi.style.cssText =

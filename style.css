@@ -9,22 +9,33 @@
     position: fixed !important;
     height: 6px !important;
 
-    background-color: rgba(255, 255, 255, 0.35) !important; /* 半透明冰透白 */
-    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.6) !important;   /* 增加立體感 */
+    background-color: rgba(255, 255, 255, 0.35) !important;
+    /* 半透明冰透白 */
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.6) !important;
+    /* 增加立體感 */
     pointer-events: none;
 
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
-    overflow: visible !important; /* 允許黃色 ID 標籤破框顯示 */
+    overflow: visible !important;
+    /* 允許黃色 ID 標籤破框顯示 */
     display: block !important;
     visibility: visible !important;
     /* z-index: 由 JS 動態設定，CSS 不干預，讓頁面高層 UI 可自然遮擋 */
 }
 
+/* [新增] 訓練模式下的半透明狀態 (避免盲操) */
+.vt-progress-container.vt-ghost {
+    opacity: 0.3 !important;
+    pointer-events: none !important;
+    filter: grayscale(50%);
+}
+
 /* 2. 進度 (科技青條) */
 .vt-progress-bar {
     height: 100% !important;
-    background-color: #ff0000; /* [架構師解鎖] 移除 !important，讓 JS 能夠覆寫 */
+    background-color: #ff0000;
+    /* [架構師解鎖] 移除 !important，讓 JS 能夠覆寫 */
     width: 0%;
     transition: width 0.3s ease;
     display: block !important;
