@@ -329,7 +329,8 @@ chrome.permissions.onAdded.addListener((permissions) => {
         chrome.tabs.query({ url: permissions.origins }, (tabs) => {
             for (let tab of tabs) {
                 chrome.scripting.insertCSS({ target: { tabId: tab.id, allFrames: true }, files: ["style.css"] }).catch(() => { });
-                chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ["shared_i18n.js", "content.js"] }).catch(() => { });
+                // [安全修復 #5] 補上遺漏的 db.js，確保 content.js 執行前 vtDB 已就緒
+                chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ["db.js", "shared_i18n.js", "content.js"] }).catch(() => { });
             }
         });
     }

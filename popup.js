@@ -89,10 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateAuthBtn = (hasPerm) => {
             if (hasPerm) {
                 btnAuthorizeCurrentSite.classList.add('authorized');
-                btnAuthorizeCurrentSite.innerHTML = getLangText(currentLang, 'siteAuthorized');
+                // [安全修復 #10] 純文字改用 textContent，消除不必要的 innerHTML 使用
+                btnAuthorizeCurrentSite.textContent = getLangText(currentLang, 'siteAuthorized');
             } else {
                 btnAuthorizeCurrentSite.classList.remove('authorized');
-                btnAuthorizeCurrentSite.innerHTML = getLangText(currentLang, 'authorizeSite');
+                btnAuthorizeCurrentSite.textContent = getLangText(currentLang, 'authorizeSite');
             }
         };
 
@@ -299,7 +300,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let rules = Array.isArray(config[d]) ? config[d] : [config[d]];
                 let hosts = new Set(); rules.forEach(r => r?.hosts?.forEach(h => hosts.add(h)));
-                let hostStr = hosts.size > 0 ? ` <span style="color:#f57c00;font-size:12px;">(${getLangText(currentLang, 'appliedTo')} ${[...hosts].map(escapeHtml).join(', ')})</span>` : '';
+                // [安全修復 #2] 以 DOM API 建構 span，透過 textContent 寫入 hosts，消除 innerHTML
+                let hostSpanEl = null;
+                if (hosts.size > 0) {
+                    hostSpanEl = document.createElement('span');
+                    hostSpanEl.style.cssText = 'color:#f57c00;font-size:12px;';
+                    hostSpanEl.textContent = `(${getLangText(currentLang, 'appliedTo')} ${[...hosts].join(', ')})`;
+                }
 
                 const row = document.createElement('div');
                 row.style.cssText = 'padding:10px; border-bottom:1px solid #333; color:#fff; display:flex; flex-direction:column; gap:8px;';
@@ -336,9 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 透過 textContent 注入變數，徹底封死 XSS
                 row.querySelector('.vt-domain-name').textContent = d;
-                if (hostStr) row.querySelector('.vt-host-info').innerHTML = hostStr; // hostStr 是內建標籤，安全
-                row.querySelector('.vt-slots-dots').innerHTML = slotDotsHtml; 
-                row.querySelector('.vt-slots-cards').innerHTML = slotCardsHtml;
+                // [安全修復 #2] hostStr 改用 DOM API 建構的 span 元素，透過 appendChild 注入
+                if (hostSpanEl) row.querySelector('.vt-host-info').appendChild(hostSpanEl);
+                // [安全修復 #3] slotDotsHtml / slotCardsHtml 改用 DOMParser 安全解析後再注入
+                const _slotParser = new DOMParser();
+                const _dotsDoc = _slotParser.parseFromString(`<div>${slotDotsHtml}</div>`, 'text/html');
+                while (_dotsDoc.body.firstChild.firstChild) {
+                    row.querySelector('.vt-slots-dots').appendChild(_dotsDoc.body.firstChild.firstChild);
+                }
+                const _cardsDoc = _slotParser.parseFromString(`<div>${slotCardsHtml}</div>`, 'text/html');
+                while (_cardsDoc.body.firstChild.firstChild) {
+                    row.querySelector('.vt-slots-cards').appendChild(_cardsDoc.body.firstChild.firstChild);
+                }
                 row.querySelector('.raw-json-section').textContent = JSON.stringify(config[d]);
                 row.querySelector('.vt-share-display').textContent = displayCode;
                 row.querySelector('.vt-share-display').title = shareCode;
@@ -355,7 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.currentTarget.textContent = isHidden ? '▼ Raw JSON' : '▶ Raw JSON';
                 };
                 row.querySelector('.del-rule-btn').onclick = async () => {
-                    const isConfirm = await showModal(`⚠️ ${getLangText(currentLang, 'delete')}`, `${getLangText(currentLang, 'confirmDelRule')} <b style="color:#00e676;">${escapeHtml(d)}</b> ?`);
+                    // [安全修復 #1] showModal 的 desc 使用純文字，不再傳入 HTML
+                    const isConfirm = await showModal(`⚠️ ${getLangText(currentLang, 'delete')}`, `${getLangText(currentLang, 'confirmDelRule')} "${d}" ?`);
                     if (isConfirm) { delete config[d]; chrome.storage.local.set({ site_config: config }, () => renderRulesList(ruleSearchInput?.value)); }
                 };
                 rulesListContainer.appendChild(row);
@@ -471,8 +488,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isRuleSafe) throw new Error("Security block: Malicious rule detected");
 
             chrome.storage.local.get(['site_config', 'enabledSites'], async (res) => {
-                let cMsg = `${getLangText(currentLang, 'modalShareDesc')} <b style="color:#4fc3f7;">${data.d}</b>`;
-                if (res.site_config && res.site_config[data.d]) cMsg += `<br><br><span style="color:#ff5252">${getLangText(currentLang, 'confirmOverwrite')}</span>`;
+                // [安全修復 #1] showModal 的 desc 使用純文字，不再拼接包含 data.d 的 HTML
+                let cMsg = `${getLangText(currentLang, 'modalShareDesc')} "${data.d}"`;
+                if (res.site_config && res.site_config[data.d]) cMsg += `\n\n${getLangText(currentLang, 'confirmOverwrite')}`;
                 if (await showModal(getLangText(currentLang, 'modalShareTitle'), cMsg)) {
                     chrome.storage.local.set({ site_config: { ...res.site_config, [data.d]: data.r }, enabledSites: { ...res.enabledSites, [data.d]: true } }, () => {
                         inlineRuleInput.value = '';
@@ -868,7 +886,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function showModal(title, desc, isPrompt = false, placeholder = "", showBuyLink = false) {
         return new Promise((resolve) => {
             mTitle.textContent = title;
-            mDesc.innerHTML = desc;
+            // [安全修復 #1] 消滅 mDesc.innerHTML = desc 這個危險出口，統一改用 textContent
+            mDesc.textContent = desc;
 
             if (isPrompt) {
                 mInput.classList.remove('hidden');
@@ -891,7 +910,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (showBuyLink && mBtnBuy) {
                 mBtnBuy.classList.remove('hidden');
                 if (mWarning) {
-                    mWarning.innerHTML = getLangText(currentLang, 'buyWarning');
+                    // [安全修復 #1] 翻譯字串為受信任靜態字典，但仍改用 textContent 以消除 innerHTML 使用
+                    mWarning.textContent = getLangText(currentLang, 'buyWarning');
                     mWarning.classList.remove('hidden');
                 }
             } else {

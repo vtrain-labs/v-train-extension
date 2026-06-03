@@ -536,6 +536,7 @@ input[type="password"] {
     font-size: 16px !important;
     color: #ffffff !important;
     line-height: 1.6;
+    white-space: pre-line; /* [安全修復] 配合 textContent，讓 \n 正確換行，消除對 <br> 的依賴 */
 }
 
 #btnForgotPassword {
