@@ -193,8 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let _rulesCurrentPage = 1;
     const _rulesPageSize = 10;
 
+    // [效能修復 P4] popup 記憶體快取：避免每次搜尋/翻頁都重新呼叫 storage.get
+    // popup 生命週期通常僅數秒，快取安全無副作用。
+    // 所有寫入 site_config 的地方都會先設 null 清除快取，確保一致性。
+    let _cachedSiteConfig = null;
+
     const ruleSearchInput = document.getElementById('ruleSearchInput');
-    // [建議] 增加搜尋 Debounce (200ms)
+    // 搜尋 Debounce (200ms)
     let searchTimer = null;
     if (ruleSearchInput) {
         ruleSearchInput.addEventListener('input', () => {
@@ -207,9 +212,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderRulesList(searchTerm = '') {
-        chrome.storage.local.get(['site_config'], async (res) => {
-            rulesListContainer.innerHTML = '';
-            const config = res.site_config || {};
+        // [效能修復 P4] 命中記憶體快取時直接渲染，跳過 storage.get
+        const _doRender = async (config) => {
+            const fragment = document.createDocumentFragment(); // [效能修復 P4] 用 Fragment 批次插入，單次 reflow
             const sysBlackList = ['isProVersion', 'remainingUses', 'storedLicenseKey', 'userPassword', 'userLang', 'vt_video_count', 'isStealthMode', 'enabledSites', 'showMonitorPanel', 'barColor'];
 
             let allDomains = Object.keys(config).filter(d => !sysBlackList.includes(d)).sort((a, b) => a.localeCompare(b));
@@ -373,14 +378,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.querySelector('.del-rule-btn').onclick = async () => {
                     // [安全修復 #1] showModal 的 desc 使用純文字，不再傳入 HTML
                     const isConfirm = await showModal(`⚠️ ${getLangText(currentLang, 'delete')}`, `${getLangText(currentLang, 'confirmDelRule')} "${d}" ?`);
-                    if (isConfirm) { delete config[d]; chrome.storage.local.set({ site_config: config }, () => renderRulesList(ruleSearchInput?.value)); }
+                    if (isConfirm) {
+                        delete config[d];
+                        _cachedSiteConfig = null; // [效能修復 P4] 清除快取，下次讀取最新資料
+                        chrome.storage.local.set({ site_config: config }, () => renderRulesList(ruleSearchInput?.value));
+                    }
                 };
-                rulesListContainer.appendChild(row);
+                fragment.appendChild(row); // [效能修復 P4] 插入 Fragment，不直接操作 DOM
             });
+
+            // 一次性將所有 row 插入 DOM（單次 reflow，消除逐列閃爍）
+            rulesListContainer.innerHTML = '';
+            rulesListContainer.appendChild(fragment);
 
             // 5. 渲染分頁按鈕
             renderPagination(totalPages, searchTerm);
-        });
+        };
+
+        if (_cachedSiteConfig !== null) {
+            _doRender(_cachedSiteConfig);
+        } else {
+            chrome.storage.local.get(['site_config'], (res) => {
+                _cachedSiteConfig = res.site_config || {};
+                _doRender(_cachedSiteConfig);
+            });
+        }
     }
 
     function renderPagination(totalPages, searchTerm) {
@@ -492,6 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let cMsg = `${getLangText(currentLang, 'modalShareDesc')} "${data.d}"`;
                 if (res.site_config && res.site_config[data.d]) cMsg += `\n\n${getLangText(currentLang, 'confirmOverwrite')}`;
                 if (await showModal(getLangText(currentLang, 'modalShareTitle'), cMsg)) {
+                    _cachedSiteConfig = null; // [效能修復 P4] 清除快取
                     chrome.storage.local.set({ site_config: { ...res.site_config, [data.d]: data.r }, enabledSites: { ...res.enabledSites, [data.d]: true } }, () => {
                         inlineRuleInput.value = '';
                         showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportSuccess'));
@@ -526,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
                     const mergedRules = { ...(res.site_config || {}), ...validatedRules };
+                    _cachedSiteConfig = null; // [效能修復 P4] 清除快取
                     chrome.storage.local.set({ site_config: mergedRules }, () => {
                         showToast(btnImportRules, getLangText(currentLang, 'msgRuleImportSuccess'));
                         renderRulesList();

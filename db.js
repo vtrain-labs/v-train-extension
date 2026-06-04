@@ -50,30 +50,23 @@ class VTDatabase {
     }
 
     async getRecords(ids) {
+        // [效能修復 P3] 計數器模式（completed++）改為 Promise.all：
+        // 每個 store.get() 包成 Promise，全部並行且語意清晰，
+        // 不需手動計數，也不會有計數器邏輯錯誤風險。
         await this.init();
-        return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction([this.storeName], 'readonly');
-            const store = transaction.objectStore(this.storeName);
-            const results = {};
-            let completed = 0;
-            
-            if (!ids || ids.length === 0) return resolve(results);
-
-            ids.forEach(id => {
-                const request = store.get(id);
-                request.onsuccess = (e) => {
-                    if (e.target.result) {
-                        results[id] = e.target.result;
-                    }
-                    completed++;
-                    if (completed === ids.length) resolve(results);
-                };
-                request.onerror = (e) => {
-                    completed++;
-                    if (completed === ids.length) resolve(results);
-                };
-            });
-        });
+        if (!ids || ids.length === 0) return {};
+        const transaction = this.db.transaction([this.storeName], 'readonly');
+        const store = transaction.objectStore(this.storeName);
+        const results = {};
+        await Promise.all(ids.map(id => new Promise((resolve) => {
+            const req = store.get(id);
+            req.onsuccess = (e) => {
+                if (e.target.result) results[id] = e.target.result;
+                resolve();
+            };
+            req.onerror = () => resolve(); // 靜默失敗，不阻斷其他查詢
+        })));
+        return results;
     }
 
     async getAllRecords() {

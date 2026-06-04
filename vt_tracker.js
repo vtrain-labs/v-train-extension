@@ -123,10 +123,28 @@ if (!window._vtTrackerLoaded) {
             // [防護] 擴充功能重載後 context 失效時自動停止計時器，避免 "Extension context invalidated" 錯誤
             if (!chrome.runtime?.id) { clearInterval(sysState._barUpdateTimer); sysState._barUpdateTimer = null; return; }
             if (sysState.isStealth || visibleTargets.size === 0) return;
+
+            // [效能修復 P1] 髒值偵測（Dirty Checking）：
+            // 分離「需要查 IDB 的 ID」與「快取命中但進度值已改變」兩種情況。
+            // 若所有 ID 都在快取中，且進度條寬度與快取完全一致，直接跳過本輪，
+            // 避免每 1.5s 在縮圖多時執行大量不必要的 style 寫入。
             const uncachedIds = [];
+            let hasDirty = false;
             visibleTargets.forEach((t) => {
-                if (!_vtProgressCache.has(t.id)) uncachedIds.push(t.id);
+                if (!_vtProgressCache.has(t.id)) {
+                    uncachedIds.push(t.id);
+                } else {
+                    const cachedPct = _vtProgressCache.get(t.id) || 0;
+                    const barData = activeOverlayBars.get(t.w);
+                    // 進度條不存在（尚未繪製）或寬度與快取不符時，標記為髒值
+                    if (!barData || parseFloat(barData.barFill.style.width) !== cachedPct) {
+                        hasDirty = true;
+                    }
+                }
             });
+            // 完全命中快取且無髒值：本輪所有進度條都是最新狀態，跳過
+            if (uncachedIds.length === 0 && !hasDirty) return;
+
             const _redrawBars = () => {
                 visibleTargets.forEach((t) => {
                     drawBar(t.w, _vtProgressCache.get(t.id) || 0, t.id);

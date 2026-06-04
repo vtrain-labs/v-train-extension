@@ -33,19 +33,20 @@ function checkAndLockIfAllClosed() {
 }
 
 function injectScriptToExistingTabs() {
-    chrome.tabs.query({ url: ["http://*/*", "https://*/*"] }, (tabs) => {
-        let currentIdx = 0;
-        const batchSize = 5; // [架構師優化] 每批次處理 5 個分頁
-        const processBatch = async () => {
-            const batch = tabs.slice(currentIdx, currentIdx + batchSize);
-            if (batch.length === 0) return;
+    // [效能修復 P2] 遞迴改 while 迴圈：原 processBatch() 遞迴呼叫沒有 await，
+    // 在 MV3 Service Worker 環境中，SW 可能在批次間隙休眠導致後續批次被截斷。
+    // 改為在同一個 async callback 裡用 for 迴圈，所有批次都在同一個 await 鏈中完成。
+    chrome.tabs.query({ url: ["http://*/*", "https://*/*"] }, async (tabs) => {
+        const batchSize = 5; // 每批次處理 5 個分頁
+        for (let i = 0; i < tabs.length; i += batchSize) {
+            const batch = tabs.slice(i, i + batchSize);
 
             await Promise.all(batch.map(async (tab) => {
                 if (!tab.url || !tab.url.startsWith('http')) return;
 
                 const urlObj = new URL(tab.url);
                 const origin = `${urlObj.protocol}//*.${urlObj.hostname.replace(/^(www\.|m\.)/i, '')}/*`;
-                
+
                 const hasPerm = await new Promise(resolve => {
                     chrome.permissions.contains({ origins: [origin] }, resolve);
                 });
@@ -62,11 +63,11 @@ function injectScriptToExistingTabs() {
                 }).catch(() => { });
             }));
 
-            currentIdx += batchSize;
-            await new Promise(r => setTimeout(r, 250)); // [架構師優化] 讓出主執行緒，確保上一批真正完成
-            processBatch();
-        };
-        processBatch();
+            // 讓出主執行緒，確保上一批真正完成後再處理下一批
+            if (i + batchSize < tabs.length) {
+                await new Promise(r => setTimeout(r, 250));
+            }
+        }
     });
 }
 
