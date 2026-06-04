@@ -119,7 +119,18 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# Hash path at <b style="color:#ffb74d;">{idx}</b> segment',
             loc_flank: 'Flanked within Left: <code style="color:#aaa;">{left}</code>, Right: <code style="color:#aaa;">{right}</code>',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ Cannot find <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Hint: Extracted is <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Hint: Extracted is <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: 'Slot {num}',
+            slotSelector: 'Selector',
+            slotIdSrc: 'ID Source',
+            slotProgressSrc: 'Progress Source',
+            ruleUrlPath: 'URL Path',
+            ruleQuery: 'Query Param',
+            ruleFlank: 'Flank Match',
+            rulePathLast: '(last segment)',
+            rulePathFirst: '(first segment)'
         },
         "zh-TW": {
             // === Popup & System Keys ===
@@ -181,7 +192,18 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# 錨點中<b style="color:#ffb74d;">{idx}</b>段',
             loc_flank: '段內夾擊：左 <code style="color:#aaa;">{left}</code>，右 <code style="color:#aaa;">{right}</code> 中',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ 找不到 <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">提示：提取結果為 <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">提示：提取結果為 <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: '槽位 {num}',
+            slotSelector: '選擇器',
+            slotIdSrc: 'ID 來源',
+            slotProgressSrc: '進度來源',
+            ruleUrlPath: 'URL 路徑',
+            ruleQuery: '查詢參數',
+            ruleFlank: '側翼匹配',
+            rulePathLast: '(末段)',
+            rulePathFirst: '(首段)'
         },
         "zh-CN": {
             // === Popup & System Keys ===
@@ -243,7 +265,18 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# 锚点中<b style="color:#ffb74d;">{idx}</b>段',
             loc_flank: '段内夹击：左 <code style="color:#aaa;">{left}</code>，右 <code style="color:#aaa;">{right}</code> 中',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ 找不到 <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">提示：提取结果为 <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">提示：提取结果为 <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: '槽位 {num}',
+            slotSelector: '选择器',
+            slotIdSrc: 'ID 来源',
+            slotProgressSrc: '进度来源',
+            ruleUrlPath: 'URL 路径',
+            ruleQuery: '查询参数',
+            ruleFlank: '侧翼匹配',
+            rulePathLast: '(末段)',
+            rulePathFirst: '(首段)'
         },
         "ja": {
             // === Popup & System Keys ===
@@ -305,7 +338,18 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# ハッシュパスの <b style="color:#ffb74d;">{idx}</b> 番目のセグメント',
             loc_flank: '挟み込み: 左 <code style="color:#aaa;">{left}</code>, 右 <code style="color:#aaa;">{right}</code>',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ 見つかりません <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">ヒント: 抽出結果 <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">ヒント: 抽出結果 <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: 'スロット {num}',
+            slotSelector: 'セレクター',
+            slotIdSrc: 'ID ソース',
+            slotProgressSrc: '進捗元',
+            ruleUrlPath: 'URL パス',
+            ruleQuery: 'クエリパラメータ',
+            ruleFlank: 'フランクマッチ',
+            rulePathLast: '(最後のセグメント)',
+            rulePathFirst: '(最初のセグメント)'
         },
         "ko": {
             // === Popup & System Keys ===
@@ -367,7 +411,18 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# 해시 경로의 <b style="color:#ffb74d;">{idx}</b> 번째 세그먼트',
             loc_flank: '양옆: 왼쪽 <code style="color:#aaa;">{left}</code>, 오른쪽 <code style="color:#aaa;">{right}</code>',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ 찾을 수 없음 <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">힌트: 추출 결과 <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">힌트: 추출 결과 <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: '슬롯 {num}',
+            slotSelector: '선택자',
+            slotIdSrc: 'ID 출처',
+            slotProgressSrc: '진행률 출처',
+            ruleUrlPath: 'URL 경로',
+            ruleQuery: '쿼리 매개변수',
+            ruleFlank: '측면 매칭',
+            rulePathLast: '(마지막 세그먼트)',
+            rulePathFirst: '(첫 번째 세그먼트)'
         },
         "es": {
             // === Popup & System Keys ===
@@ -429,7 +484,18 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# Ruta Hash en el <b style="color:#ffb74d;">{idx}</b> segmento',
             loc_flank: 'Flanqueado entre Izq: <code style="color:#aaa;">{left}</code>, Der: <code style="color:#aaa;">{right}</code>',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ No encontrado <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Pista: Extraído es <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Pista: Extraído es <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: 'Ranura {num}',
+            slotSelector: 'Selector',
+            slotIdSrc: 'Fuente de ID',
+            slotProgressSrc: 'Fuente de Progreso',
+            ruleUrlPath: 'Ruta URL',
+            ruleQuery: 'Parámetro de consulta',
+            ruleFlank: 'Coincidencia Lateral',
+            rulePathLast: '(último segmento)',
+            rulePathFirst: '(primer segmento)'
         },
         "fr": {
             // === Popup & System Keys ===
@@ -491,7 +557,18 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# Chemin Hash au <b style="color:#ffb74d;">{idx}</b> segment',
             loc_flank: 'Entouré par Gauche : <code style="color:#aaa;">{left}</code>, Droite : <code style="color:#aaa;">{right}</code>',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ Introuvable <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Indice: Extrait est <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Indice: Extrait est <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: 'Emplacement {num}',
+            slotSelector: 'Sélecteur',
+            slotIdSrc: 'Source ID',
+            slotProgressSrc: 'Source de Progression',
+            ruleUrlPath: 'Chemin URL',
+            ruleQuery: 'Paramètre de requête',
+            ruleFlank: 'Correspondance Latérale',
+            rulePathLast: '(dernier segment)',
+            rulePathFirst: '(premier segment)'
         },
         "de": {
             // === Popup & System Keys ===
@@ -553,8 +630,37 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             loc_hash_path: '# Hash-Pfad am <b style="color:#ffb74d;">{idx}</b> Segment',
             loc_flank: 'Flankiert zwischen Links: <code style="color:#aaa;">{left}</code>, Rechts: <code style="color:#aaa;">{right}</code>',
             err_not_found: '<div style="color:#ff6b6b;font-size:15px;font-weight:bold;">❌ Nicht gefunden <b>{id}</b></div>',
-            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Tipp: Extrahiert ist <b style="color:#ffb74d;">{ex}</b></div>'
+            err_hint: '<div style="color:#aaa;font-size:13px;margin-top:6px;">Tipp: Extrahiert ist <b style="color:#ffb74d;">{ex}</b></div>',
+
+            // --- Slot Card & Rule Description Keys ---
+            slotLabel: 'Slot {num}',
+            slotSelector: 'Selektor',
+            slotIdSrc: 'ID-Quelle',
+            slotProgressSrc: 'Fortschrittsquelle',
+            ruleUrlPath: 'URL-Pfad',
+            ruleQuery: 'Abfrage-Parameter',
+            ruleFlank: 'Flanken-Match',
+            rulePathLast: '(letztes Segment)',
+            rulePathFirst: '(erstes Segment)'
         }
+    };
+
+    /**
+     * 統一語言偵測函式（可在任何上下文中呼叫）
+     * 未來新增語言時，只需在此一處加入對映規則
+     * @param {string} [navLang] - 自訂導航語言（如未傳入則自動讀取 navigator.language）
+     * @returns {string} 語言 key，如 'en' / 'zh-TW' / 'zh-CN' / 'ja' 等
+     */
+    globalThis.detectLanguage = function detectLanguage(navLang) {
+        const nav = (navLang || navigator.language || 'en').toLowerCase();
+        if (nav.includes('zh-cn') || nav.includes('zh_cn')) return 'zh-CN';
+        if (nav.includes('zh')) return 'zh-TW';
+        if (nav.startsWith('ja')) return 'ja';
+        if (nav.startsWith('ko')) return 'ko';
+        if (nav.startsWith('es')) return 'es';
+        if (nav.startsWith('fr')) return 'fr';
+        if (nav.startsWith('de')) return 'de';
+        return 'en';
     };
 
     /**

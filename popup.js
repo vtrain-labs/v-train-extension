@@ -47,7 +47,7 @@ async function _vtRuleDecompress(b64) {
 document.addEventListener('DOMContentLoaded', () => {
     // [架構師注入] 同步預判 (Early Prediction)：在非同步 I/O 回傳前先進行預先渲染
     const _nav = (navigator.language || 'en').toLowerCase();
-    const _earlyLang = _nav.includes('zh-cn') ? 'zh-CN' : _nav.includes('zh') ? 'zh-TW' : _nav.startsWith('ja') ? 'ja' : _nav.startsWith('ko') ? 'ko' : _nav.startsWith('es') ? 'es' : _nav.startsWith('fr') ? 'fr' : _nav.startsWith('de') ? 'de' : 'en';
+    const _earlyLang = detectLanguage(_nav);
     applyLanguage(_earlyLang);
 
     // 綁定 UI 元素
@@ -238,23 +238,23 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // [UI P2] 人類可讀的規則描述函式
-            const describeRulePart = (r) => {
+            const describeRulePart = (r, lang) => {
                 if (!r) return null;
                 const type = r.type || '?';
                 const idx = r.idx ?? -1;
-                if (type === 'p') return `URL 路徑 ${idx === -1 ? '(末段)' : idx === 0 ? '(首段)' : `[${idx}]`}`;
-                if (type === 'q') return `查詢參數${r.key ? ` "${r.key}"` : ''}`;
+                if (type === 'p') return `${getLangText(lang, 'ruleUrlPath')} ${idx === -1 ? getLangText(lang, 'rulePathLast') : idx === 0 ? getLangText(lang, 'rulePathFirst') : `[${idx}]`}`;
+                if (type === 'q') return `${getLangText(lang, 'ruleQuery')}${r.key ? ` "${r.key}"` : ''}`;
                 if (type === 'hash') return `Hash [${idx}]`;
-                if (type === 'flank') return `側翼匹配`;
+                if (type === 'flank') return getLangText(lang, 'ruleFlank');
                 return type;
             };
 
             // [UI P2] 單個槽位的人類可讀摘要卡片（空槽回傳空字串）
-            const buildSlotCard = (rule, num) => {
+            const buildSlotCard = (rule, num, lang) => {
                 if (!rule) return '';
                 const s = escapeHtml(rule.s || '—');
-                const tDesc = describeRulePart(rule.tRule);
-                const pDesc = describeRulePart(rule.pRule);
+                const tDesc = describeRulePart(rule.tRule, lang);
+                const pDesc = describeRulePart(rule.pRule, lang);
                 const tAttr = rule.tRule?.targetAttr
                     ? ` ← <code style="background:#111;padding:1px 4px;border-radius:3px;color:#ffcc80;">${escapeHtml(rule.tRule.targetAttr)}</code>`
                     : '';
@@ -262,10 +262,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     `<code style="background:#1a2a3a;border-radius:3px;padding:1px 5px;font-size:10px;color:#4fc3f7;">${escapeHtml(h)}</code>`
                 ).join(' ');
                 return `<div style="background:#1a1a1a;border:1px solid #2a4a5a;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:11px;line-height:1.8;">
-                    <div style="color:#ff0000;font-weight:bold;margin-bottom:3px;">● 槽位 ${num}</div>
-                    <div style="color:#666;">選擇器 <code style="background:#111;border-radius:3px;padding:1px 5px;color:#e0e0e0;word-break:break-all;">${s}</code></div>
-                    ${tDesc ? `<div style="color:#666;">ID 來源 <span style="color:#f8bbd0;">${tDesc}</span>${tAttr}</div>` : ''}
-                    ${pDesc ? `<div style="color:#666;">進度來源 <span style="color:#c8e6c9;">${pDesc}</span></div>` : ''}
+                    <div style="color:#ff0000;font-weight:bold;margin-bottom:3px;">● ${getLangText(lang, 'slotLabel', { num })}</div>
+                    <div style="color:#666;">${getLangText(lang, 'slotSelector')} <code style="background:#111;border-radius:3px;padding:1px 5px;color:#e0e0e0;word-break:break-all;">${s}</code></div>
+                    ${tDesc ? `<div style="color:#666;">${getLangText(lang, 'slotIdSrc')} <span style="color:#f8bbd0;">${tDesc}</span>${tAttr}</div>` : ''}
+                    ${pDesc ? `<div style="color:#666;">${getLangText(lang, 'slotProgressSrc')} <span style="color:#c8e6c9;">${pDesc}</span></div>` : ''}
                     ${hList ? `<div style="margin-top:4px;">${hList}</div>` : ''}
                 </div>`;
             };
@@ -290,11 +290,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // [UI P2 空槽可視化] 4 個圓點：● 已訓練（亮藍）/ ○ 空槽（暗灰）
                 const slotDotsHtml = slotsArr.map((r, i) => {
                     const filled = r !== null && r !== undefined;
-                    return `<span style="background:${filled ? 'rgba(255,0,0,0.1)' : '#252525'};border:1px solid ${filled ? '#ff000066' : '#3a3a3a'};border-radius:12px;padding:2px 10px;font-size:11px;color:${filled ? '#ff0000' : '#555'};">${filled ? '●' : '○'} 槽位 ${i + 1}</span>`;
+                    return `<span style="background:${filled ? 'rgba(255,0,0,0.1)' : '#252525'};border:1px solid ${filled ? '#ff000066' : '#3a3a3a'};border-radius:12px;padding:2px 10px;font-size:11px;color:${filled ? '#ff0000' : '#555'};">${filled ? '●' : '○'} ${getLangText(currentLang, 'slotLabel', { num: i + 1 })}</span>`;
                 }).join('');
 
                 // [UI P2 人類可讀] 已訓練槽位的結構化摘要
-                const slotCardsHtml = slotsArr.map((r, i) => buildSlotCard(r, i + 1)).join('');
+                const slotCardsHtml = slotsArr.map((r, i) => buildSlotCard(r, i + 1, currentLang)).join('');
 
                 const safeJsonText = JSON.stringify(config[d]).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 

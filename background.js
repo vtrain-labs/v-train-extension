@@ -76,7 +76,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') {
         lockSystem();
         const nav = (chrome.i18n.getUILanguage() || 'en').toLowerCase(); // [CWS 修復] 改用原生 chrome.i18n.getUILanguage()，避免 OS 與瀏覽器語系不一致的判定誤差
-        const lang = nav.includes('zh-cn') ? 'zh-CN' : nav.includes('zh') ? 'zh-TW' : nav.startsWith('ja') ? 'ja' : nav.startsWith('ko') ? 'ko' : nav.startsWith('es') ? 'es' : nav.startsWith('fr') ? 'fr' : nav.startsWith('de') ? 'de' : 'en';
+        const lang = detectLanguage(nav); // [i18n 優化] 統一使用 shared_i18n.js 的 detectLanguage()，未來新增語言只需修改一處
         chrome.storage.local.set({ userLang: lang });
     }
 
