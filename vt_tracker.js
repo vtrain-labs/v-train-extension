@@ -209,6 +209,7 @@ if (!window._vtTrackerLoaded) {
                     !/^(REC|FLASH)$/.test(sysState._lastState)
                 )
                     updateDebugStatus("Waiting", "m1");
+                if (window === window.top) window.vtBookmarkPanel?.hide(); // 無影片時隱藏書籤面板
                 return;
             }
             let video = videos.sort(
@@ -216,8 +217,10 @@ if (!window._vtTrackerLoaded) {
                     b.offsetWidth * b.offsetHeight - a.offsetWidth * a.offsetHeight,
             )[0];
             sysState._activeEl = video;
-            if (!sysState._cachedId)
+            if (!sysState._cachedId) {
+                if (window === window.top) window.vtBookmarkPanel?.hide(); // 無 ID 時隱藏書籤面板
                 return window === window.top ? updateDebugStatus("OFF", "m1") : null;
+            }
             if (sysState.activeVideoId !== sysState._cachedId) {
                 sysState.activeVideoId = sysState._cachedId;
                 sysState.isDataLoaded = false;
@@ -273,6 +276,8 @@ if (!window._vtTrackerLoaded) {
                 }
             }
             checkAndSave(video, sysState.activeVideoId);
+            // 有影片且有 ID：通知書籤面板顯示
+            if (window === window.top) window.vtBookmarkPanel?.setVideo(sysState.activeVideoId);
         };
         tick();
         sysState.timer = setInterval(tick, CONFIG.checkInterval);
@@ -377,6 +382,37 @@ if (!window._vtTrackerLoaded) {
         } else window._overlaySyncLoop = null;
     }
 
+    // ─── 縮圖評分角標（Badge）─────────────────────────────────────────
+    function _vtUpdateBadge(data, videoId) {
+        const rating = window._vtRatingsCache?.[videoId];
+        const isBookmarked = window._vtBookmarkedSet?.has(videoId);
+        const icons = [];
+        if (rating === 'like') icons.push('👍');
+        if (rating === 'dislike') icons.push('😤');
+        if (isBookmarked) icons.push('❤️');
+
+        if (icons.length === 0) {
+            if (data.badgeEl) data.badgeEl.style.display = 'none';
+            return;
+        }
+        if (!data.badgeEl) {
+            const badge = document.createElement('span');
+            badge.className = 'vt-rating-badge';
+            badge.style.cssText = 'position:absolute;bottom:9px;right:3px;font-size:13px;pointer-events:none;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,0.9);';
+            data.barEl.appendChild(badge);
+            data.badgeEl = badge;
+        }
+        data.badgeEl.textContent = icons.join('');
+        data.badgeEl.style.display = 'block';
+    }
+
+    // 全域：供 vt_bookmarks.js 呼叫，在評分/書籤變更後刷新所有可見縮圖角標
+    window._vtRefreshAllBadges = function () {
+        activeOverlayBars.forEach((data) => {
+            if (data.videoId) _vtUpdateBadge(data, data.videoId);
+        });
+    };
+
     function drawBar(container, pct, id) {
         if (!_overlaySyncLoop)
             window._overlaySyncLoop = requestAnimationFrame(syncOverlay);
@@ -385,6 +421,7 @@ if (!window._vtTrackerLoaded) {
             data.barFill.style.width = `${pct}%`;
             if (data.labelEl.innerText !== `ID: ${id}`)
                 data.labelEl.innerText = `ID: ${id}`;
+            _vtUpdateBadge(data, id); // 每次更新時同步角標
             return;
         }
         let track = document.createElement("div");
@@ -409,15 +446,13 @@ if (!window._vtTrackerLoaded) {
         bar.style.setProperty("background-color", sysState.barColor, "important");
         const lbl = document.createElement("span");
         lbl.className = "vt-debug-label";
-        lbl.style.cssText = `position:absolute;bottom:8px;left:0;font-size:12px;color:#ffeb3b;text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.9);padding:2px;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:95%;line-height:1.2;font-weight:bold;display:${sysState._showMonitor ? "block" : "none"};`;
+        lbl.style.cssText = `position:absolute;bottom:8px;left:0;font-size:12px;color:#ffeb3b;text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.9);padding:2px;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%;line-height:1.2;font-weight:bold;display:${sysState._showMonitor ? "block" : "none"};`;
         lbl.innerText = `ID: ${id}`;
         track.append(bar, lbl);
         (document.body || document.documentElement).appendChild(track);
-        activeOverlayBars.set(container, {
-            barEl: track,
-            barFill: bar,
-            labelEl: lbl,
-        });
+        const newData = { barEl: track, barFill: bar, labelEl: lbl, badgeEl: null, videoId: id };
+        activeOverlayBars.set(container, newData);
+        _vtUpdateBadge(newData, id); // 新建 bar 時立即畫角標
     }
 
     function removeAllBars() {

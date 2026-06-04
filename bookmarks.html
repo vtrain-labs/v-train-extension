@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VT Bookmark Vault</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="bookmarks.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="bv-header">
+        <div class="bv-logo">
+            <span class="bv-logo-icon">📚</span>
+            <div>
+                <h1 class="bv-title">Bookmark Vault</h1>
+                <p class="bv-subtitle">V-Train Pro · 本機收藏管理</p>
+            </div>
+        </div>
+        <div class="bv-header-actions">
+            <div class="bv-search-wrap">
+                <span class="bv-search-icon">🔍</span>
+                <input type="text" id="bvSearch" class="bv-search" placeholder="搜尋書籤標題或網址...">
+            </div>
+            <div class="bv-view-toggle">
+                <button id="btnViewGrid" class="bv-view-btn active" title="格狀檢視">⊞</button>
+                <button id="btnViewList" class="bv-view-btn" title="列表檢視">≡</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="bv-body">
+        <!-- Left Sidebar: Folder Tree -->
+        <aside class="bv-sidebar">
+            <div class="bv-sidebar-hdr">
+                <span>📁 資料夾</span>
+                <button id="btnNewRootFolder" class="bv-add-root-btn" title="新增資料夾">＋</button>
+            </div>
+            <nav id="bvFolderTree" class="bv-folder-tree">
+                <!-- 動態渲染 -->
+            </nav>
+            <div class="bv-sidebar-footer">
+                <div class="bv-stat-row">
+                    <span class="bv-stat-label">📊 總收藏</span>
+                    <span class="bv-stat-val" id="bvTotalCount">0</span>
+                </div>
+                <div class="bv-stat-row">
+                    <span class="bv-stat-label">👍 喜歡</span>
+                    <span class="bv-stat-val" id="bvLikeCount">0</span>
+                </div>
+                <div class="bv-stat-row">
+                    <span class="bv-stat-label">😤 不喜歡</span>
+                    <span class="bv-stat-val" id="bvDislikeCount">0</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Content: Bookmark Grid/List -->
+        <main class="bv-content">
+            <div class="bv-content-bar">
+                <h2 class="bv-folder-title" id="bvCurrentFolderName">📥 全部收藏</h2>
+                <div class="bv-sort-row">
+                    <label class="bv-sort-label">排序：</label>
+                    <select id="bvSort" class="bv-sort-select">
+                        <option value="newest">最新加入</option>
+                        <option value="oldest">最早加入</option>
+                        <option value="title">標題 A-Z</option>
+                        <option value="domain">網站</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="bvGrid" class="bv-grid">
+                <!-- 動態渲染 -->
+            </div>
+
+            <div id="bvEmpty" class="bv-empty hidden">
+                <div class="bv-empty-icon">📭</div>
+                <p class="bv-empty-title">這裡還沒有收藏</p>
+                <p class="bv-empty-sub">在影片播放時點擊 ❤️ 按鈕開始收藏</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 重新命名 / 新增 Modal -->
+    <div id="bvModal" class="bv-modal-overlay hidden">
+        <div class="bv-modal">
+            <h3 id="bvModalTitle">新增資料夾</h3>
+            <input type="text" id="bvModalInput" class="bv-modal-input" placeholder="資料夾名稱">
+            <div class="bv-modal-btns">
+                <button id="bvModalCancel" class="bv-btn bv-btn-ghost">取消</button>
+                <button id="bvModalConfirm" class="bv-btn bv-btn-accent">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認刪除 Modal -->
+    <div id="bvConfirmModal" class="bv-modal-overlay hidden">
+        <div class="bv-modal">
+            <h3 id="bvConfirmTitle">確認刪除</h3>
+            <p id="bvConfirmDesc" class="bv-confirm-desc"></p>
+            <div class="bv-modal-btns">
+                <button id="bvConfirmCancel" class="bv-btn bv-btn-ghost">取消</button>
+                <button id="bvConfirmOk" class="bv-btn bv-btn-danger">刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="bvToast" class="bv-toast hidden"></div>
+
+    <script src="bookmarks.js"></script>
+</body>
+</html>

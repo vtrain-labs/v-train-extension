@@ -59,7 +59,7 @@ function injectScriptToExistingTabs() {
 
                 await chrome.scripting.executeScript({
                     target: { tabId: tab.id, allFrames: true },
-                    files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_trainer.js", "content.js"]
+                    files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"]
                 }).catch(() => { });
             }));
 
@@ -193,6 +193,17 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'VT_OPEN_BOOKMARKS') {
+        chrome.tabs.create({ url: chrome.runtime.getURL('bookmarks.html') });
+        return;
+    }
+
+    if (request.action === 'VT_OPEN_BUY_PAGE') {
+        const BUY_URL = 'https://ivr-extension.lemonsqueezy.com/checkout/buy/3e17b694-3f55-4e64-8aa6-bd6244bf1af4';
+        chrome.tabs.create({ url: BUY_URL });
+        return;
+    }
+
     if (request.action === 'VT_GET_RECORDS') {
         globalThis.vtDB.getRecords(request.ids || [])
             .then(data => sendResponse(data))

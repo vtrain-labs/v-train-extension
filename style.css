@@ -40,3 +40,9 @@
     transition: width 0.3s ease;
     display: block !important;
 }
+
+/* [Bookmark Vault] 浮動面板與 Modal 淡入動畫 */
+@keyframes vtFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
