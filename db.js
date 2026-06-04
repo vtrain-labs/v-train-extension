@@ -2,6 +2,8 @@
  * V-Train 混合儲存 (Hybrid Storage) IndexedDB 介面
  * 負責處理 20萬筆海量影片進度的寫入與清理
  */
+if (typeof globalThis.vtDB === 'undefined') {
+
 class VTDatabase {
     constructor() {
         this.dbName = 'VT_Storage';
@@ -141,3 +143,5 @@ class VTDatabase {
 
 // 全域單例
 globalThis.vtDB = new VTDatabase();
+
+} // End of duplicate injection guard
