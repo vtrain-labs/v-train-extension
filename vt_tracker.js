@@ -375,10 +375,6 @@ if (!window._vtTrackerLoaded) {
                     update.data.barEl.style.width = update.rect.width + "px";
                     // 寫入完成後更新快取，供下一次 Frame 比對
                     update.data._lastRect = { top: update.rect.top, left: update.rect.left, width: update.rect.width, bottom: update.rect.bottom };
-                    // 更新 badge 垂直位置 (固定在縮圖左上角)
-                    if (update.data.badgeEl) {
-                        update.data.badgeEl.style.bottom = (update.rect.height - 3) + "px";
-                    }
                 }
             });
 
@@ -399,21 +395,18 @@ if (!window._vtTrackerLoaded) {
             if (data.badgeEl) data.badgeEl.style.display = 'none';
             return;
         }
-        if (!data.badgeEl) {
-            const badge = document.createElement('span');
-            badge.className = 'vt-rating-badge';
-            badge.style.cssText = 'position:absolute;left:3px;font-size:13px;pointer-events:none;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,0.9);z-index:2;';
-            data.barEl.appendChild(badge);
-            data.badgeEl = badge;
+        if (data.badgeEl) {
+            data.badgeEl.textContent = icons.join('');
+            data.badgeEl.style.display = 'block';
         }
-        data.badgeEl.textContent = icons.join('');
-        data.badgeEl.style.display = 'block';
     }
 
     // 全域：供 vt_bookmarks.js 呼叫，在評分/書籤變更後刷新所有可見縮圖角標
     window._vtRefreshAllBadges = function () {
         activeOverlayBars.forEach((data) => {
-            if (data.videoId) _vtUpdateBadge(data, data.videoId);
+            if (data.videoId) {
+                _vtUpdateBadge(data, data.videoId);
+            }
         });
     };
 
@@ -448,18 +441,25 @@ if (!window._vtTrackerLoaded) {
         bar.style.width = `${pct}%`;
         bar.style.borderRadius = "4px";
         bar.style.setProperty("background-color", sysState.barColor, "important");
+        const infoContainer = document.createElement("div");
+        infoContainer.style.cssText = `position:absolute;bottom:8px;left:2px;display:flex;align-items:center;gap:4px;pointer-events:none;z-index:2;max-width:90%;`;
+        
+        const badgeEl = document.createElement("span");
+        badgeEl.className = "vt-rating-badge";
+        badgeEl.style.cssText = `font-size:14px;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,0.9);display:none;`;
+        
         const lbl = document.createElement("span");
         lbl.className = "vt-debug-label";
-        lbl.style.cssText = `position:absolute;bottom:8px;left:0;font-size:12px;color:#ffeb3b;text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.9);padding:2px;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80%;line-height:1.2;font-weight:bold;display:${sysState._showMonitor ? "block" : "none"};`;
+        lbl.style.cssText = `font-size:12px;color:#ffeb3b;text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;font-weight:bold;display:${sysState._showMonitor ? "block" : "none"};`;
         lbl.innerText = `ID: ${id}`;
-        track.append(bar, lbl);
+
+        infoContainer.append(badgeEl, lbl);
+        track.append(bar, infoContainer);
         (document.body || document.documentElement).appendChild(track);
-        const newData = { barEl: track, barFill: bar, labelEl: lbl, badgeEl: null, videoId: id };
+        
+        const newData = { barEl: track, barFill: bar, labelEl: lbl, badgeEl: badgeEl, videoId: id };
         activeOverlayBars.set(container, newData);
         _vtUpdateBadge(newData, id); // 新建 bar 時立即畫角標
-        if (newData.badgeEl) {
-            newData.badgeEl.style.bottom = (rect.height - 3) + 'px'; // 相對於底部的 barEl，設定 bottom 為縮圖高度 - 3px，達到 top-left 效果
-        }
     }
 
     function removeAllBars() {

@@ -59,7 +59,9 @@
         <!-- Right Content: Bookmark Grid/List -->
         <main class="bv-content">
             <div class="bv-content-bar">
-                <h2 class="bv-folder-title" id="bvCurrentFolderName">📥 全部收藏</h2>
+                <div class="bv-breadcrumb" id="bvBreadcrumb">
+                    <!-- 動態渲染麵包屑 -->
+                </div>
                 <div class="bv-sort-row">
                     <label class="bv-sort-label">排序：</label>
                     <select id="bvSort" class="bv-sort-select">
@@ -71,8 +73,12 @@
                 </div>
             </div>
 
+            <div id="bvSubfolderGrid" class="bv-subfolder-grid">
+                <!-- 動態渲染子資料夾卡片 -->
+            </div>
+
             <div id="bvGrid" class="bv-grid">
-                <!-- 動態渲染 -->
+                <!-- 動態渲染影片卡片 -->
             </div>
 
             <div id="bvEmpty" class="bv-empty hidden">
@@ -109,6 +115,14 @@
 
     <!-- Toast -->
     <div id="bvToast" class="bv-toast hidden"></div>
+
+    <!-- Right-click Context Menu -->
+    <div id="bvContextMenu" class="bv-context-menu hidden">
+        <div class="bv-cm-item" id="cmAddSubFolder"><span class="bv-cm-icon">＋</span> 新增子資料夾</div>
+        <div class="bv-cm-item" id="cmRename"><span class="bv-cm-icon">✏️</span> 重新命名</div>
+        <div class="bv-cm-divider"></div>
+        <div class="bv-cm-item danger" id="cmDelete"><span class="bv-cm-icon">🗑</span> 刪除</div>
+    </div>
 
     <script src="bookmarks.js"></script>
 </body>

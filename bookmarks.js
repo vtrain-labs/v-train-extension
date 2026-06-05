@@ -63,7 +63,7 @@ function renderFolderTree() {
 function _renderFolderLevel(container, parentId, depth) {
     const kids = _allFolders
         .filter(f => f.parentId === parentId)
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
     kids.forEach(folder => {
         const hasKids = _allFolders.some(f => f.parentId === folder.id);
@@ -92,7 +92,8 @@ function _getAllSubfolderIds(parentId, collected = new Set()) {
 function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
     const item = document.createElement('div');
     item.className = 'bv-folder-item' + (id === _activeFolderId || (id === null && _activeFolderId === null) ? ' active' : '');
-    item.style.paddingLeft = `${12 + depth * 10}px`;
+    item.style.paddingLeft = `${12 + depth * 20}px`;
+    item.style.position = 'relative';
     item.dataset.folderId = id === null ? '__null__' : (id || '__all__');
 
     // 展開/折疊箭頭
@@ -109,7 +110,7 @@ function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
         item.appendChild(tog);
     } else {
         const spacer = document.createElement('span');
-        spacer.style.width = '16px';
+        spacer.style.width = '20px';
         spacer.style.display = 'inline-block';
         spacer.style.flexShrink = '0';
         item.appendChild(spacer);
@@ -125,24 +126,12 @@ function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
     cnt.textContent = count;
     item.appendChild(cnt);
 
-    // 操作按鈕（非特殊資料夾才有）
-    if (!isSpecial) {
-        const acts = document.createElement('div');
-        acts.className = 'bv-folder-actions';
-
-        const addSubBtn = _makeActBtn('＋', '新增子資料夾');
-        addSubBtn.onclick = (e) => { e.stopPropagation(); showFolderModal(null, id); };
-
-        const renameBtn = _makeActBtn('✏️', '重新命名');
-        renameBtn.onclick = (e) => { e.stopPropagation(); showFolderModal(id); };
-
-        const delBtn = _makeActBtn('🗑', '刪除資料夾');
-        delBtn.classList.add('danger');
-        delBtn.onclick = (e) => { e.stopPropagation(); deleteFolder(id, name); };
-
-        acts.append(addSubBtn, renameBtn, delBtn);
-        item.appendChild(acts);
-    }
+    item.oncontextmenu = (e) => {
+        if (isSpecial) return;
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenu(e.pageX, e.pageY, id, name);
+    };
 
     item.onclick = () => {
         if (hasKids) {
@@ -150,8 +139,6 @@ function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
             else _expandedFolders.add(id);
         }
         _activeFolderId = id === '__null__' ? null : (id === '__all__' ? '__all__' : id);
-        document.getElementById('bvCurrentFolderName').textContent =
-            isSpecial ? (id === '__all__' ? '📚 全部收藏' : '📥 未分類') : '📁 ' + name;
         renderFolderTree();
         renderBookmarks();
     };
@@ -159,16 +146,138 @@ function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
     return item;
 }
 
-function _makeActBtn(icon, title) {
-    const btn = document.createElement('button');
-    btn.className = 'bv-folder-act-btn';
-    btn.textContent = icon;
-    btn.title = title;
-    return btn;
+function showContextMenu(x, y, folderId, folderName) {
+    const cm = document.getElementById('bvContextMenu');
+    if (!cm) return;
+    cm.classList.remove('hidden');
+    
+    const w = cm.offsetWidth || 180;
+    const h = cm.offsetHeight || 120;
+    if (x + w > window.innerWidth) x = window.innerWidth - w - 10;
+    if (y + h > window.innerHeight) y = window.innerHeight - h - 10;
+    cm.style.left = x + 'px';
+    cm.style.top = y + 'px';
+
+    document.getElementById('cmAddSubFolder').onclick = () => {
+        cm.classList.add('hidden');
+        showFolderModal(null, folderId);
+    };
+    document.getElementById('cmRename').onclick = () => {
+        cm.classList.add('hidden');
+        showFolderModal(folderId);
+    };
+    document.getElementById('cmDelete').onclick = () => {
+        cm.classList.add('hidden');
+        deleteFolder(folderId, folderName);
+    };
 }
 
+document.addEventListener('click', () => {
+    const cm = document.getElementById('bvContextMenu');
+    if (cm && !cm.classList.contains('hidden')) cm.classList.add('hidden');
+});
+
 // ─── 書籤列表 ─────────────────────────────────────────────────────────────
+function renderBreadcrumb() {
+    const bc = document.getElementById('bvBreadcrumb');
+    if (!bc) return;
+    bc.innerHTML = '';
+
+    const path = [];
+    if (_activeFolderId === '__all__') {
+        path.push({ id: '__all__', name: '📚 全部收藏' });
+    } else if (_activeFolderId === null) {
+        path.push({ id: null, name: '📥 未分類' });
+    } else {
+        path.push({ id: '__all__', name: '📚 全部收藏' });
+        
+        let curr = _allFolders.find(f => f.id === _activeFolderId);
+        const hierarchy = [];
+        while (curr) {
+            hierarchy.unshift({ id: curr.id, name: '📁 ' + curr.name });
+            curr = _allFolders.find(f => f.id === curr.parentId);
+        }
+        path.push(...hierarchy);
+    }
+
+    path.forEach((item, index) => {
+        const span = document.createElement('span');
+        span.className = 'bv-bc-item';
+        span.textContent = item.name;
+        span.onclick = () => {
+            _activeFolderId = item.id;
+            if (item.id !== '__all__' && item.id !== null) {
+                _expandedFolders.add(item.id);
+            }
+            renderFolderTree();
+            renderBookmarks();
+        };
+        bc.appendChild(span);
+
+        if (index < path.length - 1) {
+            const sep = document.createElement('span');
+            sep.className = 'bv-bc-sep';
+            sep.textContent = '>';
+            bc.appendChild(sep);
+        }
+    });
+}
+
+function renderSubfolders() {
+    const subGrid = document.getElementById('bvSubfolderGrid');
+    if (!subGrid) return;
+    subGrid.innerHTML = '';
+
+    let targetFolders = [];
+    if (_activeFolderId === '__all__') {
+        targetFolders = _allFolders.filter(f => !f.parentId);
+    } else if (_activeFolderId !== null) {
+        targetFolders = _allFolders.filter(f => f.parentId === _activeFolderId);
+    }
+
+    targetFolders.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+    targetFolders.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'bv-subfolder-card';
+        card.onclick = () => {
+            _activeFolderId = f.id;
+            _expandedFolders.add(f.id);
+            renderFolderTree();
+            renderBookmarks();
+        };
+        card.oncontextmenu = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenu(e.pageX, e.pageY, f.id, f.name);
+        };
+
+        const icon = document.createElement('div');
+        icon.className = 'bv-subfolder-card-icon';
+        icon.textContent = '📁';
+
+        const info = document.createElement('div');
+        info.className = 'bv-subfolder-card-info';
+        
+        const name = document.createElement('div');
+        name.className = 'bv-subfolder-card-name';
+        name.textContent = f.name;
+
+        const countText = document.createElement('div');
+        countText.className = 'bv-subfolder-card-count';
+        const directCount = _allBookmarks.filter(b => b.folderId === f.id).length;
+        countText.textContent = `${directCount} 部影片`;
+
+        info.append(name, countText);
+        card.append(icon, info);
+        subGrid.appendChild(card);
+    });
+}
+
 function renderBookmarks() {
+    renderBreadcrumb();
+    renderSubfolders();
+
     const grid = document.getElementById('bvGrid');
     const empty = document.getElementById('bvEmpty');
     grid.innerHTML = '';
@@ -180,7 +289,10 @@ function renderBookmarks() {
 
     grid.className = 'bv-grid' + (_viewMode === 'list' ? ' list-view' : '');
 
-    if (items.length === 0) {
+    const subGrid = document.getElementById('bvSubfolderGrid');
+    const hasSubfolders = subGrid && subGrid.children.length > 0;
+
+    if (items.length === 0 && !hasSubfolders) {
         empty.classList.remove('hidden');
         return;
     }
@@ -471,6 +583,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
     document.body.appendChild(overlay);
 
     function _renderTree() {
+        const oldScroll = tree.scrollTop;
         tree.innerHTML = '';
         const folders = _allFolders;
 
@@ -479,9 +592,10 @@ function showMoveModal(bookmarkId, currentFolderId) {
             item.style.cssText = `
                 display:flex;align-items:center;padding:7px 12px 7px ${12 + depth * 20}px;
                 border-radius:8px;margin-bottom:2px;cursor:pointer;user-select:none;
-                transition:background 0.15s;
+                transition:background 0.15s; position:relative;
                 ${selectedFolderId === id ? 'background:rgba(233,30,140,0.15);' : ''}
             `;
+
             item.onmouseenter = () => { if (selectedFolderId !== id) item.style.background = 'var(--bg4)'; };
             item.onmouseleave = () => { if (selectedFolderId !== id) item.style.background = 'none'; };
 
@@ -516,6 +630,10 @@ function showMoveModal(bookmarkId, currentFolderId) {
             }
 
             item.onclick = () => {
+                if (hasKids) {
+                    if (_expandedFolders.has(id)) _expandedFolders.delete(id);
+                    else _expandedFolders.add(id);
+                }
                 selectedFolderId = id;
                 _renderTree();
             };
@@ -527,7 +645,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
         renderItem('📥 未分類（根目錄）', null, 0, false);
 
         const renderLevel = (parentId, depth) => {
-            const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.order - b.order);
+            const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
             kids.forEach(f => {
                 const hasKids = folders.some(sub => sub.parentId === f.id);
                 renderItem('📁 ' + f.name, f.id, depth, hasKids);
@@ -537,6 +655,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
             });
         };
         renderLevel(null, 1);
+        requestAnimationFrame(() => tree.scrollTop = oldScroll);
     }
     
     _renderTree();

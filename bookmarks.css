@@ -131,18 +131,6 @@ html, body {
     background: rgba(255,255,255,0.12); border-radius: 12px;
     padding: 2px 8px; flex-shrink: 0;
 }
-.bv-folder-actions {
-    display: none; gap: 2px; flex-shrink: 0;
-}
-.bv-folder-item:hover .bv-folder-actions { display: flex; }
-.bv-folder-act-btn {
-    background: none; border: none; color: var(--text3);
-    cursor: pointer; font-size: 16px; padding: 4px 6px;
-    border-radius: 4px; transition: color 0.12s, background 0.12s;
-    line-height: 1;
-}
-.bv-folder-act-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
-.bv-folder-act-btn.danger:hover { color: #f44336; }
 
 .bv-sidebar-footer {
     padding: 14px 16px;
@@ -165,7 +153,19 @@ html, body {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 20px;
 }
-.bv-folder-title { font-size: 24px; font-weight: 600; color: var(--text); }
+/* ─── Breadcrumb ──────────────────────────────────────────────────────── */
+.bv-breadcrumb {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    font-size: 20px; font-weight: 600; color: var(--text);
+}
+.bv-bc-item {
+    cursor: pointer; padding: 4px 6px; border-radius: 6px;
+    transition: background 0.15s; display: flex; align-items: center; gap: 6px;
+}
+.bv-bc-item:hover { background: rgba(255,255,255,0.1); }
+.bv-bc-sep {
+    color: var(--text3); font-size: 16px; margin: 0 2px; font-weight: 400;
+}
 .bv-sort-row { display: flex; align-items: center; gap: 8px; }
 .bv-sort-label { font-size: 15px; color: var(--text3); }
 .bv-sort-select {
@@ -173,6 +173,31 @@ html, body {
     color: var(--text); border-radius: 8px; padding: 8px 12px;
     font-size: 16px; outline: none; cursor: pointer;
 }
+
+/* ─── Subfolder Grid ──────────────────────────────────────────────────── */
+.bv-subfolder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+}
+.bv-subfolder-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.18s; position: relative;
+}
+.bv-subfolder-card:hover {
+    transform: translateY(-2px); border-color: rgba(233,30,140,0.35);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+.bv-subfolder-card-icon { font-size: 28px; }
+.bv-subfolder-card-info { flex: 1; overflow: hidden; }
+.bv-subfolder-card-name {
+    font-size: 15px; font-weight: 500; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+.bv-subfolder-card-count { font-size: 12px; color: var(--text3); }
 
 /* ─── Grid ────────────────────────────────────────────────────────────── */
 .bv-grid {
@@ -323,10 +348,31 @@ html, body {
     pointer-events: none;
 }
 
+/* ─── Context Menu ────────────────────────────────────────────────────── */
+.bv-context-menu {
+    position: fixed; z-index: 1000;
+    background: var(--bg2); border: 1px solid rgba(233,30,140,0.3);
+    border-radius: 8px; padding: 6px 0; width: 180px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    transform-origin: top left; animation: vtFadeIn 0.1s ease-out;
+}
+.bv-cm-item {
+    padding: 10px 16px; font-size: 13px; color: var(--text);
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+    transition: background 0.1s;
+}
+.bv-cm-item:hover { background: var(--bg4); }
+.bv-cm-item.danger { color: var(--red); }
+.bv-cm-item.danger:hover { background: rgba(244,67,54,0.1); }
+.bv-cm-icon { font-size: 14px; width: 16px; text-align: center; }
+.bv-cm-divider {
+    height: 1px; background: var(--border); margin: 4px 0;
+}
+
 /* ─── Folder expand toggle ────────────────────────────────────────────── */
 .bv-folder-toggle {
     background: none; border: none; color: var(--text3);
-    cursor: pointer; font-size: 14px; padding: 0 4px;
+    cursor: pointer; font-size: 14px; padding: 0; width: 20px; text-align: center;
     transition: transform 0.15s; display: inline-block;
     flex-shrink: 0;
 }

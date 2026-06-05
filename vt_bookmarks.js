@@ -317,17 +317,19 @@ if (!window._vtBookmarksLoaded) {
         document.body.appendChild(overlay);
 
         async function _renderTree() {
-            tree.innerHTML = '';
+            const oldScroll = tree.scrollTop;
             const folders = await _getFolders();
+            tree.innerHTML = '';
 
             const renderItem = (label, id, depth, hasKids) => {
                 const item = document.createElement('div');
                 item.style.cssText = `
                     display:flex;align-items:center;padding:7px 12px 7px ${12 + depth * 20}px;
                     border-radius:8px;margin-bottom:2px;cursor:pointer;user-select:none;
-                    transition:background 0.15s;
+                    transition:background 0.15s; position:relative;
                     ${selectedFolderId === id ? 'background:rgba(233,30,140,0.15);' : ''}
                 `;
+                
                 item.onmouseenter = () => { if (selectedFolderId !== id) item.style.background = 'rgba(255,255,255,0.06)'; };
                 item.onmouseleave = () => { if (selectedFolderId !== id) item.style.background = 'none'; };
 
@@ -377,7 +379,7 @@ if (!window._vtBookmarksLoaded) {
             renderItem('📥 未分類（根目錄）', null, 0, false);
 
             const renderLevel = (parentId, depth) => {
-                const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.order - b.order);
+                const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
                 kids.forEach(f => {
                     const hasKids = folders.some(sub => sub.parentId === f.id);
                     renderItem('📁 ' + f.name, f.id, depth, hasKids);
@@ -387,6 +389,11 @@ if (!window._vtBookmarksLoaded) {
                 });
             };
             renderLevel(null, 1);
+            
+            // 恢復滾動位置
+            requestAnimationFrame(() => {
+                tree.scrollTop = oldScroll;
+            });
         }
 
         chrome.storage.local.get(['vt_bookmarks'], (data) => {
