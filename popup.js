@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnExport.textContent = getLangText(currentLang, 'exporting');
         btnExport.disabled = true;
 
-        const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
+        const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_ratings', 'vt_bookmarks', 'vt_bm_folders'];
 
         chrome.storage.local.get(sysKeys, async (sysData) => {
             let chunks = ["{"];
@@ -811,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     licenseKeys.forEach(k => delete data[k]);
 
                     let videoRecordCount = 0;
-                    const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
+                    const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_ratings', 'vt_bookmarks', 'vt_bm_folders'];
                     const dataKeys = Object.keys(data);
                     const batchSize = 10000;
                     let currentIdx = 0;
@@ -901,20 +901,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateProUI(isPro, count) {
         const limitNote = document.getElementById('limitNote');
-        const bookmarkVaultRow = document.getElementById('bookmarkVaultRow');
         if (isPro) {
             btnDonateUpgrade.classList.add('pro-active');
             btnDonateUpgrade.innerHTML = `<span class="donate-icon">👑</span> ${getLangText(currentLang, 'proActive')}`;
             videoCountLabel.textContent = count.toLocaleString();
             videoCountLabel.style.color = '#ffd700';
             if (limitNote) limitNote.style.display = 'block';
-            if (bookmarkVaultRow) bookmarkVaultRow.style.display = 'block';
         } else {
             const limit = 200;
             videoCountLabel.textContent = `${count.toLocaleString()} / ${limit}`;
             if (count >= limit) videoCountLabel.style.color = '#ff5252';
             if (limitNote) limitNote.style.display = 'none';
-            if (bookmarkVaultRow) bookmarkVaultRow.style.display = 'none'; // 非 Pro 隱藏書籤按鈕
         }
     }
 

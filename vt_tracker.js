@@ -209,7 +209,7 @@ if (!window._vtTrackerLoaded) {
                     !/^(REC|FLASH)$/.test(sysState._lastState)
                 )
                     updateDebugStatus("Waiting", "m1");
-                if (window === window.top) window.vtBookmarkPanel?.hide(); // 無影片時隱藏書籤面板
+                window.vtBookmarkPanel?.hide(); // 無影片時隱藏書籤面板
                 return;
             }
             let video = videos.sort(
@@ -218,7 +218,7 @@ if (!window._vtTrackerLoaded) {
             )[0];
             sysState._activeEl = video;
             if (!sysState._cachedId) {
-                if (window === window.top) window.vtBookmarkPanel?.hide(); // 無 ID 時隱藏書籤面板
+                window.vtBookmarkPanel?.hide(); // 無 ID 時隱藏書籤面板
                 return window === window.top ? updateDebugStatus("OFF", "m1") : null;
             }
             if (sysState.activeVideoId !== sysState._cachedId) {
@@ -277,7 +277,7 @@ if (!window._vtTrackerLoaded) {
             }
             checkAndSave(video, sysState.activeVideoId);
             // 有影片且有 ID：通知書籤面板顯示
-            if (window === window.top) window.vtBookmarkPanel?.setVideo(sysState.activeVideoId);
+            window.vtBookmarkPanel?.setVideo(sysState.activeVideoId);
         };
         tick();
         sysState.timer = setInterval(tick, CONFIG.checkInterval);
@@ -375,6 +375,10 @@ if (!window._vtTrackerLoaded) {
                     update.data.barEl.style.width = update.rect.width + "px";
                     // 寫入完成後更新快取，供下一次 Frame 比對
                     update.data._lastRect = { top: update.rect.top, left: update.rect.left, width: update.rect.width, bottom: update.rect.bottom };
+                    // 更新 badge 垂直位置 (固定在縮圖左上角)
+                    if (update.data.badgeEl) {
+                        update.data.badgeEl.style.bottom = (update.rect.height - 3) + "px";
+                    }
                 }
             });
 
@@ -398,7 +402,7 @@ if (!window._vtTrackerLoaded) {
         if (!data.badgeEl) {
             const badge = document.createElement('span');
             badge.className = 'vt-rating-badge';
-            badge.style.cssText = 'position:absolute;bottom:9px;right:3px;font-size:13px;pointer-events:none;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,0.9);';
+            badge.style.cssText = 'position:absolute;left:3px;font-size:13px;pointer-events:none;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,0.9);z-index:2;';
             data.barEl.appendChild(badge);
             data.badgeEl = badge;
         }
@@ -453,6 +457,9 @@ if (!window._vtTrackerLoaded) {
         const newData = { barEl: track, barFill: bar, labelEl: lbl, badgeEl: null, videoId: id };
         activeOverlayBars.set(container, newData);
         _vtUpdateBadge(newData, id); // 新建 bar 時立即畫角標
+        if (newData.badgeEl) {
+            newData.badgeEl.style.bottom = (rect.height - 3) + 'px'; // 相對於底部的 barEl，設定 bottom 為縮圖高度 - 3px，達到 top-left 效果
+        }
     }
 
     function removeAllBars() {

@@ -98,13 +98,13 @@ if (!window._vtBookmarksLoaded) {
     }
 
     // ─── Pro 驗證 ────────────────────────────────────────────────────────
+    // [TODO] 測試階段暫時開放，功能穩定後改回序號驗證（參考密碼鎖邏輯）
     async function _checkPro() {
-        const data = await new Promise(r => chrome.storage.local.get(['isProVersion'], r));
-        if (!data.isProVersion) {
-            _showUpgradeToast();
-            return false;
-        }
         return true;
+        // ↓ 上線後啟用以下邏輯：
+        // const data = await new Promise(r => chrome.storage.local.get(['isProVersion'], r));
+        // if (!data.isProVersion) { _showUpgradeToast(); return false; }
+        // return true;
     }
 
     function _showUpgradeToast() {
@@ -218,6 +218,8 @@ if (!window._vtBookmarksLoaded) {
     }
 
     // ─── 資料夾選擇器 Modal ──────────────────────────────────────────────
+    let _expandedFolders = new Set();
+
     function _showFolderPicker(videoId) {
         document.getElementById('vt-folder-picker')?.remove();
 
@@ -238,6 +240,8 @@ if (!window._vtBookmarksLoaded) {
             box-shadow:0 24px 64px rgba(0,0,0,0.85),0 0 0 1px rgba(233,30,140,0.1);
         `;
 
+        let selectedFolderId = null;
+
         // Header
         const hdr = document.createElement('div');
         hdr.style.cssText = `
@@ -250,8 +254,6 @@ if (!window._vtBookmarksLoaded) {
         const xBtn = document.createElement('button');
         xBtn.textContent = '✕';
         xBtn.style.cssText = 'background:none;border:none;color:#666;cursor:pointer;font-size:17px;padding:0;line-height:1;transition:color 0.15s;';
-        xBtn.onmouseenter = () => xBtn.style.color = '#ccc';
-        xBtn.onmouseleave = () => xBtn.style.color = '#666';
         xBtn.onclick = () => overlay.remove();
         hdr.append(htitle, xBtn);
 
@@ -269,103 +271,130 @@ if (!window._vtBookmarksLoaded) {
             color:#e91e8c;border-radius:8px;padding:7px 14px;cursor:pointer;
             width:100%;font-family:sans-serif;font-size:13px;transition:all 0.15s;
         `;
-        addBtn.onmouseenter = () => addBtn.style.background = 'rgba(233,30,140,0.15)';
-        addBtn.onmouseleave = () => addBtn.style.background = 'rgba(233,30,140,0.08)';
         addBtn.onclick = async () => {
             const name = prompt('新資料夾名稱：');
             if (!name?.trim()) return;
             await _createFolder(name, null);
-            _renderFolderTree(tree, videoId, overlay);
+            _renderTree();
         };
         addRow.appendChild(addBtn);
 
-        modal.append(hdr, tree, addRow);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-        overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-
-        _renderFolderTree(tree, videoId, overlay);
-    }
-
-    async function _renderFolderTree(container, videoId, overlay) {
-        container.innerHTML = '';
-        const folders = await _getFolders();
-
-        // 未分類
-        container.appendChild(_makeFolderItem('📥 未分類（根目錄）', null, videoId, overlay, folders, -1));
-
-        // 遞迴渲染
-        const renderLevel = (parentId, depth) => {
-            const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.order - b.order);
-            kids.forEach(f => {
-                container.appendChild(_makeFolderItem('📁 ' + f.name, f.id, videoId, overlay, folders, depth));
-                renderLevel(f.id, depth + 1);
-            });
-        };
-        renderLevel(null, 0);
-
-        if (folders.length === 0) {
-            const tip = document.createElement('div');
-            tip.style.cssText = 'color:#555;text-align:center;padding:24px 12px;font-family:sans-serif;font-size:13px;';
-            tip.textContent = '還沒有資料夾，點下方按鈕新增第一個！';
-            container.appendChild(tip);
-        }
-    }
-
-    function _makeFolderItem(label, folderId, videoId, overlay, allFolders, depth) {
-        const item = document.createElement('div');
-        item.style.cssText = `
-            display:flex;align-items:center;justify-content:space-between;
-            padding:9px 12px 9px ${14 + Math.max(0, depth) * 18}px;
-            border-radius:8px;cursor:pointer;margin-bottom:2px;
-            transition:background 0.13s;
-        `;
-
-        const lbl = document.createElement('span');
-        lbl.textContent = label;
-        lbl.style.cssText = 'color:#ddd;font-family:sans-serif;font-size:14px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-
-        const actBar = document.createElement('div');
-        actBar.style.cssText = 'display:flex;gap:4px;opacity:0;transition:opacity 0.13s;';
-
-        // 新增子資料夾按鈕 (只對非根目錄顯示)
-        if (folderId !== null) {
-            const subBtn = document.createElement('button');
-            subBtn.title = '新增子資料夾';
-            subBtn.textContent = '+';
-            subBtn.style.cssText = `
-                background:rgba(233,30,140,0.15);border:none;color:#e91e8c;
-                border-radius:5px;width:22px;height:22px;cursor:pointer;
-                font-size:15px;line-height:1;padding:0;flex-shrink:0;
-            `;
-            subBtn.onclick = async (e) => {
-                e.stopPropagation();
-                const name = prompt('子資料夾名稱：');
-                if (!name?.trim()) return;
-                await _createFolder(name, folderId);
-                _renderFolderTree(item.parentElement, videoId, overlay);
-            };
-            actBar.appendChild(subBtn);
-        }
-
-        item.onmouseenter = () => { item.style.background = 'rgba(233,30,140,0.12)'; actBar.style.opacity = '1'; };
-        item.onmouseleave = () => { item.style.background = ''; actBar.style.opacity = '0'; };
-
-        item.onclick = async () => {
+        // Confirm bar
+        const confirmRow = document.createElement('div');
+        confirmRow.style.cssText = 'padding:12px 16px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:flex-end;gap:8px;';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = '取消';
+        cancelBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.15);color:#ccc;border-radius:8px;padding:7px 14px;cursor:pointer;font-family:sans-serif;font-size:13px;';
+        cancelBtn.onclick = () => overlay.remove();
+        
+        const confirmBtn = document.createElement('button');
+        confirmBtn.textContent = '確認收藏';
+        confirmBtn.style.cssText = 'background:linear-gradient(135deg,#e91e8c,#9c27b0);border:none;color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-family:sans-serif;font-size:13px;font-weight:bold;';
+        confirmBtn.onclick = async () => {
             const url = location.href;
             const title = document.title;
-            const ogImg = document.querySelector('meta[property="og:image"]')?.content || '';
-            await _addBookmark(videoId, url, title, ogImg, folderId);
+            let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+                        document.querySelector('meta[property="og:image:secure_url"]')?.content ||
+                        document.querySelector('meta[name="twitter:image"]')?.content || '';
+            if (!ogImg) {
+                const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
+                if (imgs.length > 0) ogImg = imgs[0].src;
+            }
+            
+            await _addBookmark(videoId, url, title, ogImg, selectedFolderId);
             _panelBookmarked = true;
             _renderPanelState();
-            // 成功動畫
-            item.style.background = 'rgba(233,30,140,0.35)';
-            lbl.textContent = '✅ 已收藏！';
+            
+            confirmBtn.textContent = '✅ 已收藏';
+            confirmBtn.style.background = '#10b981';
             setTimeout(() => overlay.remove(), 650);
         };
+        confirmRow.append(cancelBtn, confirmBtn);
 
-        item.append(lbl, actBar);
-        return item;
+        modal.append(hdr, tree, addRow, confirmRow);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        async function _renderTree() {
+            tree.innerHTML = '';
+            const folders = await _getFolders();
+
+            const renderItem = (label, id, depth, hasKids) => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    display:flex;align-items:center;padding:7px 12px 7px ${12 + depth * 20}px;
+                    border-radius:8px;margin-bottom:2px;cursor:pointer;user-select:none;
+                    transition:background 0.15s;
+                    ${selectedFolderId === id ? 'background:rgba(233,30,140,0.15);' : ''}
+                `;
+                item.onmouseenter = () => { if (selectedFolderId !== id) item.style.background = 'rgba(255,255,255,0.06)'; };
+                item.onmouseleave = () => { if (selectedFolderId !== id) item.style.background = 'none'; };
+
+                const chevron = document.createElement('span');
+                chevron.style.cssText = `
+                    display:inline-block;width:16px;color:#888;font-size:12px;
+                    transition:transform 0.2s;text-align:center;
+                `;
+                if (hasKids) {
+                    chevron.textContent = '▶';
+                    if (_expandedFolders.has(id)) chevron.style.transform = 'rotate(90deg)';
+                }
+                
+                chevron.onclick = (e) => {
+                    if (hasKids) {
+                        e.stopPropagation();
+                        if (_expandedFolders.has(id)) _expandedFolders.delete(id);
+                        else _expandedFolders.add(id);
+                        _renderTree();
+                    }
+                };
+
+                const lbl = document.createElement('span');
+                lbl.textContent = label;
+                lbl.style.cssText = 'flex:1;color:#e4e4f0;font-size:14px;font-family:sans-serif;margin-left:6px;';
+
+                const radio = document.createElement('div');
+                radio.style.cssText = `
+                    width:16px;height:16px;border-radius:50%;border:2px solid ${selectedFolderId === id ? '#e91e8c' : '#555'};
+                    display:flex;align-items:center;justify-content:center;
+                `;
+                if (selectedFolderId === id) {
+                    const dot = document.createElement('div');
+                    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#e91e8c;';
+                    radio.appendChild(dot);
+                }
+
+                item.onclick = () => {
+                    selectedFolderId = id;
+                    _renderTree();
+                };
+
+                item.append(chevron, lbl, radio);
+                tree.appendChild(item);
+            };
+
+            renderItem('📥 未分類（根目錄）', null, 0, false);
+
+            const renderLevel = (parentId, depth) => {
+                const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.order - b.order);
+                kids.forEach(f => {
+                    const hasKids = folders.some(sub => sub.parentId === f.id);
+                    renderItem('📁 ' + f.name, f.id, depth, hasKids);
+                    if (hasKids && _expandedFolders.has(f.id)) {
+                        renderLevel(f.id, depth + 1);
+                    }
+                });
+            };
+            renderLevel(null, 1);
+        }
+
+        chrome.storage.local.get(['vt_bookmarks'], (data) => {
+            const bm = (data.vt_bookmarks || []).find(b => b.videoId === videoId);
+            if (bm) selectedFolderId = bm.folderId;
+            else selectedFolderId = null;
+            _renderTree();
+        });
     }
 
     // ─── 監控 Storage 變化，同步快取 + 刷新角標 ─────────────────────────

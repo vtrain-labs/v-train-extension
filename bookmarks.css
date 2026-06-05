@@ -18,7 +18,7 @@
     --border:    rgba(255,255,255,0.07);
     --glow:      rgba(233,30,140,0.25);
     --radius:    12px;
-    --sidebar-w: 240px;
+    --sidebar-w: 260px;
     --hdr-h:     64px;
 }
 
@@ -47,17 +47,17 @@ html, body {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.bv-subtitle { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.bv-subtitle { font-size: 14px; color: #fff; font-weight: 500; margin-top: 2px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
 
 .bv-header-actions { display: flex; align-items: center; gap: 12px; }
 .bv-search-wrap {
     position: relative; display: flex; align-items: center;
 }
-.bv-search-icon { position: absolute; left: 12px; font-size: 14px; pointer-events: none; }
+.bv-search-icon { position: absolute; left: 14px; font-size: 18px; pointer-events: none; }
 .bv-search {
-    width: 280px; padding: 8px 14px 8px 36px;
+    width: 300px; padding: 10px 16px 10px 40px;
     background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 10px; color: var(--text); font-size: 14px;
+    border-radius: 10px; color: var(--text); font-size: 16px;
     outline: none; transition: border-color 0.2s, box-shadow 0.2s;
 }
 .bv-search:focus {
@@ -67,8 +67,8 @@ html, body {
 .bv-view-toggle { display: flex; gap: 4px; }
 .bv-view-btn {
     background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text2); border-radius: 8px; padding: 7px 10px;
-    cursor: pointer; font-size: 16px; transition: all 0.15s;
+    color: var(--text2); border-radius: 8px; padding: 8px 12px;
+    cursor: pointer; font-size: 20px; transition: all 0.15s;
 }
 .bv-view-btn.active, .bv-view-btn:hover {
     background: var(--accent); border-color: var(--accent); color: #fff;
@@ -76,8 +76,8 @@ html, body {
 
 /* ─── Body Layout ─────────────────────────────────────────────────────── */
 .bv-body {
-    display: flex; height: 100%;
-    padding-top: var(--hdr-h);
+    display: flex; height: calc(100vh - var(--hdr-h));
+    margin-top: var(--hdr-h);
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────────────────── */
@@ -90,22 +90,22 @@ html, body {
 }
 .bv-sidebar-hdr {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 16px 10px;
-    font-size: 12px; font-weight: 600; color: var(--text3);
+    padding: 18px 18px 12px;
+    font-size: 16px; font-weight: 600; color: var(--text3);
     text-transform: uppercase; letter-spacing: 0.8px;
     border-bottom: 1px solid var(--border);
 }
 .bv-add-root-btn {
     background: rgba(233,30,140,0.12); border: none;
     color: var(--accent); border-radius: 6px;
-    width: 24px; height: 24px; cursor: pointer; font-size: 16px;
+    width: 28px; height: 28px; cursor: pointer; font-size: 18px;
     display: flex; align-items: center; justify-content: center;
     transition: background 0.15s;
 }
 .bv-add-root-btn:hover { background: rgba(233,30,140,0.25); }
 
 .bv-folder-tree {
-    flex: 1; overflow-y: auto; padding: 8px;
+    flex: 1; overflow-y: auto; overflow-x: auto; padding: 8px;
 }
 .bv-folder-tree::-webkit-scrollbar { width: 4px; }
 .bv-folder-tree::-webkit-scrollbar-track { background: transparent; }
@@ -113,9 +113,9 @@ html, body {
 
 /* Folder items */
 .bv-folder-item {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 10px; border-radius: 8px; cursor: pointer;
-    font-size: 13px; color: var(--text2);
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-radius: 8px; cursor: pointer;
+    font-size: 18px; color: var(--text2);
     transition: background 0.12s, color 0.12s;
     position: relative; user-select: none;
 }
@@ -127,9 +127,9 @@ html, body {
 }
 .bv-folder-item-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bv-folder-count {
-    font-size: 11px; color: var(--text3);
-    background: var(--bg4); border-radius: 10px;
-    padding: 1px 6px; flex-shrink: 0;
+    font-size: 14px; color: #fff;
+    background: rgba(255,255,255,0.12); border-radius: 12px;
+    padding: 2px 8px; flex-shrink: 0;
 }
 .bv-folder-actions {
     display: none; gap: 2px; flex-shrink: 0;
@@ -137,7 +137,7 @@ html, body {
 .bv-folder-item:hover .bv-folder-actions { display: flex; }
 .bv-folder-act-btn {
     background: none; border: none; color: var(--text3);
-    cursor: pointer; font-size: 13px; padding: 2px 4px;
+    cursor: pointer; font-size: 16px; padding: 4px 6px;
     border-radius: 4px; transition: color 0.12s, background 0.12s;
     line-height: 1;
 }
@@ -150,8 +150,8 @@ html, body {
     display: flex; flex-direction: column; gap: 8px;
 }
 .bv-stat-row { display: flex; justify-content: space-between; align-items: center; }
-.bv-stat-label { font-size: 12px; color: var(--text3); }
-.bv-stat-val { font-size: 13px; font-weight: 600; color: var(--text); }
+.bv-stat-label { font-size: 15px; color: var(--text3); }
+.bv-stat-val { font-size: 16px; font-weight: 600; color: var(--text); }
 
 /* ─── Content ─────────────────────────────────────────────────────────── */
 .bv-content {
@@ -165,13 +165,13 @@ html, body {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 20px;
 }
-.bv-folder-title { font-size: 17px; font-weight: 600; color: var(--text); }
+.bv-folder-title { font-size: 24px; font-weight: 600; color: var(--text); }
 .bv-sort-row { display: flex; align-items: center; gap: 8px; }
-.bv-sort-label { font-size: 12px; color: var(--text3); }
+.bv-sort-label { font-size: 15px; color: var(--text3); }
 .bv-sort-select {
     background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text); border-radius: 8px; padding: 5px 10px;
-    font-size: 13px; outline: none; cursor: pointer;
+    color: var(--text); border-radius: 8px; padding: 8px 12px;
+    font-size: 16px; outline: none; cursor: pointer;
 }
 
 /* ─── Grid ────────────────────────────────────────────────────────────── */
@@ -326,7 +326,7 @@ html, body {
 /* ─── Folder expand toggle ────────────────────────────────────────────── */
 .bv-folder-toggle {
     background: none; border: none; color: var(--text3);
-    cursor: pointer; font-size: 11px; padding: 0 3px;
+    cursor: pointer; font-size: 14px; padding: 0 4px;
     transition: transform 0.15s; display: inline-block;
     flex-shrink: 0;
 }

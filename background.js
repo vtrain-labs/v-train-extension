@@ -129,7 +129,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ["style.css"] }).catch(() => { });
 
                 // [架構師修改] 確保點擊右鍵注入時，也帶上 db.js 和 shared_i18n.js
-                chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_trainer.js", "content.js"] }).then(() => {
+                chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).then(() => {
                     if (!isNewGrant) return setTimeout(() => chrome.tabs.sendMessage(tab.id, { action: "START_MARKING" }).catch(() => { }), 100);
 
                     // [架構師重構] 移除寫死的多國語言物件，改用原生 chrome.i18n.getMessage
@@ -163,7 +163,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             chrome.permissions.contains({ origins: [origin] }, (hasPerm) => {
                 if (hasPerm) {
                     chrome.scripting.insertCSS({ target: { tabId, allFrames: true }, files: ["style.css"] }).catch(() => { });
-                    chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_trainer.js", "content.js"] }).catch(() => { });
+                    chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).catch(() => { });
                 }
             });
         }
@@ -342,7 +342,7 @@ chrome.permissions.onAdded.addListener((permissions) => {
             for (let tab of tabs) {
                 chrome.scripting.insertCSS({ target: { tabId: tab.id, allFrames: true }, files: ["style.css"] }).catch(() => { });
                 // [安全修復 #5] 補上遺漏的 db.js，確保 content.js 執行前 vtDB 已就緒
-                chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_trainer.js", "content.js"] }).catch(() => { });
+                chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).catch(() => { });
             }
         });
     }
