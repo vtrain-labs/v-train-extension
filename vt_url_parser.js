@@ -251,8 +251,15 @@ if (!window._vtUrlParserLoaded) {
                 }
                 return ex;
             }
-            if (raw && rule.sep && raw.includes(rule.sep)) {
-                let pts = raw.split(rule.sep);
+            if (raw && rule.sep) {
+                let pts;
+                if (raw.includes(rule.sep)) {
+                    pts = raw.split(rule.sep);
+                } else {
+                    // 容錯機制：部分網站(如 Xvideos)在播放頁使用 '.'，但縮圖使用 '-'
+                    // 當找不到原本的分割符時，退而求其次使用通用分割符進行切割
+                    pts = raw.split(/[\-\_\.\+]/);
+                }
                 let sIdx = rule.sepIdx < 0 ? pts.length + rule.sepIdx : rule.sepIdx;
                 raw = pts[Math.max(0, Math.min(sIdx, pts.length - 1))] || raw;
             }
@@ -285,7 +292,16 @@ if (!window._vtUrlParserLoaded) {
                 if (!safeVal) continue;
                 // 為了讓 URL 規則能正確執行，我們模擬完整的網址格式進行提取
                 let testValue = safeVal.startsWith('http') || safeVal.startsWith('/') ? safeVal : `https://x.com/v/${safeVal}`;
-                let extracted = extractIdByUrlRule(testValue, urlRule);
+                
+                // [架構師修復] 如果處於訓練模式 (有 targetId)，且屬性值裡面直接包含目標 ID
+                // 這代表縮圖的網址結構可能跟播放頁不同，我們應該即時動態生成針對縮圖的專屬規則 (tRule) 來提取
+                let activeRule = urlRule;
+                if (targetId && safeVal.toLowerCase().includes(targetId.toLowerCase())) {
+                    let tempRule = autoDetectUrlRule(testValue, targetId);
+                    if (tempRule) activeRule = tempRule;
+                }
+
+                let extracted = extractIdByUrlRule(testValue, activeRule);
 
                 if (extracted) {
                     // [真理比對] 如果存在 targetId (訓練模式)，則必須完全匹配才算找到位置
