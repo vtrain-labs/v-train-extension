@@ -132,9 +132,12 @@ if (!window._vtBookmarksLoaded) {
     let _panelRating = null;
     let _panelBookmarked = false;
 
+    const SVG_LIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;vertical-align:-0.2em;display:inline-block;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
+    const SVG_DISLIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;vertical-align:-0.2em;display:inline-block;"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`;
+
     const PANEL_BTNS = [
-        { key: 'like',     emoji: '👍', title: '喜歡', id: 'vt-bmb-like'     },
-        { key: 'dislike',  emoji: '😤', title: '不喜歡', id: 'vt-bmb-dislike' },
+        { key: 'like',     html: SVG_LIKE, emoji: '👍', title: '喜歡', id: 'vt-bmb-like'     },
+        { key: 'dislike',  html: SVG_DISLIKE, emoji: '😤', title: '不喜歡', id: 'vt-bmb-dislike' },
         { key: 'bookmark', emoji: '❤️', title: '收藏', id: 'vt-bmb-bm'       },
         { key: 'open',     emoji: '📚', title: '書籤管理', id: 'vt-bmb-open'  },
     ];
@@ -152,11 +155,11 @@ if (!window._vtBookmarksLoaded) {
             backdrop-filter:blur(6px);
         `;
 
-        PANEL_BTNS.forEach(({ emoji, title, id, key }) => {
+        PANEL_BTNS.forEach(({ html, emoji, title, id, key }) => {
             const btn = document.createElement('button');
             btn.id = id;
             btn.title = title;
-            btn.textContent = emoji;
+            if (html) btn.innerHTML = html; else btn.textContent = emoji;
             btn.dataset.key = key;
             btn.style.cssText = `
                 background:none;border:none;font-size:18px;cursor:pointer;
@@ -198,6 +201,37 @@ if (!window._vtBookmarksLoaded) {
 
         (document.body || document.documentElement).appendChild(p);
         _panel = p;
+        _startPanelSync();
+    }
+
+    let _panelSyncLoop = null;
+    function _startPanelSync() {
+        if (_panelSyncLoop) return;
+        const sync = () => {
+            _panelSyncLoop = requestAnimationFrame(sync);
+            if (!_panel || _panel.style.display === 'none' || !window.sysState?._activeEl) return;
+            
+            const video = window.sysState._activeEl;
+            const rect = video.getBoundingClientRect();
+            
+            // 如果處於全螢幕，退回螢幕右下角固定顯示 (因為全螢幕時外面看不到)
+            if (document.fullscreenElement) {
+                _panel.style.bottom = '82px';
+                _panel.style.right = '15px';
+                _panel.style.top = 'auto';
+                _panel.style.left = 'auto';
+            } else {
+                // 一般模式下，懸掛在影片右下方 (外面)
+                const rightOffset = window.innerWidth - rect.right;
+                const topOffset = rect.bottom + 12; // 距離影片底部 12px
+                
+                _panel.style.top = topOffset + 'px';
+                _panel.style.right = rightOffset + 'px';
+                _panel.style.bottom = 'auto';
+                _panel.style.left = 'auto';
+            }
+        };
+        _panelSyncLoop = requestAnimationFrame(sync);
     }
 
     function _renderPanelState() {
