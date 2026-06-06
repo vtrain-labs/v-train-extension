@@ -347,6 +347,7 @@ function _makeCard(bm) {
         const img = document.createElement('img');
         img.className = 'bv-card-thumb';
         img.src = bm.thumbnail;
+        img.referrerPolicy = 'no-referrer'; // 繞過 CDN 防盜鏈檢查
         img.loading = 'lazy';
         img.onerror = () => img.replaceWith(_makePlaceholder());
         card.appendChild(img);
