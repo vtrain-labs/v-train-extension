@@ -16,11 +16,12 @@ if (!window._vtBookmarksLoaded) {
     // ─── 載入快取 ────────────────────────────────────────────────────────
     async function _loadCache() {
         return new Promise(resolve => {
-            chrome.storage.local.get(['vt_ratings', 'vt_bookmarks', 'vt_panel_pos'], data => {
+            chrome.storage.local.get(['vt_ratings', 'vt_bookmarks', 'vt_panel_pos', 'showInteraction'], data => {
                 window._vtRatingsCache = data.vt_ratings || {};
                 const bm = data.vt_bookmarks || [];
                 window._vtBookmarkedSet = new Set(bm.map(b => b.videoId).filter(Boolean));
                 window._vtPanelPos = data.vt_panel_pos || null;
+                window._vtShowInteraction = data.showInteraction !== false;
                 resolve();
             });
         });
@@ -531,12 +532,18 @@ if (!window._vtBookmarksLoaded) {
             window._vtBookmarkedSet = new Set(bm.map(b => b.videoId).filter(Boolean));
             window._vtRefreshAllBadges?.();
         }
+        if (changes.showInteraction) {
+            window._vtShowInteraction = changes.showInteraction.newValue !== false;
+            if (!window._vtShowInteraction && _panel) {
+                _panel.style.display = 'none';
+            }
+        }
     });
 
     // ─── 公開 API（供 vt_tracker.js 呼叫）────────────────────────────────
     window.vtBookmarkPanel = {
         async setVideo(videoId) {
-            if (!videoId) {
+            if (!videoId || window._vtShowInteraction === false) {
                 if (_panel) _panel.style.display = 'none';
                 _currentId = null;
                 return;

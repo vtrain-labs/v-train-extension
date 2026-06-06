@@ -384,6 +384,12 @@ if (!window._vtTrackerLoaded) {
 
     // ─── 縮圖評分角標（Badge）─────────────────────────────────────────
     function _vtUpdateBadge(data, videoId) {
+        // 若關閉了互動按鈕，則連同角標一起隱藏，還原最乾淨的 UI
+        if (window._vtShowInteraction === false) {
+            if (data.badgeEl) data.badgeEl.style.display = 'none';
+            return;
+        }
+
         const rating = window._vtRatingsCache?.[videoId];
         const isBookmarked = window._vtBookmarkedSet?.has(videoId);
         const SVG_LIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;display:inline-block;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;

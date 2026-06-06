@@ -58,7 +58,19 @@
                             </div>
                             <label class="switch">
                                 <input type="checkbox" id="toggleVisibility" checked>
-                                <span class="slider"></span>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="status-row" id="interactionToggleRow" style="display: none; border-top: 1px solid #333; padding-top: 12px; margin-top: 5px;">
+                            <div class="status-info">
+                                <span class="status-label">
+                                    <span class="status-dot" style="background:#e91e8c; box-shadow:0 0 5px #e91e8c;"></span>
+                                    <span data-i18n="toggleInteraction">👍 啟用快捷互動按鈕</span>
+                                </span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="toggleInteraction" checked>
+                                <span class="slider round"></span>
                             </label>
                         </div>
                         <div class="status-row" style="margin-bottom:16px; padding-bottom:16px;">
@@ -80,9 +92,9 @@
                         </div>
                         <div style="margin-bottom:12px;" id="bookmarkVaultRow">
                             <button id="btnOpenBookmarks" class="btn-action"
-                                style="width:100%;background:linear-gradient(135deg,#880e4f,#6a1b9a);border-color:#ad1457;">
-                                <i>📚</i> <span>Bookmark Vault</span>
-                                <span style="font-size:11px;opacity:0.75;margin-left:4px;">Pro</span>
+                                style="width:100%;background:linear-gradient(135deg,#880e4f,#6a1b9a);border-color:#ad1457; position: relative;">
+                                <i>📚</i> <span data-i18n="bvTitle">Bookmark Vault</span>
+                                <span style="position:absolute; top:-6px; right:-6px; background:#e91e8c; color:white; font-size:9px; padding:1px 4px; border-radius:3px; font-weight:bold; line-height:1;" data-i18n="proOnly">PRO</span>
                             </button>
                         </div>
                         <div class="stats-compact" style="margin-bottom: 6px;">
@@ -94,8 +106,10 @@
                             💡 達到 20 萬部上限時，將自動替換最舊的 100 部紀錄</div>
 
                         <div class="actions-row">
-                            <button id="btnSetupPass" class="btn-action"><i>🔐</i> <span data-i18n="setPasscode">Set
-                                    Passcode</span></button>
+                            <button id="btnSetupPass" class="btn-action" style="position:relative;">
+                                <i>🔐</i> <span data-i18n="setPasscode">Set Passcode</span>
+                                <span style="position:absolute; top:-6px; right:-6px; background:#e91e8c; color:white; font-size:9px; padding:1px 4px; border-radius:3px; font-weight:bold; line-height:1;" data-i18n="proOnly">PRO</span>
+                            </button>
                             <button id="btnClearData" class="btn-action"><i>🗑️</i> <span data-i18n="clearData">Clear
                                     Data</span></button>
                         </div>

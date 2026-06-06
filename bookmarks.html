@@ -14,14 +14,14 @@
         <div class="bv-logo">
             <span class="bv-logo-icon">📚</span>
             <div>
-                <h1 class="bv-title">Bookmark Vault</h1>
-                <p class="bv-subtitle">V-Train Pro · 本機收藏管理</p>
+                <h1 class="bv-title" data-i18n="bvTitle">Bookmark Vault</h1>
+                <p class="bv-subtitle" data-i18n="bvSubtitle">V-Train Pro · 本機收藏管理</p>
             </div>
         </div>
         <div class="bv-header-actions">
             <div class="bv-search-wrap">
                 <span class="bv-search-icon">🔍</span>
-                <input type="text" id="bvSearch" class="bv-search" placeholder="搜尋書籤標題或網址...">
+                <input type="text" id="bvSearch" class="bv-search" data-i18n="bvSearch" placeholder="搜尋書籤標題或網址...">
             </div>
             <div class="bv-view-toggle">
                 <button id="btnViewGrid" class="bv-view-btn active" title="格狀檢視">⊞</button>
@@ -34,7 +34,7 @@
         <!-- Left Sidebar: Folder Tree -->
         <aside class="bv-sidebar">
             <div class="bv-sidebar-hdr">
-                <span>📁 資料夾</span>
+                <span data-i18n="bvFolders">📁 資料夾</span>
                 <button id="btnNewRootFolder" class="bv-add-root-btn" title="新增資料夾">＋</button>
             </div>
             <nav id="bvFolderTree" class="bv-folder-tree">
@@ -42,15 +42,15 @@
             </nav>
             <div class="bv-sidebar-footer">
                 <div class="bv-stat-row">
-                    <span class="bv-stat-label">📊 總收藏</span>
+                    <span class="bv-stat-label" data-i18n="bvTotal">📊 總收藏</span>
                     <span class="bv-stat-val" id="bvTotalCount">0</span>
                 </div>
                 <div class="bv-stat-row">
-                    <span class="bv-stat-label">👍 喜歡</span>
+                    <span class="bv-stat-label" data-i18n="bvLike">👍 喜歡</span>
                     <span class="bv-stat-val" id="bvLikeCount">0</span>
                 </div>
                 <div class="bv-stat-row">
-                    <span class="bv-stat-label">😤 不喜歡</span>
+                    <span class="bv-stat-label" data-i18n="bvDislike">😤 不喜歡</span>
                     <span class="bv-stat-val" id="bvDislikeCount">0</span>
                 </div>
             </div>
@@ -63,12 +63,12 @@
                     <!-- 動態渲染麵包屑 -->
                 </div>
                 <div class="bv-sort-row">
-                    <label class="bv-sort-label">排序：</label>
+                    <label class="bv-sort-label" data-i18n="bvSort">排序：</label>
                     <select id="bvSort" class="bv-sort-select">
-                        <option value="newest">最新加入</option>
-                        <option value="oldest">最早加入</option>
-                        <option value="title">標題 A-Z</option>
-                        <option value="domain">網站</option>
+                        <option value="newest" data-i18n="bvSortNewest">最新加入</option>
+                        <option value="oldest" data-i18n="bvSortOldest">最早加入</option>
+                        <option value="title" data-i18n="bvSortTitle">標題 A-Z</option>
+                        <option value="domain" data-i18n="bvSortDomain">網站</option>
                     </select>
                 </div>
             </div>
@@ -83,8 +83,8 @@
 
             <div id="bvEmpty" class="bv-empty hidden">
                 <div class="bv-empty-icon">📭</div>
-                <p class="bv-empty-title">這裡還沒有收藏</p>
-                <p class="bv-empty-sub">在影片播放時點擊 ❤️ 按鈕開始收藏</p>
+                <p class="bv-empty-title" data-i18n="bvEmptyTitle">這裡還沒有收藏</p>
+                <p class="bv-empty-sub" data-i18n="bvEmptySub">在影片播放時點擊 ❤️ 按鈕開始收藏</p>
             </div>
         </main>
     </div>
@@ -92,11 +92,11 @@
     <!-- 重新命名 / 新增 Modal -->
     <div id="bvModal" class="bv-modal-overlay hidden">
         <div class="bv-modal">
-            <h3 id="bvModalTitle">新增資料夾</h3>
-            <input type="text" id="bvModalInput" class="bv-modal-input" placeholder="資料夾名稱">
+            <h3 id="bvModalTitle" data-i18n="bvNewFolder">新增資料夾</h3>
+            <input type="text" id="bvModalInput" class="bv-modal-input" data-i18n="bvFolderName" placeholder="資料夾名稱">
             <div class="bv-modal-btns">
-                <button id="bvModalCancel" class="bv-btn bv-btn-ghost">取消</button>
-                <button id="bvModalConfirm" class="bv-btn bv-btn-accent">確認</button>
+                <button id="bvModalCancel" class="bv-btn bv-btn-ghost" data-i18n="cancel">取消</button>
+                <button id="bvModalConfirm" class="bv-btn bv-btn-accent" data-i18n="confirm">確認</button>
             </div>
         </div>
     </div>
@@ -104,11 +104,11 @@
     <!-- 確認刪除 Modal -->
     <div id="bvConfirmModal" class="bv-modal-overlay hidden">
         <div class="bv-modal">
-            <h3 id="bvConfirmTitle">確認刪除</h3>
+            <h3 id="bvConfirmTitle" data-i18n="bvConfirmDelete">確認刪除</h3>
             <p id="bvConfirmDesc" class="bv-confirm-desc"></p>
             <div class="bv-modal-btns">
-                <button id="bvConfirmCancel" class="bv-btn bv-btn-ghost">取消</button>
-                <button id="bvConfirmOk" class="bv-btn bv-btn-danger">刪除</button>
+                <button id="bvConfirmCancel" class="bv-btn bv-btn-ghost" data-i18n="cancel">取消</button>
+                <button id="bvConfirmOk" class="bv-btn bv-btn-danger" data-i18n="delete">刪除</button>
             </div>
         </div>
     </div>
@@ -118,12 +118,13 @@
 
     <!-- Right-click Context Menu -->
     <div id="bvContextMenu" class="bv-context-menu hidden">
-        <div class="bv-cm-item" id="cmAddSubFolder"><span class="bv-cm-icon">＋</span> 新增子資料夾</div>
-        <div class="bv-cm-item" id="cmRename"><span class="bv-cm-icon">✏️</span> 重新命名</div>
+        <div class="bv-cm-item" id="cmAddSubFolder"><span class="bv-cm-icon">＋</span> <span data-i18n="bvAddSubFolder">新增子資料夾</span></div>
+        <div class="bv-cm-item" id="cmRename"><span class="bv-cm-icon">✏️</span> <span data-i18n="bvRename">重新命名</span></div>
         <div class="bv-cm-divider"></div>
-        <div class="bv-cm-item danger" id="cmDelete"><span class="bv-cm-icon">🗑</span> 刪除</div>
+        <div class="bv-cm-item danger" id="cmDelete"><span class="bv-cm-icon">🗑</span> <span data-i18n="delete">刪除</span></div>
     </div>
 
+    <script src="shared_i18n.js"></script>
     <script src="bookmarks.js"></script>
 </body>
 </html>

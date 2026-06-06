@@ -10,16 +10,36 @@ let _searchTerm   = '';
 let _sortMode     = 'newest';
 let _viewMode     = 'grid'; // 'grid' | 'list'
 let _expandedFolders = new Set();
+let _currentLang = 'en';
 
 // ─── 載入資料 ─────────────────────────────────────────────────────────────
 async function loadData() {
     const data = await new Promise(r =>
-        chrome.storage.local.get(['vt_bookmarks', 'vt_bm_folders', 'vt_ratings'], r)
+        chrome.storage.local.get(['vt_bookmarks', 'vt_bm_folders', 'vt_ratings', 'userLang'], r)
     );
     _allBookmarks = data.vt_bookmarks || [];
     _allFolders   = data.vt_bm_folders || [];
     _allRatings   = data.vt_ratings || {};
+    
+    // 套用多國語言
+    _currentLang = data.userLang || 'en';
+    applyLanguage(_currentLang);
+
     renderAll();
+}
+
+function applyLanguage(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (typeof getLangText === 'function') {
+            const translated = getLangText(lang, key);
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.placeholder = translated;
+            } else {
+                el.innerHTML = translated;
+            }
+        }
+    });
 }
 
 // ─── 渲染全部 UI ─────────────────────────────────────────────────────────
@@ -44,15 +64,18 @@ function renderFolderTree() {
     const tree = document.getElementById('bvFolderTree');
     tree.innerHTML = '';
 
+    const allBookmarksStr = typeof getLangText === 'function' ? getLangText(_currentLang, 'bvAllBookmarks') : '全部收藏';
+    const uncategorizedStr = typeof getLangText === 'function' ? getLangText(_currentLang, 'bvUncategorized') : '未分類';
+
     // 全部
     tree.appendChild(_makeFolderNode({
-        id: '__all__', name: '📚 全部收藏', icon: '',
+        id: '__all__', name: `📚 ${allBookmarksStr}`, icon: '',
         count: _allBookmarks.length, depth: 0, isSpecial: true
     }));
     // 未分類
     const uncat = _allBookmarks.filter(b => !b.folderId).length;
     tree.appendChild(_makeFolderNode({
-        id: null, name: '📥 未分類', icon: '',
+        id: null, name: `📥 ${uncategorizedStr}`, icon: '',
         count: uncat, depth: 0, isSpecial: true
     }));
 
@@ -183,13 +206,16 @@ function renderBreadcrumb() {
     if (!bc) return;
     bc.innerHTML = '';
 
+    const allBookmarksStr = typeof getLangText === 'function' ? getLangText(_currentLang, 'bvAllBookmarks') : '全部收藏';
+    const uncategorizedStr = typeof getLangText === 'function' ? getLangText(_currentLang, 'bvUncategorized') : '未分類';
+
     const path = [];
     if (_activeFolderId === '__all__') {
-        path.push({ id: '__all__', name: '📚 全部收藏' });
+        path.push({ id: '__all__', name: `📚 ${allBookmarksStr}` });
     } else if (_activeFolderId === null) {
-        path.push({ id: null, name: '📥 未分類' });
+        path.push({ id: null, name: `📥 ${uncategorizedStr}` });
     } else {
-        path.push({ id: '__all__', name: '📚 全部收藏' });
+        path.push({ id: '__all__', name: `📚 ${allBookmarksStr}` });
         
         let curr = _allFolders.find(f => f.id === _activeFolderId);
         const hierarchy = [];
@@ -728,6 +754,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Storage 即時同步
     chrome.storage.onChanged.addListener((changes) => {
         let needReload = false;
+        if (changes.userLang) {
+            _currentLang = changes.userLang.newValue || 'en';
+            applyLanguage(_currentLang);
+            needReload = true;
+        }
         if (changes.vt_bookmarks) { _allBookmarks = changes.vt_bookmarks.newValue || []; needReload = true; }
         if (changes.vt_bm_folders) { _allFolders = changes.vt_bm_folders.newValue || []; needReload = true; }
         if (changes.vt_ratings) { _allRatings = changes.vt_ratings.newValue || {}; needReload = true; }

@@ -109,7 +109,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         id: "mark_vt_thumbnail",
         title: chrome.i18n.getMessage("contextMenuTrack"),
         contexts: ["all"]
-    });
+    }, () => chrome.runtime.lastError);
 
     // 註冊計數器校準任務 (僅更新/安裝時執行一次)
     chrome.alarms.create('vt_init_count', { when: Date.now() + 3000 });

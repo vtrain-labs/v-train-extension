@@ -157,10 +157,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const isStealth = (items.isStealthMode === undefined) ? true : !!items.isStealthMode;
         const isPro = !!items.isProVersion;
 
+        const toggleInteraction = document.getElementById('toggleInteraction');
+        const interactionToggleRow = document.getElementById('interactionToggleRow');
+
         toggleVisibility.checked = !isStealth; updateStatusUI(!isStealth);
         if (toggleMonitorPanel) toggleMonitorPanel.checked = items.showMonitorPanel !== false;
+        if (toggleInteraction) toggleInteraction.checked = items.showInteraction !== false;
         if (progressBarColor) progressBarColor.value = items.barColor || '#ff0000';
         updateProUI(isPro, items.vt_video_count || 0);
+
+        // Interaction Toggle Event
+        if (toggleInteraction) {
+            toggleInteraction.addEventListener('change', () => {
+                chrome.storage.local.set({ showInteraction: toggleInteraction.checked });
+            });
+        }
 
         chrome.extension.isAllowedIncognitoAccess((isAllowed) => {
             const warningEl = document.getElementById('incognitoWarning');
@@ -901,17 +912,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateProUI(isPro, count) {
         const limitNote = document.getElementById('limitNote');
+        const interactionToggleRow = document.getElementById('interactionToggleRow');
+        
         if (isPro) {
             btnDonateUpgrade.classList.add('pro-active');
             btnDonateUpgrade.innerHTML = `<span class="donate-icon">👑</span> ${getLangText(currentLang, 'proActive')}`;
             videoCountLabel.textContent = count.toLocaleString();
             videoCountLabel.style.color = '#ffd700';
             if (limitNote) limitNote.style.display = 'block';
+            if (interactionToggleRow) interactionToggleRow.style.display = 'flex';
         } else {
             const limit = 200;
             videoCountLabel.textContent = `${count.toLocaleString()} / ${limit}`;
             if (count >= limit) videoCountLabel.style.color = '#ff5252';
             if (limitNote) limitNote.style.display = 'none';
+            if (interactionToggleRow) interactionToggleRow.style.display = 'none';
         }
     }
 

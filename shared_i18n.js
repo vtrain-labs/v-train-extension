@@ -130,7 +130,36 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Query Param',
             ruleFlank: 'Flank Match',
             rulePathLast: '(last segment)',
-            rulePathFirst: '(first segment)'
+            rulePathFirst: '(first segment)',
+
+            // === Vault & Advanced UI ===
+            bvTitle: "Bookmark Vault",
+            bvSubtitle: "V-Train Pro · Local Collection",
+            bvSearch: "Search title or URL...",
+            bvFolders: "📁 Folders",
+            bvAllBookmarks: "All Bookmarks",
+            bvUncategorized: "Uncategorized",
+            bvTotal: "📊 Total",
+            bvLike: "👍 Likes",
+            bvDislike: "😤 Dislikes",
+            bvSort: "Sort: Newest",
+            bvSettings: "⚙️ System Settings",
+            toggleInteraction: "👍 Enable Interaction Buttons",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+,
+            bvEmptyTitle: "No Bookmarks Yet",
+            bvEmptySub: "Click the ❤️ button while watching to start saving.",
+            bvNewFolder: "New Folder",
+            bvFolderName: "Folder Name",
+            bvConfirmDelete: "Confirm Delete",
+            bvAddSubFolder: "Add Subfolder",
+            bvRename: "Rename",
+            bvSortNewest: "Newest First",
+            bvSortOldest: "Oldest First",
+            bvSortTitle: "Title A-Z",
+            bvSortDomain: "Domain"
+
         },
         "zh-TW": {
             // === Popup & System Keys ===
@@ -203,7 +232,36 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: '查詢參數',
             ruleFlank: '側翼匹配',
             rulePathLast: '(末段)',
-            rulePathFirst: '(首段)'
+            rulePathFirst: '(首段)',
+
+            // === Vault & Advanced UI ===
+            bvTitle: "本機書籤庫",
+            bvSubtitle: "V-Train Pro · 本機收藏管理",
+            bvSearch: "搜尋書籤標題或網址...",
+            bvFolders: "📁 資料夾",
+            bvAllBookmarks: "全部收藏",
+            bvUncategorized: "未分類",
+            bvTotal: "📊 總收藏",
+            bvLike: "👍 喜歡",
+            bvDislike: "😤 不喜歡",
+            bvSort: "排序：最新加入",
+            bvSettings: "⚙️ 系統設定",
+            toggleInteraction: "👍 啟用快捷互動按鈕",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+,
+            bvEmptyTitle: "這裡還沒有收藏",
+            bvEmptySub: "在影片播放時點擊 ❤️ 按鈕開始收藏",
+            bvNewFolder: "新增資料夾",
+            bvFolderName: "資料夾名稱",
+            bvConfirmDelete: "確認刪除",
+            bvAddSubFolder: "新增子資料夾",
+            bvRename: "重新命名",
+            bvSortNewest: "最新加入",
+            bvSortOldest: "最早加入",
+            bvSortTitle: "標題 A-Z",
+            bvSortDomain: "網站"
+
         },
         "zh-CN": {
             // === Popup & System Keys ===
@@ -276,7 +334,36 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: '查询参数',
             ruleFlank: '侧翼匹配',
             rulePathLast: '(末段)',
-            rulePathFirst: '(首段)'
+            rulePathFirst: '(首段)',
+
+            // === Vault & Advanced UI ===
+            bvTitle: "本地书签库",
+            bvSubtitle: "V-Train Pro · 本地收藏管理",
+            bvSearch: "搜索书签标题或网址...",
+            bvFolders: "📁 文件夹",
+            bvAllBookmarks: "全部收藏",
+            bvUncategorized: "未分类",
+            bvTotal: "📊 总收藏",
+            bvLike: "👍 喜欢",
+            bvDislike: "😤 不喜欢",
+            bvSort: "排序：最新加入",
+            bvSettings: "⚙️ 系统设置",
+            toggleInteraction: "👍 启用快捷互动按钮",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+,
+            bvEmptyTitle: "这里还没有收藏",
+            bvEmptySub: "在影片播放时点击 ❤️ 按钮开始收藏",
+            bvNewFolder: "新建文件夹",
+            bvFolderName: "文件夹名称",
+            bvConfirmDelete: "确认删除",
+            bvAddSubFolder: "新建子文件夹",
+            bvRename: "重命名",
+            bvSortNewest: "最新加入",
+            bvSortOldest: "最早加入",
+            bvSortTitle: "标题 A-Z",
+            bvSortDomain: "网站"
+
         },
         "ja": {
             // === Popup & System Keys ===
@@ -349,7 +436,36 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'クエリパラメータ',
             ruleFlank: 'フランクマッチ',
             rulePathLast: '(最後のセグメント)',
-            rulePathFirst: '(最初のセグメント)'
+            rulePathFirst: '(最初のセグメント)',
+
+            // === Vault & Advanced UI ===
+            bvTitle: "ローカルブックマーク",
+            bvSubtitle: "V-Train Pro · ローカルコレクション",
+            bvSearch: "タイトルやURLを検索...",
+            bvFolders: "📁 フォルダ",
+            bvAllBookmarks: "すべてのブックマーク",
+            bvUncategorized: "未分類",
+            bvTotal: "📊 合計",
+            bvLike: "👍 いいね",
+            bvDislike: "😤 よくないね",
+            bvSort: "並べ替え：最新",
+            bvSettings: "⚙️ システム設定",
+            toggleInteraction: "👍 インタラクションボタンを有効化",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+,
+            bvEmptyTitle: "まだブックマークがありません",
+            bvEmptySub: "再生中に ❤️ ボタンをクリックして保存を開始します。",
+            bvNewFolder: "新規フォルダ",
+            bvFolderName: "フォルダ名",
+            bvConfirmDelete: "削除の確認",
+            bvAddSubFolder: "サブフォルダを追加",
+            bvRename: "名前を変更",
+            bvSortNewest: "最新順",
+            bvSortOldest: "古い順",
+            bvSortTitle: "タイトル A-Z",
+            bvSortDomain: "サイト"
+
         },
         "ko": {
             // === Popup & System Keys ===
@@ -422,7 +538,36 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: '쿼리 매개변수',
             ruleFlank: '측면 매칭',
             rulePathLast: '(마지막 세그먼트)',
-            rulePathFirst: '(첫 번째 세그먼트)'
+            rulePathFirst: '(첫 번째 세그먼트)',
+
+            // === Vault & Advanced UI ===
+            bvTitle: "로컬 북마크",
+            bvSubtitle: "V-Train Pro · 로컬 컬렉션",
+            bvSearch: "제목 또는 URL 검색...",
+            bvFolders: "📁 폴더",
+            bvAllBookmarks: "모든 북마크",
+            bvUncategorized: "미분류",
+            bvTotal: "📊 총 북마크",
+            bvLike: "👍 좋아요",
+            bvDislike: "😤 싫어요",
+            bvSort: "정렬: 최신순",
+            bvSettings: "⚙️ 시스템 설정",
+            toggleInteraction: "👍 상호작용 버튼 활성화",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+,
+            bvEmptyTitle: "아직 북마크가 없습니다",
+            bvEmptySub: "재생 중 ❤️ 버튼을 클릭하여 저장을 시작하세요.",
+            bvNewFolder: "새 폴더",
+            bvFolderName: "폴더 이름",
+            bvConfirmDelete: "삭제 확인",
+            bvAddSubFolder: "하위 폴더 추가",
+            bvRename: "이름 변경",
+            bvSortNewest: "최신순",
+            bvSortOldest: "오래된순",
+            bvSortTitle: "제목 A-Z",
+            bvSortDomain: "도메인"
+
         },
         "es": {
             // === Popup & System Keys ===
@@ -495,7 +640,36 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Parámetro de consulta',
             ruleFlank: 'Coincidencia Lateral',
             rulePathLast: '(último segmento)',
-            rulePathFirst: '(primer segmento)'
+            rulePathFirst: '(primer segmento)',
+
+            // === Vault & Advanced UI ===
+            bvTitle: "Bóveda de Marcadores",
+            bvSubtitle: "V-Train Pro · Colección Local",
+            bvSearch: "Buscar título o URL...",
+            bvFolders: "📁 Carpetas",
+            bvAllBookmarks: "Todos",
+            bvUncategorized: "Sin categoría",
+            bvTotal: "📊 Total",
+            bvLike: "👍 Me gusta",
+            bvDislike: "😤 No me gusta",
+            bvSort: "Orden: Más recientes",
+            bvSettings: "⚙️ Configuración del sistema",
+            toggleInteraction: "👍 Habilitar botones de interacción",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+,
+            bvEmptyTitle: "Aún no hay marcadores",
+            bvEmptySub: "Haz clic en ❤️ durante la reproducción para guardar.",
+            bvNewFolder: "Nueva carpeta",
+            bvFolderName: "Nombre de la carpeta",
+            bvConfirmDelete: "Confirmar eliminación",
+            bvAddSubFolder: "Añadir subcarpeta",
+            bvRename: "Renombrar",
+            bvSortNewest: "Más recientes",
+            bvSortOldest: "Más antiguos",
+            bvSortTitle: "Título A-Z",
+            bvSortDomain: "Dominio"
+
         },
         "fr": {
             // === Popup & System Keys ===
@@ -568,7 +742,36 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Paramètre de requête',
             ruleFlank: 'Correspondance Latérale',
             rulePathLast: '(dernier segment)',
-            rulePathFirst: '(premier segment)'
+            rulePathFirst: '(premier segment)',
+
+            // === Vault & Advanced UI ===
+            bvTitle: "Coffre aux Signets",
+            bvSubtitle: "V-Train Pro · Collection locale",
+            bvSearch: "Rechercher titre ou URL...",
+            bvFolders: "📁 Dossiers",
+            bvAllBookmarks: "Tous les favoris",
+            bvUncategorized: "Non classé",
+            bvTotal: "📊 Total",
+            bvLike: "👍 J'aime",
+            bvDislike: "😤 Je n'aime pas",
+            bvSort: "Trier: Plus récents",
+            bvSettings: "⚙️ Paramètres du système",
+            toggleInteraction: "👍 Activer les boutons d'interaction",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+,
+            bvEmptyTitle: "Aucun favori pour le moment",
+            bvEmptySub: "Cliquez sur ❤️ pendant la lecture pour enregistrer.",
+            bvNewFolder: "Nouveau dossier",
+            bvFolderName: "Nom du dossier",
+            bvConfirmDelete: "Confirmer la suppression",
+            bvAddSubFolder: "Ajouter un sous-dossier",
+            bvRename: "Renommer",
+            bvSortNewest: "Plus récents",
+            bvSortOldest: "Plus anciens",
+            bvSortTitle: "Titre A-Z",
+            bvSortDomain: "Domaine"
+
         },
         "de": {
             // === Popup & System Keys ===
@@ -641,8 +844,37 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Abfrage-Parameter',
             ruleFlank: 'Flanken-Match',
             rulePathLast: '(letztes Segment)',
-            rulePathFirst: '(erstes Segment)'
-        }
+            rulePathFirst: '(erstes Segment)',
+            bvEmptyTitle: "Noch keine Lesezeichen",
+            bvEmptySub: "Klicken Sie während der Wiedergabe auf ❤️, um zu speichern.",
+            bvNewFolder: "Neuer Ordner",
+            bvFolderName: "Ordnername",
+            bvConfirmDelete: "Löschen bestätigen",
+            bvAddSubFolder: "Unterordner hinzufügen",
+            bvRename: "Umbenennen",
+            bvSortNewest: "Neueste",
+            bvSortOldest: "Älteste",
+            bvSortTitle: "Titel A-Z",
+            bvSortDomain: "Domäne"
+
+        },
+
+            // === Vault & Advanced UI ===
+            bvTitle: "Lesezeichen-Tresor",
+            bvSubtitle: "V-Train Pro · Lokale Sammlung",
+            bvSearch: "Titel oder URL suchen...",
+            bvFolders: "📁 Ordner",
+            bvAllBookmarks: "Alle Lesezeichen",
+            bvUncategorized: "Nicht kategorisiert",
+            bvTotal: "📊 Gesamt",
+            bvLike: "👍 Mag ich",
+            bvDislike: "😤 Mag ich nicht",
+            bvSort: "Sortieren: Neueste",
+            bvSettings: "⚙️ Systemeinstellungen",
+            toggleInteraction: "👍 Interaktionsschaltflächen aktivieren",
+            proOnly: "PRO",
+            openVaultPro: "Bookmark Vault PRO"
+
     };
 
     /**
