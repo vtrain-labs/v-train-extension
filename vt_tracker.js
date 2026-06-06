@@ -435,8 +435,8 @@ if (!window._vtTrackerLoaded) {
         //   - 不需要 overflow:hidden 容器，不會意外建立孤立的 Stacking Context
         let computedZ = window.getComputedStyle(container).zIndex;
         let targetZ =
-            computedZ === "auto" || isNaN(parseInt(computedZ)) ? 1 : parseInt(computedZ) + 1;
-        track.style.zIndex = targetZ; // 不用 !important，讓頁面更高層 UI 可以自然蓋過
+            computedZ === "auto" || isNaN(parseInt(computedZ)) ? 99 : parseInt(computedZ) + 99;
+        track.style.zIndex = targetZ; // 提升層級避免被縮圖內部的覆蓋層或漸層擋住
         const rect = container.getBoundingClientRect();
         track.style.top = rect.bottom - 6 + "px";
         track.style.left = rect.left + "px";

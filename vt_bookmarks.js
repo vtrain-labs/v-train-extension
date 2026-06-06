@@ -16,10 +16,11 @@ if (!window._vtBookmarksLoaded) {
     // ─── 載入快取 ────────────────────────────────────────────────────────
     async function _loadCache() {
         return new Promise(resolve => {
-            chrome.storage.local.get(['vt_ratings', 'vt_bookmarks'], data => {
+            chrome.storage.local.get(['vt_ratings', 'vt_bookmarks', 'vt_panel_pos'], data => {
                 window._vtRatingsCache = data.vt_ratings || {};
                 const bm = data.vt_bookmarks || [];
                 window._vtBookmarkedSet = new Set(bm.map(b => b.videoId).filter(Boolean));
+                window._vtPanelPos = data.vt_panel_pos || null;
                 resolve();
             });
         });
@@ -155,6 +156,72 @@ if (!window._vtBookmarksLoaded) {
             backdrop-filter:blur(6px);
         `;
 
+        const dragHandle = document.createElement('div');
+        dragHandle.innerHTML = '⋮⋮';
+        dragHandle.title = '拖曳移動 (點兩下恢復原位)';
+        dragHandle.style.cssText = `
+            cursor:grab;color:rgba(255,255,255,0.4);font-size:14px;
+            padding:0 6px;user-select:none;display:flex;align-items:center;
+            transition:color 0.2s;height:100%;
+        `;
+        dragHandle.onmouseenter = () => dragHandle.style.color = 'rgba(255,255,255,0.8)';
+        dragHandle.onmouseleave = () => dragHandle.style.color = 'rgba(255,255,255,0.4)';
+        p.appendChild(dragHandle);
+
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+        
+        dragHandle.onmousedown = (e) => {
+            if (e.button !== 0) return;
+            isDragging = true;
+            dragHandle.style.cursor = 'grabbing';
+            window._vtPanelDragged = true;
+            
+            const rect = p.getBoundingClientRect();
+            p.style.left = rect.left + 'px';
+            p.style.top = rect.top + 'px';
+            p.style.right = 'auto';
+            p.style.bottom = 'auto';
+
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        };
+
+        function onMouseMove(e) {
+            if (!isDragging) return;
+            let newLeft = initialLeft + (e.clientX - startX);
+            let newTop = initialTop + (e.clientY - startY);
+            
+            const maxLeft = window.innerWidth - p.offsetWidth;
+            const maxTop = window.innerHeight - p.offsetHeight;
+            
+            if (newLeft < 0) newLeft = 0;
+            if (newLeft > maxLeft) newLeft = maxLeft;
+            if (newTop < 0) newTop = 0;
+            if (newTop > maxTop) newTop = maxTop;
+            
+            p.style.left = newLeft + 'px';
+            p.style.top = newTop + 'px';
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            dragHandle.style.cursor = 'grab';
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            chrome.storage.local.set({ vt_panel_pos: { left: p.style.left, top: p.style.top } });
+        }
+        
+        dragHandle.ondblclick = () => {
+            window._vtPanelDragged = false;
+            chrome.storage.local.remove('vt_panel_pos');
+        };
+
         PANEL_BTNS.forEach(({ html, emoji, title, id, key }) => {
             const btn = document.createElement('button');
             btn.id = id;
@@ -207,9 +274,23 @@ if (!window._vtBookmarksLoaded) {
     let _panelSyncLoop = null;
     function _startPanelSync() {
         if (_panelSyncLoop) return;
+        
+        // 恢復之前的拖曳位置
+        if (window._vtPanelPos) {
+            window._vtPanelDragged = true;
+            if (_panel) {
+                _panel.style.left = window._vtPanelPos.left;
+                _panel.style.top = window._vtPanelPos.top;
+                _panel.style.right = 'auto';
+                _panel.style.bottom = 'auto';
+            }
+        }
+
         const sync = () => {
             _panelSyncLoop = requestAnimationFrame(sync);
             if (!_panel || _panel.style.display === 'none' || !window.sysState?._activeEl) return;
+            
+            if (window._vtPanelDragged) return; // 使用者已手動拖曳，停止自動對齊
             
             const video = window.sysState._activeEl;
             const rect = video.getBoundingClientRect();
