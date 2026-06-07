@@ -12,9 +12,16 @@ let _viewMode     = 'grid'; // 'grid' | 'list'
 let _expandedFolders = new Set();
 let _currentLang = 'en';
 
+// Pagination
+let _currentPage = 1;
+let _itemsPerPage = 12;
+let _resizeTimer = null;
+
 function getLang(key, defaultText) {
     if (typeof getLangText === 'function') {
-        return getLangText(_currentLang, key) || defaultText;
+        const text = getLangText(_currentLang, key);
+        // 如果回傳的字串跟 key 一樣，代表字典檔沒找到，改用 defaultText
+        if (text && text !== key) return text;
     }
     return defaultText;
 }
@@ -354,6 +361,18 @@ function renderSubfolders() {
         card.append(icon, info);
         subGrid.appendChild(card);
     });
+
+    const subContainer = document.getElementById('bvSubfolderContainer');
+    if (subContainer) {
+        if (targetFolders.length === 0) {
+            subContainer.classList.add('hidden');
+        } else {
+            subContainer.classList.remove('hidden');
+            setTimeout(() => {
+                if (window._updateSubfolderScrollBtns) window._updateSubfolderScrollBtns();
+            }, 50);
+        }
+    }
 }
 
 function renderBookmarks() {
@@ -376,11 +395,98 @@ function renderBookmarks() {
 
     if (items.length === 0 && !hasSubfolders) {
         empty.classList.remove('hidden');
+        document.getElementById('bvPagination').innerHTML = '';
         return;
     }
     empty.classList.add('hidden');
 
-    items.forEach(bm => grid.appendChild(_makeCard(bm)));
+    const totalItems = items.length;
+    const totalPages = Math.ceil(totalItems / _itemsPerPage) || 1;
+    
+    // 確保當前分頁沒有超出範圍
+    if (_currentPage > totalPages) _currentPage = totalPages;
+    if (_currentPage < 1) _currentPage = 1;
+
+    const startIndex = (_currentPage - 1) * _itemsPerPage;
+    const pageItems = items.slice(startIndex, startIndex + _itemsPerPage);
+
+    pageItems.forEach(bm => grid.appendChild(_makeCard(bm)));
+
+    _renderPagination(totalItems, totalPages);
+}
+
+function _renderPagination(totalItems, totalPages) {
+    const container = document.getElementById('bvPagination');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (totalPages <= 1) return; // 只有一頁不顯示分頁列
+
+    const paginationDiv = document.createElement('div');
+    paginationDiv.className = 'bv-pagination';
+
+    const createBtn = (text, page, isDisabled, isActive) => {
+        const btn = document.createElement('button');
+        btn.className = 'bv-page-btn';
+        if (isDisabled) btn.classList.add('disabled');
+        if (isActive) btn.classList.add('active');
+        btn.textContent = text;
+        
+        if (!isDisabled && !isActive) {
+            btn.onclick = () => {
+                _currentPage = page;
+                renderBookmarks();
+                document.querySelector('.bv-content').scrollTo({ top: 0, behavior: 'smooth' });
+            };
+        }
+        return btn;
+    };
+
+    // < 上一頁
+    paginationDiv.appendChild(createBtn('<', _currentPage - 1, _currentPage === 1, false));
+
+    // 智慧型頁碼省略邏輯 (1 2 3 4 5 ... 259 260)
+    const maxVisible = 7;
+    let pages = [];
+
+    if (totalPages <= maxVisible) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+        pages.push(1);
+        if (_currentPage > 3) pages.push('...');
+        
+        let start = Math.max(2, _currentPage - 1);
+        let end = Math.min(totalPages - 1, _currentPage + 1);
+        
+        if (_currentPage === 1) end = 3;
+        if (_currentPage === totalPages) start = totalPages - 2;
+
+        for (let i = start; i <= end; i++) pages.push(i);
+        
+        if (_currentPage < totalPages - 2) pages.push('...');
+        pages.push(totalPages);
+    }
+
+    pages.forEach(p => {
+        if (p === '...') {
+            const dots = document.createElement('span');
+            dots.textContent = '...';
+            dots.style.color = 'var(--text3)';
+            dots.style.padding = '0 4px';
+            paginationDiv.appendChild(dots);
+        } else {
+            paginationDiv.appendChild(createBtn(p, p, false, p === _currentPage));
+        }
+    });
+
+    // > 下一頁
+    paginationDiv.appendChild(createBtn('>', _currentPage + 1, _currentPage === totalPages, false));
+
+    const hint = document.createElement('div');
+    hint.className = 'bv-page-hint';
+    hint.textContent = getLangText ? getLangText(_currentLang, 'bvPageHint', { key: '← / →' }) || '使用鍵盤上的 ← 與 → 鍵來翻頁' : '使用鍵盤上的 ← 與 → 鍵來翻頁';
+
+    container.append(paginationDiv, hint);
 }
 
 function _getFilteredBookmarks() {
@@ -425,17 +531,32 @@ function _makeCard(bm) {
     card.className = 'bv-card';
 
     // Thumbnail
+
+    const rating = _allRatings[bm.videoId];
+    const SVG_LIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;display:inline-block;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
+    const SVG_DISLIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;display:inline-block;"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`;
+    
+    const badges = document.createElement('span');
+    badges.className = 'bv-card-badges';
+    let iconsHTML = '';
+    if (rating === 'like') iconsHTML += SVG_LIKE;
+    if (rating === 'dislike') iconsHTML += SVG_DISLIKE;
+    iconsHTML += '<span>❤️</span>';
+    badges.innerHTML = iconsHTML;
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'bv-card-thumb-wrap';
+
     if (bm.thumbnail) {
         const img = document.createElement('img');
         img.className = 'bv-card-thumb';
         img.referrerPolicy = 'no-referrer'; // 繞過 CDN 防盜鏈檢查
         img.loading = 'lazy';
         
-        // [自癒機制 UI] 圖片載入失敗時顯示提示
         img.onerror = () => {
             const ph = document.createElement('div');
             ph.className = 'bv-card-thumb-placeholder';
-            ph.style.cssText = 'display:flex; flex-direction:column; justify-content:center; align-items:center; background:#1a1a1a; padding:10px; text-align:center; height:100%; border-bottom:1px solid #333;';
+            ph.style.cssText = 'display:flex; flex-direction:column; justify-content:center; align-items:center; background:#1a1a1a; padding:10px; text-align:center; height:100%;';
             ph.innerHTML = `<span style="font-size:24px;margin-bottom:8px;">🪄</span><span style="color:#00e676; font-size:12px; font-weight:bold; line-height:1.4;">${getLang('clickToHeal', '點擊觀看以修復縮圖')}</span>`;
             img.replaceWith(ph);
         };
@@ -451,10 +572,15 @@ function _makeCard(bm) {
             img.src = bm.thumbnail;
         });
 
-        card.appendChild(img);
+        thumbWrap.appendChild(img);
     } else {
-        card.appendChild(_makePlaceholder());
+        const ph = _makePlaceholder();
+        ph.className = 'bv-card-thumb-placeholder';
+        thumbWrap.appendChild(ph);
     }
+    
+    thumbWrap.appendChild(badges);
+    card.appendChild(thumbWrap);
 
     // Body
     const body = document.createElement('div');
@@ -472,28 +598,12 @@ function _makeCard(bm) {
     domain.className = 'bv-card-domain';
     domain.textContent = bm.domain || '';
 
-    const badges = document.createElement('span');
-    badges.className = 'bv-card-badges';
-    badges.style.display = 'flex';
-    badges.style.alignItems = 'center';
-    badges.style.gap = '4px';
-
-    const rating = _allRatings[bm.videoId];
-    const SVG_LIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;display:inline-block;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-    const SVG_DISLIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;display:inline-block;"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`;
-
-    let iconsHTML = '';
-    if (rating === 'like') iconsHTML += SVG_LIKE;
-    if (rating === 'dislike') iconsHTML += SVG_DISLIKE;
-    iconsHTML += '<span>❤️</span>';
-    badges.innerHTML = iconsHTML;
-
     const date = document.createElement('span');
     date.className = 'bv-card-date';
     date.textContent = bm.addedAt ? _formatDate(bm.addedAt) : '';
 
-    meta.append(domain, badges);
-    body.append(title, meta, date);
+    meta.append(domain, date);
+    body.append(title, meta);
     card.appendChild(body);
 
     // Hover actions
@@ -509,13 +619,19 @@ function _makeCard(bm) {
         showMoveModal(bm.id, bm.folderId);
     };
 
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'bv-card-act';
+    renameBtn.textContent = '✏️';
+    renameBtn.title = getLang('bvRenameBookmark', '重新命名書籤');
+    renameBtn.onclick = (e) => { e.stopPropagation(); renameBookmark(bm.id, bm.title || bm.url); };
+
     const delBtn = document.createElement('button');
     delBtn.className = 'bv-card-act danger';
     delBtn.textContent = '🗑';
     delBtn.title = getLang('bvDeleteBookmark', '刪除書籤');
     delBtn.onclick = (e) => { e.stopPropagation(); deleteBookmark(bm.id, bm.title); };
 
-    acts.append(moveBtn, delBtn);
+    acts.append(renameBtn, moveBtn, delBtn);
     card.appendChild(acts);
 
     // 點擊卡片開啟連結
@@ -635,6 +751,19 @@ async function deleteBookmark(bookmarkId, title) {
             showToast('🗑 書籤已刪除');
         }
     );
+}
+
+async function renameBookmark(bookmarkId, oldTitle) {
+    const newTitle = prompt(getLang('bvNewBookmarkTitle', '請輸入新標題：'), oldTitle);
+    if (newTitle !== null && newTitle.trim() !== '' && newTitle !== oldTitle) {
+        const bm = _allBookmarks.find(b => b.id === bookmarkId);
+        if (bm) {
+            bm.title = newTitle.trim();
+            await window.vtDB.put('vt_bookmarks', bm);
+            notifySync();
+            renderAll();
+        }
+    }
 }
 
 // ─── 確認 Modal ──────────────────────────────────────────────────────────
@@ -801,8 +930,63 @@ function showToast(msg) {
     t._timer = setTimeout(() => t.classList.add('hidden'), 2200);
 }
 
+// ─── 動態分頁核心邏輯 ──────────────────────────────────────────────────
+function _calculateGridCapacity() {
+    if (_viewMode === 'list') {
+        _itemsPerPage = 12; // 列表模式預設顯示數量
+        return;
+    }
+    const grid = document.getElementById('bvGrid');
+    if (!grid) return;
+    
+    let cols = 1;
+    const style = window.getComputedStyle(grid);
+    const colsStr = style.gridTemplateColumns;
+    
+    if (colsStr && colsStr !== 'none') {
+        // 透過 getComputedStyle 取得瀏覽器實際算出的欄數
+        cols = colsStr.split(' ').length;
+    } else {
+        // Fallback: 如果無法取得樣式，用容器寬度估算
+        const content = document.querySelector('.bv-content');
+        if (content) cols = Math.max(1, Math.floor(content.clientWidth / 236));
+    }
+    
+    // 預設顯示 3 排
+    _itemsPerPage = Math.max(1, cols) * 3;
+}
+
 // ─── 初始化事件 ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    // 初始計算網格容量
+    _calculateGridCapacity();
+
+    // 監聽視窗縮放以重新計算分頁
+    window.addEventListener('resize', () => {
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(() => {
+            if (_viewMode === 'grid') {
+                _calculateGridCapacity();
+                renderBookmarks();
+            }
+        }, 150);
+    });
+
+    // 鍵盤左右切換分頁
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        const totalItems = _getFilteredBookmarks().length;
+        const totalPages = Math.ceil(totalItems / _itemsPerPage) || 1;
+        
+        if (e.key === 'ArrowLeft' && _currentPage > 1) {
+            _currentPage--;
+            renderBookmarks();
+        } else if (e.key === 'ArrowRight' && _currentPage < totalPages) {
+            _currentPage++;
+            renderBookmarks();
+        }
+    });
+
     // 搜尋
     const searchEl = document.getElementById('bvSearch');
     let _searchTimer;
@@ -810,9 +994,36 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(_searchTimer);
         _searchTimer = setTimeout(() => {
             _searchTerm = searchEl.value.trim();
+            _currentPage = 1; // 重設分頁
             renderBookmarks();
         }, 200);
     });
+
+    // 子資料夾橫向捲動
+    const subGrid = document.getElementById('bvSubfolderGrid');
+    const btnLeft = document.getElementById('bvSubfolderLeft');
+    const btnRight = document.getElementById('bvSubfolderRight');
+    
+    if (subGrid && btnLeft && btnRight) {
+        const updateScrollBtns = () => {
+            // Check if scrollable
+            if (subGrid.scrollWidth <= subGrid.clientWidth + 2) {
+                btnLeft.classList.add('hidden');
+                btnRight.classList.add('hidden');
+                return;
+            }
+            btnLeft.classList.toggle('hidden', subGrid.scrollLeft <= 5);
+            btnRight.classList.toggle('hidden', subGrid.scrollLeft >= subGrid.scrollWidth - subGrid.clientWidth - 5);
+        };
+        
+        subGrid.addEventListener('scroll', updateScrollBtns);
+        window.addEventListener('resize', updateScrollBtns);
+        
+        btnLeft.onclick = () => subGrid.scrollBy({ left: -300, behavior: 'smooth' });
+        btnRight.onclick = () => subGrid.scrollBy({ left: 300, behavior: 'smooth' });
+        
+        window._updateSubfolderScrollBtns = updateScrollBtns;
+    }
 
     // 排序
     document.getElementById('bvSort').addEventListener('change', (e) => {

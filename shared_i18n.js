@@ -173,8 +173,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "New Folder",
             bvNewSubFolderTitle: "New Subfolder",
             bvRenameFolderTitle: "Rename Folder",
+            bvRenameBookmark: "Rename Bookmark",
+            bvNewBookmarkTitle: "New title:",
+            bvPageHint: "Use keyboard {key} to turn pages",
             bvGrid: "Grid View",
-            bvList: "List View"
+            bvList: "List View",
+            clickToHeal: "Click to heal"
 
         },
         "zh-TW": {
@@ -291,8 +295,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "新增資料夾",
             bvNewSubFolderTitle: "新增子資料夾",
             bvRenameFolderTitle: "重新命名資料夾",
+            bvRenameBookmark: "重新命名書籤",
+            bvNewBookmarkTitle: "請輸入新標題：",
+            bvPageHint: "使用鍵盤上的 {key} 鍵來翻頁",
             bvGrid: "格狀檢視",
-            bvList: "列表檢視"
+            bvList: "列表檢視",
+            clickToHeal: "點擊修復"
 
         },
         "zh-CN": {
@@ -409,8 +417,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "新增文件夹",
             bvNewSubFolderTitle: "新增子文件夹",
             bvRenameFolderTitle: "重命名文件夹",
+            bvRenameBookmark: "重命名书签",
+            bvNewBookmarkTitle: "请输入新标题：",
+            bvPageHint: "使用键盘上的 {key} 键来翻页",
             bvGrid: "网格视图",
-            bvList: "列表视图"
+            bvList: "列表视图",
+            clickToHeal: "点击修复"
 
         },
         "ja": {
@@ -527,8 +539,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "新しいフォルダ",
             bvNewSubFolderTitle: "新しいサブフォルダ",
             bvRenameFolderTitle: "フォルダ名を変更",
+            bvRenameBookmark: "ブックマーク名を変更",
+            bvNewBookmarkTitle: "新しいタイトル：",
+            bvPageHint: "キーボードの {key} キーでページをめくる",
             bvGrid: "グリッド表示",
-            bvList: "リスト表示"
+            bvList: "リスト表示",
+            clickToHeal: "クリックして修復"
 
         },
         "ko": {
@@ -645,8 +661,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "새 폴더",
             bvNewSubFolderTitle: "새 하위 폴더",
             bvRenameFolderTitle: "폴더 이름 바꾸기",
+            bvRenameBookmark: "북마크 이름 바꾸기",
+            bvNewBookmarkTitle: "새 제목:",
+            bvPageHint: "키보드의 {key} 키를 사용하여 페이지를 넘기세요",
             bvGrid: "그리드 보기",
-            bvList: "목록 보기"
+            bvList: "목록 보기",
+            clickToHeal: "클릭하여 복구"
 
         },
         "es": {
@@ -763,8 +783,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "Nueva Carpeta",
             bvNewSubFolderTitle: "Nueva Subcarpeta",
             bvRenameFolderTitle: "Renombrar Carpeta",
+            bvRenameBookmark: "Renombrar Marcador",
+            bvNewBookmarkTitle: "Nuevo título:",
+            bvPageHint: "Usa las teclas {key} para cambiar de página",
             bvGrid: "Vista de Cuadrícula",
-            bvList: "Vista de Lista"
+            bvList: "Vista de Lista",
+            clickToHeal: "Haz clic para reparar"
 
         },
         "fr": {
@@ -881,8 +905,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "Nouveau Dossier",
             bvNewSubFolderTitle: "Nouveau Sous-dossier",
             bvRenameFolderTitle: "Renommer le Dossier",
+            bvRenameBookmark: "Renommer le Signet",
+            bvNewBookmarkTitle: "Nouveau titre:",
+            bvPageHint: "Utilisez les touches {key} pour tourner les pages",
             bvGrid: "Vue en Grille",
-            bvList: "Vue en Liste"
+            bvList: "Vue en Liste",
+            clickToHeal: "Cliquez pour réparer"
 
         },
         "de": {
@@ -982,8 +1010,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvNewFolderTitle: "Neuer Ordner",
             bvNewSubFolderTitle: "Neuer Unterordner",
             bvRenameFolderTitle: "Ordner umbenennen",
+            bvRenameBookmark: "Lesezeichen umbenennen",
+            bvNewBookmarkTitle: "Neuer Titel:",
+            bvPageHint: "Verwenden Sie die Tasten {key}, um die Seiten umzublättern",
             bvGrid: "Rasteransicht",
-            bvList: "Listenansicht"
+            bvList: "Listenansicht",
+            clickToHeal: "Klicken zum Reparieren"
 
         },
 

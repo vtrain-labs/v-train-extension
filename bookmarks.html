@@ -76,8 +76,12 @@
                 </div>
             </div>
 
-            <div id="bvSubfolderGrid" class="bv-subfolder-grid">
-                <!-- 動態渲染子資料夾卡片 -->
+            <div class="bv-subfolder-container hidden" id="bvSubfolderContainer">
+                <button class="bv-scroll-btn bv-scroll-left" id="bvSubfolderLeft">&lt;</button>
+                <div id="bvSubfolderGrid" class="bv-subfolder-grid">
+                    <!-- 動態渲染子資料夾卡片 -->
+                </div>
+                <button class="bv-scroll-btn bv-scroll-right" id="bvSubfolderRight">&gt;</button>
             </div>
 
             <div id="bvGrid" class="bv-grid">
@@ -89,6 +93,8 @@
                 <p class="bv-empty-title" data-i18n="bvEmptyTitle">這裡還沒有收藏</p>
                 <p class="bv-empty-sub" data-i18n="bvEmptySub">在影片播放時點擊 ❤️ 按鈕開始收藏</p>
             </div>
+
+            <div id="bvPagination" class="bv-pagination-container"></div>
         </main>
     </div>
 

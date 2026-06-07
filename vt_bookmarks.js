@@ -612,26 +612,38 @@ if (!window._vtBookmarksLoaded) {
             _panelRating = window._vtRatingsCache[videoId] || null;
             _panelBookmarked = window._vtBookmarkedSet?.has(videoId) || false;
 
-            // [自癒機制 Self-Healing] 如果此影片已在書籤庫中，於背景靜默重新抓取縮圖並寫入快取庫
+            // [自癒機制 Self-Healing] 如果此影片已在書籤庫中，於背景靜默重新抓取縮圖並寫入快取庫。
+            // 加入溫和的重試機制，最多 3 次，避免被當作 DDoS 攻擊，同時能繞過廣告延遲。
             if (_panelBookmarked) {
-                setTimeout(() => {
-                    let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
-                                document.querySelector('meta[property="og:image:secure_url"]')?.content ||
-                                document.querySelector('meta[name="twitter:image"]')?.content || '';
-                    if (!ogImg) {
-                        const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
-                        if (imgs.length > 0) ogImg = imgs[0].src;
-                    }
-                    if (ogImg && ogImg.startsWith('http')) {
-                        fetch(ogImg).then(r => r.blob()).then(blob => {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                                vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: reader.result }).catch(()=>{});
-                            };
-                            reader.readAsDataURL(blob);
-                        }).catch(()=>{});
-                    }
-                }, 2500); // 延遲執行，不影響主頁面載入效能
+                const _heal = (attempt = 1) => {
+                    if (attempt > 3) return; // 最多嘗試 3 次
+                    setTimeout(() => {
+                        let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+                                    document.querySelector('meta[property="og:image:secure_url"]')?.content ||
+                                    document.querySelector('meta[name="twitter:image"]')?.content || '';
+                        if (!ogImg) {
+                            const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
+                            if (imgs.length > 0) ogImg = imgs[0].src;
+                        }
+                        if (ogImg && ogImg.startsWith('http')) {
+                            fetch(ogImg).then(r => {
+                                if (!r.ok) throw new Error('Fetch failed');
+                                return r.blob();
+                            }).then(blob => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                    vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: reader.result }).catch(()=>{});
+                                };
+                                reader.readAsDataURL(blob);
+                            }).catch(()=>{
+                                _heal(attempt + 1); // 如果抓取失敗 (例如廣告阻擋)，稍後再試
+                            });
+                        } else {
+                            _heal(attempt + 1); // 如果 DOM 還沒生出圖片標籤，也稍後再試
+                        }
+                    }, attempt === 1 ? 300 : 3000 * (attempt - 1)); // 第一次 0.3 秒，第二次 3 秒，第三次 6 秒
+                };
+                _heal();
             }
 
             _createPanel();
