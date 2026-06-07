@@ -171,7 +171,10 @@ if (!window._vtTrackerLoaded) {
             if (sysState._lastUrl !== location.href) {
                 sysState._lastUrl = location.href;
                 window._cachedIframes = null; // [效能優化] URL 變化時清除 iframe 快取
-                if (window === window.top) sysState._cachedId = null;
+                if (window === window.top) {
+                    sysState._cachedId = null;
+                    sysState.activeVideoId = null; // [修復] URL 變化時清除狀態，避免卡在舊影片
+                }
                 if (sysState.currentDriver?.savedConfigArr) {
                     for (let cfg of sysState.currentDriver.savedConfigArr) {
                         let id = extractIdByUrlRule(
@@ -203,13 +206,16 @@ if (!window._vtTrackerLoaded) {
                     (v.offsetWidth >= 340 || v.videoWidth >= 340),
             );
             if (videos.length === 0) {
-                if (
-                    window === window.top &&
-                    sysState._cachedId &&
-                    !/^(REC|FLASH)$/.test(sysState._lastState)
-                )
-                    updateDebugStatus("Waiting", "m1");
-                window.vtBookmarkPanel?.hide(); // 無影片時隱藏書籤面板
+                const targetId = sysState._cachedId || sysState.activeVideoId;
+                if (window === window.top && targetId) {
+                    if (!/^(REC|FLASH)$/.test(sysState._lastState)) {
+                        updateDebugStatus("Waiting", "m1");
+                    }
+                    // [VR/Iframe 修復] 雖然頂層沒有影片元素，但既然成功提取了 ID 或是 iframe 傳回了進度，代表這是內嵌影片
+                    window.vtBookmarkPanel?.setVideo(targetId);
+                } else {
+                    window.vtBookmarkPanel?.hide(); // 無影片且無 ID 時隱藏書籤面板
+                }
                 return;
             }
             let video = videos.sort(
@@ -217,14 +223,18 @@ if (!window._vtTrackerLoaded) {
                     b.offsetWidth * b.offsetHeight - a.offsetWidth * a.offsetHeight,
             )[0];
             sysState._activeEl = video;
-            if (!sysState._cachedId) {
+            
+            // [VR/Iframe 修復] 允許從網址解析出的 _cachedId，或是從 iframe 同步過來的 activeVideoId
+            const currentVideoId = sysState._cachedId || sysState.activeVideoId;
+            
+            if (!currentVideoId) {
                 window.vtBookmarkPanel?.hide(); // 無 ID 時隱藏書籤面板
                 return window === window.top ? updateDebugStatus("OFF", "m1") : null;
             }
-            if (sysState.activeVideoId !== sysState._cachedId) {
-                sysState.activeVideoId = sysState._cachedId;
+            if (sysState.activeVideoId !== currentVideoId) {
+                sysState.activeVideoId = currentVideoId;
                 sysState.isDataLoaded = false;
-                const _loadTarget = sysState._cachedId; // [BUG 修復] 快取 ID 避免閉包跟蹤競態
+                const _loadTarget = currentVideoId; // [BUG 修復] 快取 ID 避免閉包跟蹤競態
                 new Promise(resolve => chrome.runtime.sendMessage({ action: "VT_GET_RECORDS", ids: [_loadTarget] }, resolve)).then((res) => {
                     if (!res) res = {};
                     if (sysState.activeVideoId === _loadTarget) {

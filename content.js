@@ -91,8 +91,13 @@ if (!window._vtInjected) {
             }
         }
         if (e.data.type === "VT_SYNC_ACK" && window === window.top) {
+            // [VR/Iframe 修復] 同步 ID 給頂層的狀態機，避免被輪詢迴圈隱藏
+            sysState.activeVideoId = e.data.id;
+            if (window.vtBookmarkPanel && e.data.id) {
+                window.vtBookmarkPanel.setVideo(e.data.id);
+            }
             if (e.data.force) {
-                if (sysState._flashTimer) clearTimeout(sysState._flashTimer); // [修復] 執行前先清除舊計時器
+                if (sysState._flashTimer) clearTimeout(sysState._flashTimer);
                 updateDebugStatus("FLASH", `[${e.data.id}] m3s: ${e.data.pct}%`);
                 sysState._flashTimer = setTimeout(() => {
                     if (sysState.activeVideoId === e.data.id)

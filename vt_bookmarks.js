@@ -172,7 +172,12 @@ if (!window._vtBookmarksLoaded) {
     ];
 
     function _createPanel() {
-        if (_panel) return;
+        if (_panel) {
+            if (!_panel.isConnected) {
+                (document.body || document.documentElement).appendChild(_panel);
+            }
+            return;
+        }
         const p = document.createElement('div');
         p.id = 'vt-bookmark-panel';
         p.style.cssText = `
@@ -605,7 +610,10 @@ if (!window._vtBookmarksLoaded) {
                 _currentId = null;
                 return;
             }
-            if (_currentId === videoId) return; // 沒變化，不重繪
+            // [SPA 修復] 檢查面板是否被框架意外移除，如果移除則必須強制重繪
+            const isDetached = _panel && !_panel.isConnected;
+            
+            if (_currentId === videoId && !isDetached) return; // 沒變化且還在 DOM 上，不重繪
             _currentId = videoId;
 
             if (!window._vtRatingsCache) await _loadCache();

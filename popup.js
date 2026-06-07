@@ -128,27 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 初始化資料
-    const configKeys = ['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_bookmarks', 'vt_ratings', 'vt_bm_folders', 'showInteraction'];
+    const configKeys = ['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'showInteraction'];
     chrome.storage.local.get(configKeys, async (items) => {
-        // [Data Migration] Seamlessly move legacy bookmark data from storage.local to IndexedDB
-        if (items.vt_bookmarks || items.vt_ratings || items.vt_bm_folders) {
-            try {
-                if (items.vt_bookmarks) {
-                    for (const b of items.vt_bookmarks) await window.vtDB.put('vt_bookmarks', b);
-                }
-                if (items.vt_ratings) {
-                    for (const [videoId, rating] of Object.entries(items.vt_ratings)) {
-                        await window.vtDB.put('vt_ratings', { videoId, rating, timestamp: Date.now() });
-                    }
-                }
-                if (items.vt_bm_folders) {
-                    for (const f of items.vt_bm_folders) await window.vtDB.put('vt_bm_folders', f);
-                }
-                chrome.storage.local.remove(['vt_bookmarks', 'vt_ratings', 'vt_bm_folders']);
-            } catch (e) {
-                console.error('[VT Migration] Failed to migrate bookmarks to IndexedDB:', e);
-            }
-        }
+        // [Data Migration] Aggressively clean up legacy bloated data without loading it
+        chrome.storage.local.remove(['vt_bookmarks', 'vt_ratings', 'vt_bm_folders']);
 
         if (items.userLang) {
             currentLang = items.userLang;
@@ -929,7 +912,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     chrome.storage.local.clear(async () => {
                         const mergedData = { ...config };
-                        for (const k of sysKeys) {
+                        const storageKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
+                        for (const k of storageKeys) {
                             if (data[k] !== undefined) mergedData[k] = data[k];
                         }
 
@@ -941,15 +925,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Import Bookmarks
                         if (data.vt_bookmarks && Array.isArray(data.vt_bookmarks)) {
-                            for (const b of data.vt_bookmarks) await window.vtDB.put('vt_bookmarks', b);
+                            await window.vtDB.putBulk('vt_bookmarks', data.vt_bookmarks);
                         }
                         if (data.vt_ratings && typeof data.vt_ratings === 'object') {
-                            for (const [videoId, rating] of Object.entries(data.vt_ratings)) {
-                                await window.vtDB.put('vt_ratings', { videoId, rating, timestamp: Date.now() });
-                            }
+                            const ratingsArray = Object.entries(data.vt_ratings).map(([videoId, rating]) => ({ videoId, rating, timestamp: Date.now() }));
+                            await window.vtDB.putBulk('vt_ratings', ratingsArray);
                         }
                         if (data.vt_bm_folders && Array.isArray(data.vt_bm_folders)) {
-                            for (const f of data.vt_bm_folders) await window.vtDB.put('vt_bm_folders', f);
+                            await window.vtDB.putBulk('vt_bm_folders', data.vt_bm_folders);
                         }
 
                         const finalKeys = Object.keys(data).filter(k => !sysKeys.includes(k) && !licenseKeys.includes(k));

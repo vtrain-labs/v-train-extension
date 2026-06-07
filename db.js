@@ -66,6 +66,19 @@ class VTDatabase {
         });
     }
 
+    async putBulk(storeName, items) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = (e) => reject(e.target.error);
+            for (const item of items) {
+                store.put(item);
+            }
+        });
+    }
+
     async get(storeName, key) {
         await this.init();
         return new Promise((resolve, reject) => {

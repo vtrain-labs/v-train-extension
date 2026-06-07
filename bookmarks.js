@@ -482,6 +482,34 @@ function _renderPagination(totalItems, totalPages) {
     // > 下一頁
     paginationDiv.appendChild(createBtn('>', _currentPage + 1, _currentPage === totalPages, false));
 
+    // Jump Input
+    const jumpWrap = document.createElement('div');
+    jumpWrap.style.cssText = 'display:inline-flex; align-items:center; margin-left:12px; position:relative;';
+    
+    const jumpInput = document.createElement('input');
+    jumpInput.type = 'number';
+    jumpInput.min = 1;
+    jumpInput.max = totalPages;
+    jumpInput.placeholder = '';
+    jumpInput.className = 'bv-page-jump-input';
+    jumpInput.title = '輸入頁碼後按 Enter 跳轉';
+    
+    jumpInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            let p = parseInt(jumpInput.value);
+            if (!isNaN(p)) {
+                if (p < 1) p = 1;
+                if (p > totalPages) p = totalPages;
+                _currentPage = p;
+                renderBookmarks();
+                document.querySelector('.bv-content').scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    };
+    
+    jumpWrap.appendChild(jumpInput);
+    paginationDiv.appendChild(jumpWrap);
+
     const hint = document.createElement('div');
     hint.className = 'bv-page-hint';
     hint.textContent = getLangText ? getLangText(_currentLang, 'bvPageHint', { key: '← / →' }) || '使用鍵盤上的 ← 與 → 鍵來翻頁' : '使用鍵盤上的 ← 與 → 鍵來翻頁';
