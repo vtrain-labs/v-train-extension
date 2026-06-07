@@ -143,7 +143,7 @@ function renderFolderTree() {
 function _renderFolderLevel(container, parentId, depth) {
     const kids = _allFolders
         .filter(f => f.parentId === parentId)
-        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+        .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
     kids.forEach(folder => {
         const hasKids = _allFolders.some(f => f.parentId === folder.id);
@@ -324,7 +324,7 @@ function renderSubfolders() {
         targetFolders = _allFolders.filter(f => f.parentId === _activeFolderId);
     }
 
-    targetFolders.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+    targetFolders.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
     targetFolders.forEach(f => {
         const card = document.createElement('div');
@@ -902,7 +902,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
         renderItem('📥 未分類（根目錄）', null, 0, false);
 
         const renderLevel = (parentId, depth) => {
-            const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+            const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
             kids.forEach(f => {
                 const hasKids = folders.some(sub => sub.parentId === f.id);
                 renderItem('📁 ' + f.name, f.id, depth, hasKids);
@@ -930,47 +930,10 @@ function showToast(msg) {
     t._timer = setTimeout(() => t.classList.add('hidden'), 2200);
 }
 
-// ─── 動態分頁核心邏輯 ──────────────────────────────────────────────────
-function _calculateGridCapacity() {
-    if (_viewMode === 'list') {
-        _itemsPerPage = 12; // 列表模式預設顯示數量
-        return;
-    }
-    const grid = document.getElementById('bvGrid');
-    if (!grid) return;
-    
-    let cols = 1;
-    const style = window.getComputedStyle(grid);
-    const colsStr = style.gridTemplateColumns;
-    
-    if (colsStr && colsStr !== 'none') {
-        // 透過 getComputedStyle 取得瀏覽器實際算出的欄數
-        cols = colsStr.split(' ').length;
-    } else {
-        // Fallback: 如果無法取得樣式，用容器寬度估算
-        const content = document.querySelector('.bv-content');
-        if (content) cols = Math.max(1, Math.floor(content.clientWidth / 236));
-    }
-    
-    // 預設顯示 3 排
-    _itemsPerPage = Math.max(1, cols) * 3;
-}
-
 // ─── 初始化事件 ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // 初始計算網格容量
-    _calculateGridCapacity();
-
-    // 監聽視窗縮放以重新計算分頁
-    window.addEventListener('resize', () => {
-        clearTimeout(_resizeTimer);
-        _resizeTimer = setTimeout(() => {
-            if (_viewMode === 'grid') {
-                _calculateGridCapacity();
-                renderBookmarks();
-            }
-        }, 150);
-    });
+    // 預設固定為 18 個一頁 (3排6列)
+    _itemsPerPage = _viewMode === 'list' ? 12 : 18;
 
     // 鍵盤左右切換分頁
     document.addEventListener('keydown', (e) => {
@@ -1010,17 +973,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (subGrid.scrollWidth <= subGrid.clientWidth + 2) {
                 btnLeft.classList.add('hidden');
                 btnRight.classList.add('hidden');
-                return;
+            } else {
+                btnLeft.classList.remove('hidden');
+                btnRight.classList.remove('hidden');
             }
-            btnLeft.classList.toggle('hidden', subGrid.scrollLeft <= 5);
-            btnRight.classList.toggle('hidden', subGrid.scrollLeft >= subGrid.scrollWidth - subGrid.clientWidth - 5);
         };
         
         subGrid.addEventListener('scroll', updateScrollBtns);
         window.addEventListener('resize', updateScrollBtns);
         
-        btnLeft.onclick = () => subGrid.scrollBy({ left: -300, behavior: 'smooth' });
-        btnRight.onclick = () => subGrid.scrollBy({ left: 300, behavior: 'smooth' });
+        // 每次點擊左右箭頭時，直接捲動整個可視寬度的距離加上 gap (16px) (跳一頁)
+        btnLeft.onclick = () => subGrid.scrollBy({ left: -(subGrid.clientWidth + 16), behavior: 'smooth' });
+        btnRight.onclick = () => subGrid.scrollBy({ left: subGrid.clientWidth + 16, behavior: 'smooth' });
         
         window._updateSubfolderScrollBtns = updateScrollBtns;
     }
@@ -1034,12 +998,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 切換檢視
     document.getElementById('btnViewGrid').addEventListener('click', () => {
         _viewMode = 'grid';
+        _itemsPerPage = 18;
         document.getElementById('btnViewGrid').classList.add('active');
         document.getElementById('btnViewList').classList.remove('active');
         renderBookmarks();
     });
     document.getElementById('btnViewList').addEventListener('click', () => {
         _viewMode = 'list';
+        _itemsPerPage = 12;
         document.getElementById('btnViewList').classList.add('active');
         document.getElementById('btnViewGrid').classList.remove('active');
         renderBookmarks();
