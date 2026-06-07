@@ -12,14 +12,58 @@ let _viewMode     = 'grid'; // 'grid' | 'list'
 let _expandedFolders = new Set();
 let _currentLang = 'en';
 
+function getLang(key, defaultText) {
+    if (typeof getLangText === 'function') {
+        return getLangText(_currentLang, key) || defaultText;
+    }
+    return defaultText;
+}
+
+const vtSyncChannel = new BroadcastChannel('vt_sync_channel');
+vtSyncChannel.onmessage = (e) => {
+    if (e.data.action === 'sync_bookmarks') loadData();
+};
+function notifySync() { vtSyncChannel.postMessage({ action: 'sync_bookmarks' }); }
+
+chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.action === 'VT_SYNC_BOOKMARKS') {
+        loadData();
+    }
+});
+
+chrome.storage.onChanged.addListener((changes) => {
+    if (changes.userLang) {
+        _currentLang = changes.userLang.newValue || 'en';
+        applyLanguage(_currentLang);
+        renderFolderTree(); // Re-render tree to translate "All" and "Uncategorized"
+        renderBreadcrumb(); // Re-render breadcrumb
+    }
+});
+
 // ─── 載入資料 ─────────────────────────────────────────────────────────────
 async function loadData() {
-    const data = await new Promise(r =>
-        chrome.storage.local.get(['vt_bookmarks', 'vt_bm_folders', 'vt_ratings', 'userLang'], r)
-    );
-    _allBookmarks = data.vt_bookmarks || [];
-    _allFolders   = data.vt_bm_folders || [];
-    _allRatings   = data.vt_ratings || {};
+    const data = await new Promise(r => chrome.storage.local.get(['userLang'], r));
+    
+    _allBookmarks = await window.vtDB.getAll('vt_bookmarks');
+    
+    // [動態 CDN 自學引擎] 掃描現有書籤，將 圖片CDN網域 對應到 來源網域，交給 Background 動態建立規則
+    const cdnMap = {};
+    _allBookmarks.forEach(bm => {
+        if (bm.thumbnail && bm.thumbnail.startsWith('http') && bm.url) {
+            try {
+                const imgHost = new URL(bm.thumbnail).hostname;
+                const pageOrigin = new URL(bm.url).origin + "/";
+                cdnMap[imgHost] = pageOrigin;
+            } catch (e) {}
+        }
+    });
+    try { chrome.runtime.sendMessage({ action: 'VT_SYNC_CDNS', cdnMap }).catch(()=>{}); } catch(e){}
+
+    _allFolders   = await window.vtDB.getAll('vt_bm_folders');
+    
+    const ratings = await window.vtDB.getAll('vt_ratings');
+    _allRatings = {};
+    ratings.forEach(r => _allRatings[r.videoId] = r.rating);
     
     // 套用多國語言
     _currentLang = data.userLang || 'en';
@@ -38,6 +82,12 @@ function applyLanguage(lang) {
             } else {
                 el.innerHTML = translated;
             }
+        }
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        if (typeof getLangText === 'function') {
+            el.title = getLangText(lang, key);
         }
     });
 }
@@ -115,7 +165,7 @@ function _getAllSubfolderIds(parentId, collected = new Set()) {
 function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
     const item = document.createElement('div');
     item.className = 'bv-folder-item' + (id === _activeFolderId || (id === null && _activeFolderId === null) ? ' active' : '');
-    item.style.paddingLeft = `${12 + depth * 20}px`;
+    item.style.paddingLeft = `${12 + depth * 10}px`;
     item.style.position = 'relative';
     item.dataset.folderId = id === null ? '__null__' : (id || '__all__');
 
@@ -123,11 +173,16 @@ function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
     if (hasKids) {
         const tog = document.createElement('button');
         tog.className = 'bv-folder-toggle' + (_expandedFolders.has(id) ? ' expanded' : '');
-        tog.textContent = '▶';
+        tog.textContent = _expandedFolders.has(id) ? 'v' : '❯';
         tog.onclick = (e) => {
             e.stopPropagation();
-            if (_expandedFolders.has(id)) _expandedFolders.delete(id);
-            else _expandedFolders.add(id);
+            if (_expandedFolders.has(id)) {
+                _expandedFolders.delete(id);
+                tog.textContent = '❯';
+            } else {
+                _expandedFolders.add(id);
+                tog.textContent = 'v';
+            }
             renderFolderTree();
         };
         item.appendChild(tog);
@@ -142,6 +197,7 @@ function _makeFolderNode({ id, name, count, depth, hasKids, isSpecial }) {
     const lbl = document.createElement('span');
     lbl.className = 'bv-folder-item-label';
     lbl.textContent = (isSpecial ? '' : '📁 ') + name;
+    lbl.title = name;
     item.appendChild(lbl);
 
     const cnt = document.createElement('span');
@@ -372,10 +428,29 @@ function _makeCard(bm) {
     if (bm.thumbnail) {
         const img = document.createElement('img');
         img.className = 'bv-card-thumb';
-        img.src = bm.thumbnail;
         img.referrerPolicy = 'no-referrer'; // 繞過 CDN 防盜鏈檢查
         img.loading = 'lazy';
-        img.onerror = () => img.replaceWith(_makePlaceholder());
+        
+        // [自癒機制 UI] 圖片載入失敗時顯示提示
+        img.onerror = () => {
+            const ph = document.createElement('div');
+            ph.className = 'bv-card-thumb-placeholder';
+            ph.style.cssText = 'display:flex; flex-direction:column; justify-content:center; align-items:center; background:#1a1a1a; padding:10px; text-align:center; height:100%; border-bottom:1px solid #333;';
+            ph.innerHTML = `<span style="font-size:24px;margin-bottom:8px;">🪄</span><span style="color:#00e676; font-size:12px; font-weight:bold; line-height:1.4;">${getLang('clickToHeal', '點擊觀看以修復縮圖')}</span>`;
+            img.replaceWith(ph);
+        };
+        
+        // [效能升級] 優先從分離資料庫提取二進位縮圖
+        window.vtDB.get('vt_thumbnails', bm.videoId).then(data => {
+            if (data && data.thumbnail) {
+                img.src = data.thumbnail;
+            } else {
+                img.src = bm.thumbnail; // fallback
+            }
+        }).catch(() => {
+            img.src = bm.thumbnail;
+        });
+
         card.appendChild(img);
     } else {
         card.appendChild(_makePlaceholder());
@@ -428,7 +503,7 @@ function _makeCard(bm) {
     const moveBtn = document.createElement('button');
     moveBtn.className = 'bv-card-act';
     moveBtn.textContent = '🗂';
-    moveBtn.title = '移動到...';
+    moveBtn.title = getLang('bvMoveTo', '移動到...');
     moveBtn.onclick = (e) => { 
         e.stopPropagation(); 
         showMoveModal(bm.id, bm.folderId);
@@ -437,7 +512,7 @@ function _makeCard(bm) {
     const delBtn = document.createElement('button');
     delBtn.className = 'bv-card-act danger';
     delBtn.textContent = '🗑';
-    delBtn.title = '刪除書籤';
+    delBtn.title = getLang('bvDeleteBookmark', '刪除書籤');
     delBtn.onclick = (e) => { e.stopPropagation(); deleteBookmark(bm.id, bm.title); };
 
     acts.append(moveBtn, delBtn);
@@ -469,7 +544,7 @@ function showFolderModal(editId = null, parentId = null) {
     const confirm = document.getElementById('bvModalConfirm');
     const cancel = document.getElementById('bvModalCancel');
 
-    title.textContent = editId ? '重新命名資料夾' : (parentId ? '新增子資料夾' : '新增資料夾');
+    title.textContent = editId ? getLang('bvRenameFolderTitle', '重新命名資料夾') : (parentId ? getLang('bvNewSubFolderTitle', '新增子資料夾') : getLang('bvNewFolderTitle', '新增資料夾'));
     input.value = editId ? (_allFolders.find(f => f.id === editId)?.name || '') : '';
     modal.classList.remove('hidden');
     input.focus();
@@ -487,19 +562,24 @@ function showFolderModal(editId = null, parentId = null) {
         const name = input.value.trim();
         if (!name) return;
         if (editId) {
-            // 重新命名
-            const f = _allFolders.find(f => f.id === editId);
-            if (f) { f.name = name; await _saveFolders(); }
+            // 修改
+            const f = _allFolders.find(x => x.id === editId);
+            if (f) {
+                f.name = name;
+                await window.vtDB.put('vt_bm_folders', f);
+            }
         } else {
             // 新增
-            _allFolders.push({
+            const newF = {
                 id: 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
                 name, parentId: parentId || null,
                 order: _allFolders.length, createdAt: Date.now()
-            });
-            await _saveFolders();
+            };
+            _allFolders.push(newF);
+            await window.vtDB.put('vt_bm_folders', newF);
             if (parentId) _expandedFolders.add(parentId);
         }
+        notifySync();
         cleanup();
         renderAll();
     };
@@ -516,13 +596,21 @@ async function deleteFolder(folderId, folderName) {
             // 移動書籤到未分類
             const allSubIds = _getAllSubfolderIds(folderId);
             allSubIds.add(folderId);
-            _allBookmarks = _allBookmarks.map(b =>
-                allSubIds.has(b.folderId) ? { ...b, folderId: null } : b
-            );
-            await _saveBookmarks();
+            
+            for (const b of _allBookmarks) {
+                if (allSubIds.has(b.folderId)) {
+                    b.folderId = null;
+                    await window.vtDB.put('vt_bookmarks', b);
+                }
+            }
+            
             // 刪除資料夾及子孫
-            _allFolders = _allFolders.filter(f => !allSubIds.has(f.id) && f.id !== folderId);
-            await _saveFolders();
+            for (const id of allSubIds) {
+                await window.vtDB.delete('vt_bm_folders', id);
+            }
+            _allFolders = _allFolders.filter(f => !allSubIds.has(f.id));
+            
+            notifySync();
             if (_activeFolderId === folderId || allSubIds.has(_activeFolderId)) {
                 _activeFolderId = '__all__';
             }
@@ -534,11 +622,15 @@ async function deleteFolder(folderId, folderName) {
 
 async function deleteBookmark(bookmarkId, title) {
     showConfirm(
-        `刪除書籤？`,
-        `「${(title || '').slice(0, 40)}」將從收藏中移除。`,
+        getLang('bvDeleteBookmarkConfirm', '刪除書籤？'),
+        getLang('bvDeleteBookmarkDesc', '「{title}」將從收藏中移除。').replace('{title}', (title || '').slice(0, 40)),
         async () => {
+            const bm = _allBookmarks.find(b => b.id === bookmarkId);
             _allBookmarks = _allBookmarks.filter(b => b.id !== bookmarkId);
-            await _saveBookmarks();
+            if (bm) {
+                await window.vtDB.delete('vt_bookmarks', bm.videoId);
+                notifySync();
+            }
             renderAll();
             showToast('🗑 書籤已刪除');
         }
@@ -605,7 +697,8 @@ function showMoveModal(bookmarkId, currentFolderId) {
         const bm = _allBookmarks.find(b => b.id === bookmarkId);
         if (bm) {
             bm.folderId = selectedFolderId;
-            await _saveBookmarks();
+            await window.vtDB.put('vt_bookmarks', bm);
+            notifySync();
             renderAll();
             showToast('✅ 書籤已移動');
         }
@@ -697,12 +790,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
 }
 
 // ─── 儲存 ─────────────────────────────────────────────────────────────────
-function _saveFolders() {
-    return new Promise(r => chrome.storage.local.set({ vt_bm_folders: _allFolders }, r));
-}
-function _saveBookmarks() {
-    return new Promise(r => chrome.storage.local.set({ vt_bookmarks: _allBookmarks }, r));
-}
+// (移除 _saveFolders 與 _saveBookmarks，改為即時寫入 DB)
 
 // ─── Toast ────────────────────────────────────────────────────────────────
 function showToast(msg) {
@@ -751,19 +839,48 @@ document.addEventListener('DOMContentLoaded', () => {
         showFolderModal(null, null);
     });
 
-    // Storage 即時同步
-    chrome.storage.onChanged.addListener((changes) => {
-        let needReload = false;
-        if (changes.userLang) {
-            _currentLang = changes.userLang.newValue || 'en';
-            applyLanguage(_currentLang);
-            needReload = true;
-        }
-        if (changes.vt_bookmarks) { _allBookmarks = changes.vt_bookmarks.newValue || []; needReload = true; }
-        if (changes.vt_bm_folders) { _allFolders = changes.vt_bm_folders.newValue || []; needReload = true; }
-        if (changes.vt_ratings) { _allRatings = changes.vt_ratings.newValue || {}; needReload = true; }
-        if (needReload) renderAll();
-    });
+    // 移除舊的 chrome.storage.onChanged 監聽，因為現在全部由 BroadcastChannel 接手同步。
+    const channel = new BroadcastChannel('vt_sync');
+    channel.onmessage = (event) => {
+        if (event.data === 'data_updated') loadData();
+    };
+
+    // Resizer logic
+    const resizer = document.getElementById('bvResizer');
+    const sidebar = document.querySelector('.bv-sidebar');
+    let isResizing = false;
+
+    if (resizer && sidebar) {
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            sidebar.style.userSelect = 'none'; // Prevent text selection while dragging
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const newWidth = e.clientX;
+            if (newWidth >= 200 && newWidth <= 800) {
+                sidebar.style.width = newWidth + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                sidebar.style.userSelect = '';
+                document.body.style.userSelect = '';
+                chrome.storage.local.set({ sidebarWidth: sidebar.style.width });
+            }
+        });
+
+        // Initialize sidebar width from storage
+        chrome.storage.local.get(['sidebarWidth'], (data) => {
+            if (data.sidebarWidth) sidebar.style.width = data.sidebarWidth;
+        });
+    }
 
     // 載入資料
     loadData();

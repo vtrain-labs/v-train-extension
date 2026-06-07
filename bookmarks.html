@@ -24,8 +24,8 @@
                 <input type="text" id="bvSearch" class="bv-search" data-i18n="bvSearch" placeholder="搜尋書籤標題或網址...">
             </div>
             <div class="bv-view-toggle">
-                <button id="btnViewGrid" class="bv-view-btn active" title="格狀檢視">⊞</button>
-                <button id="btnViewList" class="bv-view-btn" title="列表檢視">≡</button>
+                <button id="btnViewGrid" class="bv-view-btn active" data-i18n-title="bvGrid" title="格狀檢視">⊞</button>
+                <button id="btnViewList" class="bv-view-btn" data-i18n-title="bvList" title="列表檢視">≡</button>
             </div>
         </div>
     </header>
@@ -35,7 +35,7 @@
         <aside class="bv-sidebar">
             <div class="bv-sidebar-hdr">
                 <span data-i18n="bvFolders">📁 資料夾</span>
-                <button id="btnNewRootFolder" class="bv-add-root-btn" title="新增資料夾">＋</button>
+                <button id="btnNewRootFolder" class="bv-add-root-btn" data-i18n-title="bvNewFolderTitle" title="新增資料夾">＋</button>
             </div>
             <nav id="bvFolderTree" class="bv-folder-tree">
                 <!-- 動態渲染 -->
@@ -55,6 +55,9 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Resizer Handle -->
+        <div class="bv-sidebar-resizer" id="bvResizer"></div>
 
         <!-- Right Content: Bookmark Grid/List -->
         <main class="bv-content">
@@ -125,6 +128,7 @@
     </div>
 
     <script src="shared_i18n.js"></script>
+    <script src="db.js"></script>
     <script src="bookmarks.js"></script>
 </body>
 </html>

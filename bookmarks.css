@@ -82,11 +82,23 @@ html, body {
 
 /* ─── Sidebar ─────────────────────────────────────────────────────────── */
 .bv-sidebar {
-    width: var(--sidebar-w); flex-shrink: 0;
+    width: var(--sidebar-w); min-width: 200px; max-width: 800px;
+    flex-shrink: 0;
     background: var(--bg2);
     border-right: 1px solid var(--border);
     display: flex; flex-direction: column;
-    overflow: hidden;
+    overflow-x: hidden; overflow-y: auto;
+}
+
+.bv-sidebar-resizer {
+    width: 5px;
+    cursor: col-resize;
+    background: transparent;
+    transition: background 0.2s;
+    z-index: 10;
+}
+.bv-sidebar-resizer:hover, .bv-sidebar-resizer:active {
+    background: rgba(233, 30, 140, 0.5);
 }
 .bv-sidebar-hdr {
     display: flex; justify-content: space-between; align-items: center;
@@ -114,7 +126,7 @@ html, body {
 /* Folder items */
 .bv-folder-item {
     display: flex; align-items: center; gap: 8px;
-    padding: 10px 14px; border-radius: 8px; cursor: pointer;
+    padding: 6px 10px; border-radius: 8px; cursor: pointer;
     font-size: 18px; color: var(--text2);
     transition: background 0.12s, color 0.12s;
     position: relative; user-select: none;
@@ -372,11 +384,12 @@ html, body {
 /* ─── Folder expand toggle ────────────────────────────────────────────── */
 .bv-folder-toggle {
     background: none; border: none; color: var(--text3);
-    cursor: pointer; font-size: 14px; padding: 0; width: 20px; text-align: center;
-    transition: transform 0.15s; display: inline-block;
-    flex-shrink: 0;
+    cursor: pointer; padding: 2px; display: flex; align-items: center;
+    justify-content: center; width: 20px; height: 20px; font-size: 14px;
+    transition: color 0.15s; flex-shrink: 0; font-family: monospace; font-weight: bold;
 }
-.bv-folder-toggle.expanded { transform: rotate(90deg); }
+.bv-folder-toggle:hover { color: var(--text); }
+.bv-folder-toggle.expanded { color: var(--text2); }
 
 /* ─── Animations ──────────────────────────────────────────────────────── */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

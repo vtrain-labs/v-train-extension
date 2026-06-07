@@ -12,19 +12,65 @@ if (!window._vtBookmarksLoaded) {
     // ─── 全域快取 ────────────────────────────────────────────────────────
     window._vtRatingsCache = null;   // { [videoId]: 'like' | 'dislike' }
     window._vtBookmarkedSet = null;  // Set<videoId>
+    const vtSyncChannel = new BroadcastChannel('vt_sync_channel');
+    function notifySync() {
+        vtSyncChannel.postMessage({ action: 'sync_bookmarks' });
+        try { chrome.runtime.sendMessage({ action: 'VT_SYNC_BOOKMARKS' }).catch(()=>{}); } catch (e) {}
+    }
+    vtSyncChannel.onmessage = (e) => {
+        if (e.data.action === 'sync_bookmarks') {
+            _loadCache().then(() => {
+                if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
+            });
+        }
+    };
+
+    // ─── 資料庫代理 (DB Proxy) ──────────────────────────────────────────────────
+    // 所有 DB 操作必須透過 Background Script 進行，確保寫入擴充功能的來源 (Origin)，而非當前網站 (Host) 的來源
+    const vtDBProxy = {
+        get: (storeName, key) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_GET', storeName, key }, r)),
+        getAll: (storeName) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_GET_ALL', storeName }, r)),
+        put: (storeName, obj) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_PUT', storeName, obj }, r)),
+        delete: (storeName, key) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_DELETE', storeName, key }, r))
+    };
+
+
 
     // ─── 載入快取 ────────────────────────────────────────────────────────
     async function _loadCache() {
-        return new Promise(resolve => {
-            chrome.storage.local.get(['vt_ratings', 'vt_bookmarks', 'vt_panel_pos', 'showInteraction'], data => {
-                window._vtRatingsCache = data.vt_ratings || {};
-                const bm = data.vt_bookmarks || [];
-                window._vtBookmarkedSet = new Set(bm.map(b => b.videoId).filter(Boolean));
+        return new Promise(async (resolve) => {
+            const ratings = await vtDBProxy.getAll('vt_ratings');
+            window._vtRatingsCache = {};
+            ratings.forEach(r => window._vtRatingsCache[r.videoId] = r.rating);
+
+            const bm = await vtDBProxy.getAll('vt_bookmarks');
+            window._vtBookmarkedSet = new Set(bm.map(b => b.videoId).filter(Boolean));
+
+            chrome.storage.local.get(['vt_panel_pos', 'showInteraction', 'isProVersion', 'userLang'], data => {
                 window._vtPanelPos = data.vt_panel_pos || null;
-                window._vtShowInteraction = data.showInteraction !== false;
+                window._vtShowInteraction = !!data.showInteraction;
+                window._vtIsPro = !!data.isProVersion;
+                window._vtCurrentLang = data.userLang || 'en';
                 resolve();
             });
         });
+    }
+
+    // ─── 滑鼠移入移出觸發邏輯 ────────────────────────────────────────────
+    let _hoverTimer = null;
+    let _leaveTimer = null;
+
+    function _handleVideoHover(e) {
+        if (!window._vtShowInteraction || !window._vtIsPro) return;
+        const target = e.target;
+        const videoId = window._vtParseVideoId(target.closest('a')?.href || target.href);
+        if (!videoId) return;
+
+        clearTimeout(_leaveTimer);
+        _hoverTimer = setTimeout(() => {
+            const rect = target.getBoundingClientRect();
+            _showPanel(videoId, rect);
+        }, 150); // 稍微延遲避免快速滑過
     }
 
     // ─── 評分操作 ────────────────────────────────────────────────────────
@@ -35,24 +81,25 @@ if (!window._vtBookmarksLoaded) {
         const next = (current === rating) ? null : rating;
         if (next === null) {
             delete window._vtRatingsCache[videoId];
+            await vtDBProxy.delete('vt_ratings', videoId);
         } else {
             window._vtRatingsCache[videoId] = next;
+            await vtDBProxy.put('vt_ratings', { videoId, rating, timestamp: Date.now() });
         }
-        await new Promise(r => chrome.storage.local.set({ vt_ratings: window._vtRatingsCache }, r));
+        if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
+        notifySync();
         return next;
     }
 
     // ─── 書籤操作 ────────────────────────────────────────────────────────
     async function _addBookmark(videoId, url, title, thumbnail, folderId) {
-        const data = await new Promise(r => chrome.storage.local.get(['vt_bookmarks'], r));
-        const bookmarks = data.vt_bookmarks || [];
-        const existing = bookmarks.find(b => b.videoId === videoId);
+        let existing = await vtDBProxy.get('vt_bookmarks', videoId);
         if (existing) {
             existing.folderId = folderId;
             existing.addedAt = Date.now();
             existing.title = title || existing.title;
         } else {
-            bookmarks.push({
+            existing = {
                 id: 'bm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
                 videoId,
                 url,
@@ -61,17 +108,19 @@ if (!window._vtBookmarksLoaded) {
                 folderId: folderId || null,
                 domain: location.hostname,
                 addedAt: Date.now()
-            });
+            };
         }
-        await new Promise(r => chrome.storage.local.set({ vt_bookmarks: bookmarks }, r));
+        await vtDBProxy.put('vt_bookmarks', existing);
         if (window._vtBookmarkedSet) window._vtBookmarkedSet.add(videoId);
+        if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
+        notifySync();
     }
 
     async function _removeBookmark(videoId) {
-        const data = await new Promise(r => chrome.storage.local.get(['vt_bookmarks'], r));
-        const filtered = (data.vt_bookmarks || []).filter(b => b.videoId !== videoId);
-        await new Promise(r => chrome.storage.local.set({ vt_bookmarks: filtered }, r));
+        await vtDBProxy.delete('vt_bookmarks', videoId);
         if (window._vtBookmarkedSet) window._vtBookmarkedSet.delete(videoId);
+        if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
+        notifySync();
     }
 
     async function _isBookmarked(videoId) {
@@ -81,8 +130,7 @@ if (!window._vtBookmarksLoaded) {
 
     // ─── 資料夾操作 ──────────────────────────────────────────────────────
     async function _getFolders() {
-        const data = await new Promise(r => chrome.storage.local.get(['vt_bm_folders'], r));
-        return data.vt_bm_folders || [];
+        return await vtDBProxy.getAll('vt_bm_folders');
     }
 
     async function _createFolder(name, parentId = null) {
@@ -94,41 +142,20 @@ if (!window._vtBookmarksLoaded) {
             order: folders.length,
             createdAt: Date.now()
         };
-        folders.push(newF);
-        await new Promise(r => chrome.storage.local.set({ vt_bm_folders: folders }, r));
+        await vtDBProxy.put('vt_bm_folders', newF);
+        notifySync();
         return newF;
     }
 
     // ─── Pro 驗證 ────────────────────────────────────────────────────────
-    // [TODO] 測試階段暫時開放，功能穩定後改回序號驗證（參考密碼鎖邏輯）
     async function _checkPro() {
+        if (!window._vtIsPro) {
+            return false;
+        }
         return true;
-        // ↓ 上線後啟用以下邏輯：
-        // const data = await new Promise(r => chrome.storage.local.get(['isProVersion'], r));
-        // if (!data.isProVersion) { _showUpgradeToast(); return false; }
-        // return true;
     }
 
-    function _showUpgradeToast() {
-        if (document.getElementById('vt-upgrade-toast')) return;
-        const t = document.createElement('div');
-        t.id = 'vt-upgrade-toast';
-        t.style.cssText = `
-            position:fixed;bottom:145px;right:15px;
-            background:linear-gradient(135deg,#e91e8c,#9c27b0);
-            color:#fff;padding:10px 16px;border-radius:10px;
-            font-family:sans-serif;font-size:13px;font-weight:bold;
-            z-index:2147483647;box-shadow:0 4px 20px rgba(233,30,140,0.5);
-            cursor:pointer;line-height:1.5;animation:vtFadeIn 0.2s ease;
-        `;
-        t.innerHTML = '🔒 此功能需要 Pro 序號<br><small style="font-weight:normal;opacity:0.85">點擊前往購買</small>';
-        t.onclick = () => chrome.runtime.sendMessage({ action: 'VT_OPEN_BUY_PAGE' });
-        document.body.appendChild(t);
-        setTimeout(() => t.style.opacity = '0', 2500);
-        setTimeout(() => t.remove(), 2800);
-    }
-
-    // ─── 浮動操作面板 ────────────────────────────────────────────────────
+    // ─── 滑鼠移入移出觸發邏輯 ────────────────────────────────────────────
     let _panel = null;
     let _currentId = null;
     let _panelRating = null;
@@ -364,8 +391,11 @@ if (!window._vtBookmarksLoaded) {
             padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);
             display:flex;justify-content:space-between;align-items:center;
         `;
+        const lang = window._vtCurrentLang || 'zh-TW';
+        const getLang = (k, def) => (typeof getLangText === 'function' ? getLangText(lang, k) : def);
+
         const htitle = document.createElement('span');
-        htitle.textContent = '📁 選擇收藏位置';
+        htitle.textContent = '📁 ' + getLang('bvSelectFolder', '選擇收藏位置');
         htitle.style.cssText = 'color:#fff;font-size:15px;font-weight:700;font-family:sans-serif;';
         const xBtn = document.createElement('button');
         xBtn.textContent = '✕';
@@ -381,14 +411,14 @@ if (!window._vtBookmarksLoaded) {
         const addRow = document.createElement('div');
         addRow.style.cssText = 'padding:10px 16px;border-top:1px solid rgba(255,255,255,0.07);';
         const addBtn = document.createElement('button');
-        addBtn.textContent = '＋ 新增根目錄資料夾';
+        addBtn.textContent = '＋ ' + getLang('bvAddRootFolder', '新增根目錄資料夾');
         addBtn.style.cssText = `
             background:rgba(233,30,140,0.08);border:1px dashed rgba(233,30,140,0.4);
             color:#e91e8c;border-radius:8px;padding:7px 14px;cursor:pointer;
             width:100%;font-family:sans-serif;font-size:13px;transition:all 0.15s;
         `;
         addBtn.onclick = async () => {
-            const name = prompt('新資料夾名稱：');
+            const name = prompt(getLang('bvFolderNamePrompt', '新資料夾名稱：'));
             if (!name?.trim()) return;
             await _createFolder(name, null);
             _renderTree();
@@ -400,12 +430,12 @@ if (!window._vtBookmarksLoaded) {
         confirmRow.style.cssText = 'padding:12px 16px;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:flex-end;gap:8px;';
         
         const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = '取消';
+        cancelBtn.textContent = getLang('btnCancel', '取消');
         cancelBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.15);color:#ccc;border-radius:8px;padding:7px 14px;cursor:pointer;font-family:sans-serif;font-size:13px;';
         cancelBtn.onclick = () => overlay.remove();
         
         const confirmBtn = document.createElement('button');
-        confirmBtn.textContent = '確認收藏';
+        confirmBtn.textContent = getLang('bvConfirmSave', '確認收藏');
         confirmBtn.style.cssText = 'background:linear-gradient(135deg,#e91e8c,#9c27b0);border:none;color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-family:sans-serif;font-size:13px;font-weight:bold;';
         confirmBtn.onclick = async () => {
             const url = location.href;
@@ -417,12 +447,33 @@ if (!window._vtBookmarksLoaded) {
                 const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
                 if (imgs.length > 0) ogImg = imgs[0].src;
             }
-            
+
+            // [無痛快取機制] 擷取圖片轉換為二進位存入快取資料庫
+            if (ogImg && ogImg.startsWith('http')) {
+                fetch(ogImg).then(r => r.blob()).then(blob => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: reader.result }).catch(()=>{});
+                    };
+                    reader.readAsDataURL(blob);
+                }).catch(()=>{});
+            }
+
             await _addBookmark(videoId, url, title, ogImg, selectedFolderId);
+            
+            // [動態 CDN 自學引擎] 當下立即配對並註冊規則
+            if (ogImg && ogImg.startsWith('http') && url) {
+                try {
+                    const imgHost = new URL(ogImg).hostname;
+                    const pageOrigin = new URL(url).origin + "/";
+                    chrome.runtime.sendMessage({ action: 'VT_SYNC_CDNS', cdnMap: { [imgHost]: pageOrigin } }).catch(()=>{});
+                } catch(e) {}
+            }
+
             _panelBookmarked = true;
             _renderPanelState();
             
-            confirmBtn.textContent = '✅ 已收藏';
+            confirmBtn.textContent = '✅ ' + getLang('bvSaved', '已收藏');
             confirmBtn.style.background = '#10b981';
             setTimeout(() => overlay.remove(), 650);
         };
@@ -492,7 +543,7 @@ if (!window._vtBookmarksLoaded) {
                 tree.appendChild(item);
             };
 
-            renderItem('📥 未分類（根目錄）', null, 0, false);
+            renderItem('📥 ' + getLang('bvUncategorizedRoot', '未分類（根目錄）'), null, 0, false);
 
             const renderLevel = (parentId, depth) => {
                 const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
@@ -533,10 +584,16 @@ if (!window._vtBookmarksLoaded) {
             window._vtRefreshAllBadges?.();
         }
         if (changes.showInteraction) {
-            window._vtShowInteraction = changes.showInteraction.newValue !== false;
+            window._vtShowInteraction = !!changes.showInteraction.newValue;
             if (!window._vtShowInteraction && _panel) {
                 _panel.style.display = 'none';
             }
+        }
+        if (changes.isProVersion) {
+            window._vtIsPro = !!changes.isProVersion.newValue;
+        }
+        if (changes.userLang) {
+            window._vtCurrentLang = changes.userLang.newValue;
         }
     });
 
@@ -554,6 +611,28 @@ if (!window._vtBookmarksLoaded) {
             if (!window._vtRatingsCache) await _loadCache();
             _panelRating = window._vtRatingsCache[videoId] || null;
             _panelBookmarked = window._vtBookmarkedSet?.has(videoId) || false;
+
+            // [自癒機制 Self-Healing] 如果此影片已在書籤庫中，於背景靜默重新抓取縮圖並寫入快取庫
+            if (_panelBookmarked) {
+                setTimeout(() => {
+                    let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+                                document.querySelector('meta[property="og:image:secure_url"]')?.content ||
+                                document.querySelector('meta[name="twitter:image"]')?.content || '';
+                    if (!ogImg) {
+                        const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
+                        if (imgs.length > 0) ogImg = imgs[0].src;
+                    }
+                    if (ogImg && ogImg.startsWith('http')) {
+                        fetch(ogImg).then(r => r.blob()).then(blob => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: reader.result }).catch(()=>{});
+                            };
+                            reader.readAsDataURL(blob);
+                        }).catch(()=>{});
+                    }
+                }, 2500); // 延遲執行，不影響主頁面載入效能
+            }
 
             _createPanel();
             if (_panel) { _panel.style.display = 'flex'; _renderPanelState(); }

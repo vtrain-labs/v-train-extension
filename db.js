@@ -7,8 +7,8 @@ if (typeof globalThis.vtDB === 'undefined') {
 class VTDatabase {
     constructor() {
         this.dbName = 'VT_Storage';
-        this.storeName = 'video_records';
-        this.version = 1;
+        this.storeName = 'video_records'; // Default/legacy store
+        this.version = 3; // Upgraded version for bookmarks
         this.db = null;
         this.initPromise = null;
     }
@@ -19,10 +19,27 @@ class VTDatabase {
             const request = indexedDB.open(this.dbName, this.version);
             request.onupgradeneeded = (e) => {
                 const db = e.target.result;
-                if (!db.objectStoreNames.contains(this.storeName)) {
-                    const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-                    // 建立 lastUpdated 索引以供 GC 快速排序刪除
+                // v1 store
+                if (!db.objectStoreNames.contains('video_records')) {
+                    const store = db.createObjectStore('video_records', { keyPath: 'id' });
                     store.createIndex('lastUpdated', 'lastUpdated', { unique: false });
+                }
+                // v2 stores
+                if (!db.objectStoreNames.contains('vt_bookmarks')) {
+                    // Use videoId as primary key for bookmarks
+                    db.createObjectStore('vt_bookmarks', { keyPath: 'videoId' });
+                }
+                if (!db.objectStoreNames.contains('vt_ratings')) {
+                    // Use videoId as primary key for ratings
+                    db.createObjectStore('vt_ratings', { keyPath: 'videoId' });
+                }
+                if (!db.objectStoreNames.contains('vt_bm_folders')) {
+                    // Use id as primary key for folders
+                    db.createObjectStore('vt_bm_folders', { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains('vt_thumbnails')) {
+                    // Use videoId as primary key for thumbnails cache
+                    db.createObjectStore('vt_thumbnails', { keyPath: 'videoId' });
                 }
             };
             request.onsuccess = (e) => {
@@ -37,22 +54,68 @@ class VTDatabase {
         return this.initPromise;
     }
 
-    async putRecord(id, data) {
+    // --- Generic Multi-Store Methods ---
+    async put(storeName, obj) {
         await this.init();
         return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction([this.storeName], 'readwrite');
-            const store = transaction.objectStore(this.storeName);
-            const record = { id, ...data };
-            const request = store.put(record);
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.put(obj);
             request.onsuccess = () => resolve();
             request.onerror = (e) => reject(e.target.error);
         });
     }
 
+    async get(storeName, key) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.get(key);
+            request.onsuccess = (e) => resolve(e.target.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async getAll(storeName) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.getAll();
+            request.onsuccess = (e) => resolve(e.target.result || []);
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async delete(storeName, key) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.delete(key);
+            request.onsuccess = () => resolve();
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    async clear(storeName) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.clear();
+            request.onsuccess = () => resolve();
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
+    // --- Legacy / Specific Methods for video_records ---
+    async putRecord(id, data) {
+        return this.put(this.storeName, { id, ...data });
+    }
+
     async getRecords(ids) {
-        // [效能修復 P3] 計數器模式（completed++）改為 Promise.all：
-        // 每個 store.get() 包成 Promise，全部並行且語意清晰，
-        // 不需手動計數，也不會有計數器邏輯錯誤風險。
         await this.init();
         if (!ids || ids.length === 0) return {};
         const transaction = this.db.transaction([this.storeName], 'readonly');
@@ -64,27 +127,20 @@ class VTDatabase {
                 if (e.target.result) results[id] = e.target.result;
                 resolve();
             };
-            req.onerror = () => resolve(); // 靜默失敗，不阻斷其他查詢
+            req.onerror = () => resolve();
         })));
         return results;
     }
 
     async getAllRecords() {
-        await this.init();
-        return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction([this.storeName], 'readonly');
-            const store = transaction.objectStore(this.storeName);
-            const request = store.getAll();
-            request.onsuccess = (e) => resolve(e.target.result || []);
-            request.onerror = (e) => reject(e.target.error);
-        });
+        return this.getAll(this.storeName);
     }
 
-    async count() {
+    async count(storeName = this.storeName) {
         await this.init();
         return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction([this.storeName], 'readonly');
-            const store = transaction.objectStore(this.storeName);
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
             const request = store.count();
             request.onsuccess = (e) => resolve(e.target.result);
             request.onerror = (e) => reject(e.target.error);
@@ -95,7 +151,10 @@ class VTDatabase {
         await this.init();
         return new Promise(async (resolve, reject) => {
             try {
-                const currentCount = await this.count();
+                // If limit is Infinity, do not run GC
+                if (limit === Infinity) return resolve(false);
+
+                const currentCount = await this.count(this.storeName);
                 if (currentCount <= limit) return resolve(false);
 
                 const transaction = this.db.transaction([this.storeName], 'readwrite');
@@ -112,7 +171,7 @@ class VTDatabase {
                         deleted++;
                         cursor.continue();
                     } else {
-                        resolve(true); // 表示有執行清理
+                        resolve(true);
                     }
                 };
                 request.onerror = (e) => reject(e.target.error);
@@ -123,14 +182,7 @@ class VTDatabase {
     }
 
     async clearRecords() {
-        await this.init();
-        return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction([this.storeName], 'readwrite');
-            const store = transaction.objectStore(this.storeName);
-            const request = store.clear();
-            request.onsuccess = () => resolve();
-            request.onerror = (e) => reject(e.target.error);
-        });
+        return this.clear(this.storeName);
     }
 }
 

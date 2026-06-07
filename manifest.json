@@ -10,7 +10,9 @@
     "tabs",
     "scripting",
     "contextMenus",
-    "alarms"
+    "alarms",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [],
   "optional_host_permissions": [

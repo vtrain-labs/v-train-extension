@@ -8,6 +8,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
     const VT_I18N = {
         "en": {
+
             // === Popup & System Keys ===
             securityLock: "Privacy Lock",
             enterPass: "Enter passcode to access history",
@@ -39,7 +40,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             msgInvalidKey: "❌ Invalid Key",
             msgNetworkError: "❌ Network Error",
             msgProOnlyFeature: "⚡ Pro Feature",
-            msgProOnlyDesc: "Please upgrade to V-Train Pro to use Privacy Lock and Password Rescue.",
+            msgProOnlyDesc: "Please upgrade to V-Train Pro to unlock this advanced feature.",
             msgSaved: "✅ Saved",
             msgCleared: "✅ Data Cleared",
             msgImportSuccess: "✅ Import Successful! Reloading...",
@@ -144,7 +145,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 Dislikes",
             bvSort: "Sort: Newest",
             bvSettings: "⚙️ System Settings",
-            toggleInteraction: "👍 Enable Interaction Buttons",
+            toggleInteraction: "👍 Enable Like/Bookmark Buttons",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 ,
@@ -158,10 +159,26 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "Newest First",
             bvSortOldest: "Oldest First",
             bvSortTitle: "Title A-Z",
-            bvSortDomain: "Domain"
+            bvSortDomain: "Domain",
+            bvSelectFolder: "Select Folder",
+            bvAddRootFolder: "Add Root Folder",
+            bvFolderNamePrompt: "New Folder Name:",
+            btnCancel: "Cancel",
+            bvConfirmSave: "Confirm Save",
+            bvSaved: "Saved",
+            bvUncategorizedRoot: "Uncategorized (Root)",
+            bvDeleteBookmark: "Delete Bookmark",
+            bvDeleteBookmarkConfirm: "Delete Bookmark?",
+            bvMoveTo: "Move to...",
+            bvNewFolderTitle: "New Folder",
+            bvNewSubFolderTitle: "New Subfolder",
+            bvRenameFolderTitle: "Rename Folder",
+            bvGrid: "Grid View",
+            bvList: "List View"
 
         },
         "zh-TW": {
+
             // === Popup & System Keys ===
             securityLock: "安全鎖定", enterPass: "請輸入密碼以存取紀錄", unlockBtn: "解鎖", forgotPass: "忘記密碼？(限 Pro 版)",
             unlockPro: "升級 V-Train Pro", proActive: "V-Train Pro 已啟用", monitoring: "自動監控 (ON)", stealth: "手動暫停 (OFF)",
@@ -175,7 +192,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "沒有序號？立即購買 ($4.99)", cancel: "取消", confirm: "確認",
             msgIncorrectPass: "❌ 密碼錯誤", msgVerifySuccess: "✅ 驗證成功！", msgLimitReached: "❌ 已達設備綁定上限",
             msgInvalidKey: "❌ 序號無效", msgNetworkError: "❌ 網路連線錯誤", msgProOnlyFeature: "⚡ Pro 限定功能",
-            msgProOnlyDesc: "請先升級至 V-Train Pro 才能使用安全鎖與密碼救援功能。", msgSaved: "✅ 已儲存", msgCleared: "✅ 資料已清除",
+            msgProOnlyDesc: "請先升級至 V-Train Pro 才能解鎖此進階功能。", msgSaved: "✅ 已儲存", msgCleared: "✅ 資料已清除",
             msgImportSuccess: "✅ 匯入成功！重新載入中...", msgImportFail: "❌ 格式錯誤", modalEnablePro: "⚡ 啟用 V-Train Pro",
             modalEnterKey: "請輸入您的授權序號：", modalSetPass: "🔐 設定密碼", modalSetPassDesc: "設定新密碼 (留空則移除鎖定)。",
             modalClearData: "⚠️ 清除資料", modalClearDesc: "確定刪除所有觀看紀錄？<br>(Pro資格與設定將會保留)",
@@ -246,7 +263,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 不喜歡",
             bvSort: "排序：最新加入",
             bvSettings: "⚙️ 系統設定",
-            toggleInteraction: "👍 啟用快捷互動按鈕",
+            toggleInteraction: "👍 啟用按讚收藏按鈕",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 ,
@@ -260,10 +277,26 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "最新加入",
             bvSortOldest: "最早加入",
             bvSortTitle: "標題 A-Z",
-            bvSortDomain: "網站"
+            bvSortDomain: "網站",
+            bvSelectFolder: "選擇收藏位置",
+            bvAddRootFolder: "新增根目錄資料夾",
+            bvFolderNamePrompt: "新資料夾名稱：",
+            btnCancel: "取消",
+            bvConfirmSave: "確認收藏",
+            bvSaved: "已收藏",
+            bvUncategorizedRoot: "未分類（根目錄）",
+            bvDeleteBookmark: "刪除書籤",
+            bvDeleteBookmarkConfirm: "刪除書籤？",
+            bvMoveTo: "移動到...",
+            bvNewFolderTitle: "新增資料夾",
+            bvNewSubFolderTitle: "新增子資料夾",
+            bvRenameFolderTitle: "重新命名資料夾",
+            bvGrid: "格狀檢視",
+            bvList: "列表檢視"
 
         },
         "zh-CN": {
+
             // === Popup & System Keys ===
             securityLock: "安全锁定", enterPass: "请输入密码以访问记录", unlockBtn: "解锁", forgotPass: "忘记密码？(限 Pro 版)",
             unlockPro: "升级 V-Train Pro", proActive: "V-Train Pro 已激活", monitoring: "自动监控 (ON)", stealth: "手动暂停 (OFF)",
@@ -277,7 +310,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "没有序列号？立即购买 ($4.99)", cancel: "取消", confirm: "确认",
             msgIncorrectPass: "❌ 密码错误", msgVerifySuccess: "✅ 验证成功！", msgLimitReached: "❌ 已达设备绑定上限",
             msgInvalidKey: "❌ 序列号无效", msgNetworkError: "❌ 网络连接错误", msgProOnlyFeature: "⚡ Pro 限定功能",
-            msgProOnlyDesc: "请先升级至 V-Train Pro 才能使用安全锁与密码救援功能。", msgSaved: "✅ 已保存", msgCleared: "✅ 数据已清除",
+            msgProOnlyDesc: "请先升级至 V-Train Pro 才能解锁此进阶功能。", msgSaved: "✅ 已保存", msgCleared: "✅ 数据已清除",
             msgImportSuccess: "✅ 导入成功！重新加载中...", msgImportFail: "❌ 格式错误", modalEnablePro: "⚡ 启用 V-Train Pro",
             modalEnterKey: "请输入您的授权序列号：", modalSetPass: "🔐 设置密码", modalSetPassDesc: "设置新密码 (留空则移除锁定)。",
             modalClearData: "⚠️ 清除数据", modalClearDesc: "确定删除所有观看记录？<br>(Pro资格与设置将会保留)",
@@ -348,7 +381,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 不喜欢",
             bvSort: "排序：最新加入",
             bvSettings: "⚙️ 系统设置",
-            toggleInteraction: "👍 启用快捷互动按钮",
+            toggleInteraction: "👍 启用点赞收藏按钮",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 ,
@@ -362,10 +395,26 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "最新加入",
             bvSortOldest: "最早加入",
             bvSortTitle: "标题 A-Z",
-            bvSortDomain: "网站"
+            bvSortDomain: "网站",
+            bvSelectFolder: "选择收藏位置",
+            bvAddRootFolder: "新增根目录文件夹",
+            bvFolderNamePrompt: "新文件夹名称：",
+            btnCancel: "取消",
+            bvConfirmSave: "确认收藏",
+            bvSaved: "已收藏",
+            bvUncategorizedRoot: "未分类（根目录）",
+            bvDeleteBookmark: "删除书签",
+            bvDeleteBookmarkConfirm: "删除书签？",
+            bvMoveTo: "移动到...",
+            bvNewFolderTitle: "新增文件夹",
+            bvNewSubFolderTitle: "新增子文件夹",
+            bvRenameFolderTitle: "重命名文件夹",
+            bvGrid: "网格视图",
+            bvList: "列表视图"
 
         },
         "ja": {
+
             // === Popup & System Keys ===
             securityLock: "セキュリティロック", enterPass: "パスコードを入力してアクセス", unlockBtn: "解除", forgotPass: "パスコードを忘れた場合 (Pro限定)",
             unlockPro: "V-Train Proを解除", proActive: "V-Train Pro 有効", monitoring: "追跡中 (ON)", stealth: "一時停止 (OFF)",
@@ -379,7 +428,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "ライセンスキーがない？ 購入 ($4.99)", cancel: "キャンセル", confirm: "確認",
             msgIncorrectPass: "❌ パスコードが違います", msgVerifySuccess: "✅ 認証成功！", msgLimitReached: "❌ デバイス制限に達しました",
             msgInvalidKey: "❌ 無効なキー", msgNetworkError: "❌ ネットワークエラー", msgProOnlyFeature: "⚡ Pro機能",
-            msgProOnlyDesc: "セキュリティロックとパスワード救出を使用するには、V-Train Proにアップグレードしてください。", msgSaved: "✅ 保存しました", msgCleared: "✅ データを消去しました",
+            msgProOnlyDesc: "この高度な機能のロックを解除するには、V-Train Proにアップグレードしてください。", msgSaved: "✅ 保存しました", msgCleared: "✅ データを消去しました",
             msgImportSuccess: "✅ インポート成功！リロード中...", msgImportFail: "❌ フォーマットエラー", modalEnablePro: "⚡ V-Train Proを有効化",
             modalEnterKey: "ライセンスキーを入力してください:", modalSetPass: "🔐 パスコード設定", modalSetPassDesc: "新しいパスコードを設定 (空欄でロック解除)。",
             modalClearData: "⚠️ データ消去", modalClearDesc: "すべての視聴履歴を削除しますか？<br>(Proステータスと設定は保持されます)",
@@ -450,7 +499,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 よくないね",
             bvSort: "並べ替え：最新",
             bvSettings: "⚙️ システム設定",
-            toggleInteraction: "👍 インタラクションボタンを有効化",
+            toggleInteraction: "👍 いいね/お気に入りボタンを有効化",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 ,
@@ -464,10 +513,26 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "最新順",
             bvSortOldest: "古い順",
             bvSortTitle: "タイトル A-Z",
-            bvSortDomain: "サイト"
+            bvSortDomain: "サイト",
+            bvSelectFolder: "フォルダを選択",
+            bvAddRootFolder: "ルートフォルダを追加",
+            bvFolderNamePrompt: "新しいフォルダ名：",
+            btnCancel: "キャンセル",
+            bvConfirmSave: "保存を確認",
+            bvSaved: "保存しました",
+            bvUncategorizedRoot: "未分類（ルート）",
+            bvDeleteBookmark: "ブックマークを削除",
+            bvDeleteBookmarkConfirm: "ブックマークを削除しますか？",
+            bvMoveTo: "移動...",
+            bvNewFolderTitle: "新しいフォルダ",
+            bvNewSubFolderTitle: "新しいサブフォルダ",
+            bvRenameFolderTitle: "フォルダ名を変更",
+            bvGrid: "グリッド表示",
+            bvList: "リスト表示"
 
         },
         "ko": {
+
             // === Popup & System Keys ===
             securityLock: "보안 잠금", enterPass: "기록에 액세스하려면 비밀번호 입력", unlockBtn: "잠금 해제", forgotPass: "비밀번호를 잊으셨나요? (Pro 전용)",
             unlockPro: "V-Train Pro 전용 잠금 해제", proActive: "V-Train Pro 활성화됨", monitoring: "추적 중 (ON)", stealth: "일시 정지 (OFF)",
@@ -481,7 +546,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "라이선스 키가 없나요? 지금 구매 ($4.99)", cancel: "취소", confirm: "확인",
             msgIncorrectPass: "❌ 비밀번호가 틀렸습니다", msgVerifySuccess: "✅ 인증 성공!", msgLimitReached: "❌ 기기 제한 도달",
             msgInvalidKey: "❌ 잘못된 키", msgNetworkError: "❌ 네트워크 오류", msgProOnlyFeature: "⚡ Pro 기능",
-            msgProOnlyDesc: "보안 잠금 및 비밀번호 복구를 사용하려면 V-Train Pro로 업그레이드하세요.", msgSaved: "✅ 저장됨", msgCleared: "✅ 데이터 삭제됨",
+            msgProOnlyDesc: "이 고급 기능을 잠금 해제하려면 V-Train Pro로 업그레이드하세요.", msgSaved: "✅ 저장됨", msgCleared: "✅ 데이터 삭제됨",
             msgImportSuccess: "✅ 가져오기 성공! 다시 로드 중...", msgImportFail: "❌ 형식 오류", modalEnablePro: "⚡ V-Train Pro 활성화",
             modalEnterKey: "라이선스 키를 입력하세요:", modalSetPass: "🔐 비밀번호 설정", modalSetPassDesc: "새 비밀번호 설정 (잠금을 해제하려면 비워 두세요).",
             modalClearData: "⚠️ 데이터 삭제", modalClearDesc: "모든 시청 기록을 삭제하시겠습니까?<br>(Pro 상태 및 설정은 유지됨)",
@@ -552,7 +617,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 싫어요",
             bvSort: "정렬: 최신순",
             bvSettings: "⚙️ 시스템 설정",
-            toggleInteraction: "👍 상호작용 버튼 활성화",
+            toggleInteraction: "👍 좋아요/북마크 버튼 활성화",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 ,
@@ -566,10 +631,26 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "최신순",
             bvSortOldest: "오래된순",
             bvSortTitle: "제목 A-Z",
-            bvSortDomain: "도메인"
+            bvSortDomain: "도메인",
+            bvSelectFolder: "폴더 선택",
+            bvAddRootFolder: "루트 폴더 추가",
+            bvFolderNamePrompt: "새 폴더 이름:",
+            btnCancel: "취소",
+            bvConfirmSave: "저장 확인",
+            bvSaved: "저장됨",
+            bvUncategorizedRoot: "미분류 (루트)",
+            bvDeleteBookmark: "북마크 삭제",
+            bvDeleteBookmarkConfirm: "북마크를 삭제하시겠습니까?",
+            bvMoveTo: "이동...",
+            bvNewFolderTitle: "새 폴더",
+            bvNewSubFolderTitle: "새 하위 폴더",
+            bvRenameFolderTitle: "폴더 이름 바꾸기",
+            bvGrid: "그리드 보기",
+            bvList: "목록 보기"
 
         },
         "es": {
+
             // === Popup & System Keys ===
             securityLock: "Bloqueo de Seguridad", enterPass: "Ingrese código para acceder", unlockBtn: "Desbloquear", forgotPass: "¿Olvidó su código? (Solo Pro)",
             unlockPro: "Desbloquear V-Train Pro", proActive: "V-Train Pro Activo", monitoring: "Rastreando (ON)", stealth: "Pausado (OFF)",
@@ -583,7 +664,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "¿Sin clave? Comprar ahora ($4.99)", cancel: "Cancelar", confirm: "Confirmar",
             msgIncorrectPass: "❌ Código Incorrecto", msgVerifySuccess: "✅ ¡Verificado!", msgLimitReached: "❌ Límite de dispositivo alcanzado",
             msgInvalidKey: "❌ Clave Inválida", msgNetworkError: "❌ Error de Red", msgProOnlyFeature: "⚡ Función Pro",
-            msgProOnlyDesc: "Actualice a V-Train Pro para usar Bloqueo de Seguridad y Rescate.", msgSaved: "✅ Guardado", msgCleared: "✅ Datos Borrados",
+            msgProOnlyDesc: "Actualice a V-Train Pro para desbloquear esta función avanzada.", msgSaved: "✅ Guardado", msgCleared: "✅ Datos Borrados",
             msgImportSuccess: "✅ ¡Importación Exitosa! Recargando...", msgImportFail: "❌ Error de Formato", modalEnablePro: "⚡ Activar V-Train Pro",
             modalEnterKey: "Ingrese su clave de licencia:", modalSetPass: "🔐 Configurar Código", modalSetPassDesc: "Establecer nuevo código (vacío para eliminar).",
             modalClearData: "⚠️ Borrar Datos", modalClearDesc: "¿Seguro que desea borrar el historial?<br>(El estado Pro y ajustes se conservarán)",
@@ -654,7 +735,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 No me gusta",
             bvSort: "Orden: Más recientes",
             bvSettings: "⚙️ Configuración del sistema",
-            toggleInteraction: "👍 Habilitar botones de interacción",
+            toggleInteraction: "👍 Habilitar botones de Me gusta/Marcador",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 ,
@@ -668,10 +749,26 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "Más recientes",
             bvSortOldest: "Más antiguos",
             bvSortTitle: "Título A-Z",
-            bvSortDomain: "Dominio"
+            bvSortDomain: "Dominio",
+            bvSelectFolder: "Seleccionar Carpeta",
+            bvAddRootFolder: "Añadir Carpeta Raíz",
+            bvFolderNamePrompt: "Nombre de la Nueva Carpeta:",
+            btnCancel: "Cancelar",
+            bvConfirmSave: "Confirmar Guardado",
+            bvSaved: "Guardado",
+            bvUncategorizedRoot: "Sin Categoría (Raíz)",
+            bvDeleteBookmark: "Eliminar Marcador",
+            bvDeleteBookmarkConfirm: "¿Eliminar Marcador?",
+            bvMoveTo: "Mover a...",
+            bvNewFolderTitle: "Nueva Carpeta",
+            bvNewSubFolderTitle: "Nueva Subcarpeta",
+            bvRenameFolderTitle: "Renombrar Carpeta",
+            bvGrid: "Vista de Cuadrícula",
+            bvList: "Vista de Lista"
 
         },
         "fr": {
+
             // === Popup & System Keys ===
             securityLock: "Verrouillage de sécurité", enterPass: "Entrez le code pour accéder", unlockBtn: "Déverrouiller", forgotPass: "Code oublié ? (Pro uniquement)",
             unlockPro: "Débloquer V-Train Pro", proActive: "V-Train Pro Actif", monitoring: "Suivi (ON)", stealth: "En pause (OFF)",
@@ -685,7 +782,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "Pas de clé ? Acheter ($4.99)", cancel: "Annuler", confirm: "Confirmer",
             msgIncorrectPass: "❌ Code incorrect", msgVerifySuccess: "✅ Vérifié avec succès !", msgLimitReached: "❌ Limite d'appareils atteinte",
             msgInvalidKey: "❌ Clé invalide", msgNetworkError: "❌ Erreur réseau", msgProOnlyFeature: "⚡ Fonction Pro",
-            msgProOnlyDesc: "Veuillez passer à V-Train Pro pour utiliser le verrouillage et le sauvetage.", msgSaved: "✅ Enregistré", msgCleared: "✅ Données effacées",
+            msgProOnlyDesc: "Veuillez passer à V-Train Pro pour débloquer cette fonctionnalité avancée.", msgSaved: "✅ Enregistré", msgCleared: "✅ Données effacées",
             msgImportSuccess: "✅ Importation réussie ! Rechargement...", msgImportFail: "❌ Erreur de format", modalEnablePro: "⚡ Activer V-Train Pro",
             modalEnterKey: "Veuillez entrer votre clé de licence :", modalSetPass: "🔐 Définir le code", modalSetPassDesc: "Définir un nouveau code (laisser vide pour supprimer).",
             modalClearData: "⚠️ Effacer les données", modalClearDesc: "Voulez-vous vraiment supprimer tout l'historique ?<br>(Le statut Pro et les paramètres seront conservés)",
@@ -756,7 +853,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 Je n'aime pas",
             bvSort: "Trier: Plus récents",
             bvSettings: "⚙️ Paramètres du système",
-            toggleInteraction: "👍 Activer les boutons d'interaction",
+            toggleInteraction: "👍 Activer les boutons J'aime/Signet",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 ,
@@ -770,10 +867,26 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "Plus récents",
             bvSortOldest: "Plus anciens",
             bvSortTitle: "Titre A-Z",
-            bvSortDomain: "Domaine"
+            bvSortDomain: "Domaine",
+            bvSelectFolder: "Sélectionner le Dossier",
+            bvAddRootFolder: "Ajouter le Dossier Racine",
+            bvFolderNamePrompt: "Nom du Nouveau Dossier :",
+            btnCancel: "Annuler",
+            bvConfirmSave: "Confirmer la Sauvegarde",
+            bvSaved: "Sauvegardé",
+            bvUncategorizedRoot: "Non Classé (Racine)",
+            bvDeleteBookmark: "Supprimer le Signet",
+            bvDeleteBookmarkConfirm: "Supprimer le Signet ?",
+            bvMoveTo: "Déplacer vers...",
+            bvNewFolderTitle: "Nouveau Dossier",
+            bvNewSubFolderTitle: "Nouveau Sous-dossier",
+            bvRenameFolderTitle: "Renommer le Dossier",
+            bvGrid: "Vue en Grille",
+            bvList: "Vue en Liste"
 
         },
         "de": {
+
             // === Popup & System Keys ===
             securityLock: "Sicherheitssperre", enterPass: "Passcode eingeben", unlockBtn: "Entsperren", forgotPass: "Passcode vergessen? (Nur Pro)",
             unlockPro: "V-Train Pro freischalten", proActive: "V-Train Pro Aktiv", monitoring: "Aufzeichnung (ON)", stealth: "Pausiert (OFF)",
@@ -787,7 +900,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "Kein Schlüssel? Jetzt kaufen ($4.99)", cancel: "Abbrechen", confirm: "Bestätigen",
             msgIncorrectPass: "❌ Falscher Passcode", msgVerifySuccess: "✅ Erfolgreich verifiziert!", msgLimitReached: "❌ Gerätelimit erreicht",
             msgInvalidKey: "❌ Ungültiger Schlüssel", msgNetworkError: "❌ Netzwerkfehler", msgProOnlyFeature: "⚡ Pro-Funktion",
-            msgProOnlyDesc: "Bitte Upgrade auf V-Train Pro für Sicherheitssperre und Rettung.", msgSaved: "✅ Gespeichert", msgCleared: "✅ Daten gelöscht",
+            msgProOnlyDesc: "Bitte auf V-Train Pro aktualisieren, um diese erweiterte Funktion freizuschalten.", msgSaved: "✅ Gespeichert", msgCleared: "✅ Daten gelöscht",
             msgImportSuccess: "✅ Import erfolgreich! Wird neu geladen...", msgImportFail: "❌ Formatfehler", modalEnablePro: "⚡ V-Train Pro aktivieren",
             modalEnterKey: "Bitte geben Sie Ihren Lizenzschlüssel ein:", modalSetPass: "🔐 Passcode setzen", modalSetPassDesc: "Neuen Passcode setzen (leer lassen zum Entfernen).",
             modalClearData: "⚠️ Daten löschen", modalClearDesc: "Sind Sie sicher, dass Sie den Verlauf löschen wollen?<br>(Pro-Status und Einstellungen bleiben erhalten)",
@@ -855,7 +968,22 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSortNewest: "Neueste",
             bvSortOldest: "Älteste",
             bvSortTitle: "Titel A-Z",
-            bvSortDomain: "Domäne"
+            bvSortDomain: "Domäne",
+            bvSelectFolder: "Ordner Auswählen",
+            bvAddRootFolder: "Stammordner Hinzufügen",
+            bvFolderNamePrompt: "Neuer Ordnername:",
+            btnCancel: "Abbrechen",
+            bvConfirmSave: "Speichern Bestätigen",
+            bvSaved: "Gespeichert",
+            bvUncategorizedRoot: "Nicht kategorisiert (Stammordner)",
+            bvDeleteBookmark: "Lesezeichen löschen",
+            bvDeleteBookmarkConfirm: "Lesezeichen löschen?",
+            bvMoveTo: "Verschieben nach...",
+            bvNewFolderTitle: "Neuer Ordner",
+            bvNewSubFolderTitle: "Neuer Unterordner",
+            bvRenameFolderTitle: "Ordner umbenennen",
+            bvGrid: "Rasteransicht",
+            bvList: "Listenansicht"
 
         },
 
@@ -871,7 +999,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvDislike: "😤 Mag ich nicht",
             bvSort: "Sortieren: Neueste",
             bvSettings: "⚙️ Systemeinstellungen",
-            toggleInteraction: "👍 Interaktionsschaltflächen aktivieren",
+            toggleInteraction: "👍 Like/Lesezeichen-Schaltflächen aktivieren",
             proOnly: "PRO",
             openVaultPro: "Bookmark Vault PRO"
 

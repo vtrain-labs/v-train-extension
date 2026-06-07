@@ -128,8 +128,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 初始化資料
-    const configKeys = ['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
-    chrome.storage.local.get(configKeys, (items) => {
+    const configKeys = ['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_bookmarks', 'vt_ratings', 'vt_bm_folders', 'showInteraction'];
+    chrome.storage.local.get(configKeys, async (items) => {
+        // [Data Migration] Seamlessly move legacy bookmark data from storage.local to IndexedDB
+        if (items.vt_bookmarks || items.vt_ratings || items.vt_bm_folders) {
+            try {
+                if (items.vt_bookmarks) {
+                    for (const b of items.vt_bookmarks) await window.vtDB.put('vt_bookmarks', b);
+                }
+                if (items.vt_ratings) {
+                    for (const [videoId, rating] of Object.entries(items.vt_ratings)) {
+                        await window.vtDB.put('vt_ratings', { videoId, rating, timestamp: Date.now() });
+                    }
+                }
+                if (items.vt_bm_folders) {
+                    for (const f of items.vt_bm_folders) await window.vtDB.put('vt_bm_folders', f);
+                }
+                chrome.storage.local.remove(['vt_bookmarks', 'vt_ratings', 'vt_bm_folders']);
+            } catch (e) {
+                console.error('[VT Migration] Failed to migrate bookmarks to IndexedDB:', e);
+            }
+        }
+
         if (items.userLang) {
             currentLang = items.userLang;
         } else {
@@ -162,13 +182,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toggleVisibility.checked = !isStealth; updateStatusUI(!isStealth);
         if (toggleMonitorPanel) toggleMonitorPanel.checked = items.showMonitorPanel !== false;
-        if (toggleInteraction) toggleInteraction.checked = items.showInteraction !== false;
+        if (toggleInteraction) toggleInteraction.checked = !!items.showInteraction;
         if (progressBarColor) progressBarColor.value = items.barColor || '#ff0000';
         updateProUI(isPro, items.vt_video_count || 0);
 
         // Interaction Toggle Event
         if (toggleInteraction) {
-            toggleInteraction.addEventListener('change', () => {
+            toggleInteraction.addEventListener('change', async (e) => {
+                if (!isPro) {
+                    e.preventDefault();
+                    toggleInteraction.checked = false;
+                    await showModal(getLangText(currentLang, 'msgProOnlyFeature'), getLangText(currentLang, 'msgProOnlyDesc'), false, "", true);
+                    return;
+                }
                 chrome.storage.local.set({ showInteraction: toggleInteraction.checked });
             });
         }
@@ -190,7 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnOpenBookmarks = document.getElementById('btnOpenBookmarks');
         if (btnOpenBookmarks) {
             btnOpenBookmarks.addEventListener('click', () => {
-                chrome.tabs.create({ url: chrome.runtime.getURL('bookmarks.html') });
+                chrome.storage.local.get('isProVersion', async (items) => {
+                    if (!items.isProVersion) {
+                        await showModal(getLangText(currentLang, 'msgProOnlyFeature'), getLangText(currentLang, 'msgProOnlyDesc'), false, "", true);
+                        return;
+                    }
+                    chrome.tabs.create({ url: chrome.runtime.getURL('bookmarks.html') });
+                });
             });
         }
 
@@ -758,7 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnExport.textContent = getLangText(currentLang, 'exporting');
         btnExport.disabled = true;
 
-        const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_ratings', 'vt_bookmarks', 'vt_bm_folders'];
+        const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
 
         chrome.storage.local.get(sysKeys, async (sysData) => {
             let chunks = ["{"];
@@ -772,6 +804,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
+                // Export Bookmarks
+                const bookmarks = await window.vtDB.getAll('vt_bookmarks');
+                if (bookmarks.length > 0) {
+                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify('vt_bookmarks')}:${JSON.stringify(bookmarks)}`);
+                    isFirst = false;
+                }
+                // Export Ratings
+                const ratings = await window.vtDB.getAll('vt_ratings');
+                if (ratings.length > 0) {
+                    const ratingsObj = {};
+                    ratings.forEach(r => ratingsObj[r.videoId] = r.rating);
+                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify('vt_ratings')}:${JSON.stringify(ratingsObj)}`);
+                    isFirst = false;
+                }
+                // Export Folders
+                const folders = await window.vtDB.getAll('vt_bm_folders');
+                if (folders.length > 0) {
+                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify('vt_bm_folders')}:${JSON.stringify(folders)}`);
+                    isFirst = false;
+                }
+
+                // Export Video Records
                 const records = await window.vtDB.getAllRecords();
                 for (const item of records) {
                     const k = item.id;
@@ -881,6 +935,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         await new Promise(r => chrome.storage.local.set(mergedData, r));
                         await window.vtDB.clearRecords();
+                        await window.vtDB.clear('vt_bookmarks');
+                        await window.vtDB.clear('vt_ratings');
+                        await window.vtDB.clear('vt_bm_folders');
+
+                        // Import Bookmarks
+                        if (data.vt_bookmarks && Array.isArray(data.vt_bookmarks)) {
+                            for (const b of data.vt_bookmarks) await window.vtDB.put('vt_bookmarks', b);
+                        }
+                        if (data.vt_ratings && typeof data.vt_ratings === 'object') {
+                            for (const [videoId, rating] of Object.entries(data.vt_ratings)) {
+                                await window.vtDB.put('vt_ratings', { videoId, rating, timestamp: Date.now() });
+                            }
+                        }
+                        if (data.vt_bm_folders && Array.isArray(data.vt_bm_folders)) {
+                            for (const f of data.vt_bm_folders) await window.vtDB.put('vt_bm_folders', f);
+                        }
 
                         const finalKeys = Object.keys(data).filter(k => !sysKeys.includes(k) && !licenseKeys.includes(k));
                         for (const k of finalKeys) {
@@ -913,20 +983,36 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateProUI(isPro, count) {
         const limitNote = document.getElementById('limitNote');
         const interactionToggleRow = document.getElementById('interactionToggleRow');
+        const interactionLabel = document.querySelector('#interactionToggleRow .status-label');
+        const upsellBadge = document.getElementById('upsellBadge');
         
         if (isPro) {
             btnDonateUpgrade.classList.add('pro-active');
             btnDonateUpgrade.innerHTML = `<span class="donate-icon">👑</span> ${getLangText(currentLang, 'proActive')}`;
-            videoCountLabel.textContent = count.toLocaleString();
+            videoCountLabel.innerHTML = `${count.toLocaleString()} / &infin; <span style="font-size:10px;background:#ff007f;color:#fff;padding:2px 4px;border-radius:4px;margin-left:4px;">PRO</span>`;
             videoCountLabel.style.color = '#ffd700';
             if (limitNote) limitNote.style.display = 'block';
             if (interactionToggleRow) interactionToggleRow.style.display = 'flex';
+            if (upsellBadge) upsellBadge.style.display = 'none';
+            if (interactionLabel && interactionLabel.querySelector('.pro-badge')) {
+                interactionLabel.querySelector('.pro-badge').remove();
+            }
         } else {
             const limit = 200;
             videoCountLabel.textContent = `${count.toLocaleString()} / ${limit}`;
             if (count >= limit) videoCountLabel.style.color = '#ff5252';
             if (limitNote) limitNote.style.display = 'none';
-            if (interactionToggleRow) interactionToggleRow.style.display = 'none';
+            if (upsellBadge) upsellBadge.style.display = 'inline-block';
+            if (interactionToggleRow) {
+                interactionToggleRow.style.display = 'flex';
+                if (interactionLabel && !interactionLabel.querySelector('.pro-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'pro-badge';
+                    badge.style.cssText = 'font-size:10px;background:#ff007f;color:#fff;padding:2px 4px;border-radius:4px;margin-left:8px;';
+                    badge.textContent = 'PRO';
+                    interactionLabel.appendChild(badge);
+                }
+            }
         }
     }
 

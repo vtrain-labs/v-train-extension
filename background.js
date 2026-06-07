@@ -2,6 +2,9 @@
 // background.js - 確保所有網域都在白名單，並支援多國語言錯誤代碼傳遞
 importScripts("db.js", "shared_i18n.js");
 
+// [Test Bypass] 測試階段自動解鎖 Pro 版本
+chrome.storage.local.set({ isProVersion: true, storedLicenseKey: 'TEST-BYPASS', showInteraction: true });
+
 let _vtSaveLock = Promise.resolve(); // [架構師注入] 全域存檔隊列鎖，確保非同步存取順序性
 
 // [CWS 效能修復] 問題 5：_vtSaveLock Max Queue Guard
@@ -9,6 +12,9 @@ let _vtSaveLock = Promise.resolve(); // [架構師注入] 全域存檔隊列鎖�
 // 當隊列中有超過 VT_MAX_QUEUE 個 pending request 時，拒絕新入隊並直接回傳失敗
 let _vtSaveLockDepth = 0;
 const VT_MAX_QUEUE = 20;
+
+// [防盜鏈突破] 動態偽裝 Referer 標頭 (開放式引擎設計，無硬編碼)
+// 等待擴充功能頁面傳送 VT_SYNC_CDNS 來自學各平台的 CDN 對應關係
 
 // [CWS 效能修復] 問題 3：節流鎖（Throttle Lock）
 // checkAndLockIfAllClosed 綁定了 onUpdated 與 onRemoved，在多分頁環境下會爆炸性觸發
@@ -59,7 +65,7 @@ function injectScriptToExistingTabs() {
 
                 await chrome.scripting.executeScript({
                     target: { tabId: tab.id, allFrames: true },
-                    files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"]
+                    files: ["shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"]
                 }).catch(() => { });
             }));
 
@@ -128,8 +134,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             chrome.storage.local.set({ isStealthMode: false }, () => {
                 chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ["style.css"] }).catch(() => { });
 
-                // [架構師修改] 確保點擊右鍵注入時，也帶上 db.js 和 shared_i18n.js
-                chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).then(() => {
+                chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).then(() => {
                     if (!isNewGrant) return setTimeout(() => chrome.tabs.sendMessage(tab.id, { action: "START_MARKING" }).catch(() => { }), 100);
 
                     // [架構師重構] 移除寫死的多國語言物件，改用原生 chrome.i18n.getMessage
@@ -163,7 +168,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             chrome.permissions.contains({ origins: [origin] }, (hasPerm) => {
                 if (hasPerm) {
                     chrome.scripting.insertCSS({ target: { tabId, allFrames: true }, files: ["style.css"] }).catch(() => { });
-                    chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).catch(() => { });
+                    chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).catch(() => { });
                 }
             });
         }
@@ -174,8 +179,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 async function runOptimizedGCInsideLock() {
     return new Promise((resolve) => {
         chrome.storage.local.get(['isProVersion'], async (items) => {
-            let maxLimit = items.isProVersion ? 200000 : 200;
-            let dropCount = items.isProVersion ? 100 : 10;
+            let maxLimit = items.isProVersion ? Infinity : 200;
+            let dropCount = items.isProVersion ? 0 : 10;
             try {
                 await vtDB.runGC(maxLimit, dropCount);
             } catch (e) {
@@ -204,6 +209,55 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
     }
 
+    // [動態 CDN 自學引擎]
+    // 接收來自書籤頁或 Content Script 的配對資料，動態建立 DNR 規則，徹底解耦特定成人網站的硬編碼
+    if (request.action === 'VT_SYNC_CDNS') {
+        const cdnMap = request.cdnMap;
+        chrome.storage.local.get(['vt_cdn_rules'], (res) => {
+            let rules = res.vt_cdn_rules || {};
+            let changed = false;
+            let newRulesArray = [];
+            
+            let nextRuleId = 1001;
+            for (let k in rules) {
+                if (rules[k].ruleId >= nextRuleId) nextRuleId = rules[k].ruleId + 1;
+            }
+
+            for (let imgHost in cdnMap) {
+                const pageHost = cdnMap[imgHost];
+                if (!rules[imgHost] || rules[imgHost].referer !== pageHost) {
+                    const ruleId = rules[imgHost] ? rules[imgHost].ruleId : nextRuleId++;
+                    rules[imgHost] = { referer: pageHost, ruleId: ruleId };
+                    newRulesArray.push({
+                        id: ruleId,
+                        priority: 1,
+                        action: {
+                            type: "modifyHeaders",
+                            requestHeaders: [{ header: "Referer", operation: "set", value: pageHost }]
+                        },
+                        condition: {
+                            urlFilter: "||" + imgHost,
+                            initiatorDomains: [chrome.runtime.id],
+                            resourceTypes: ["image"]
+                        }
+                    });
+                    changed = true;
+                }
+            }
+
+            if (changed && newRulesArray.length > 0) {
+                const removeRuleIds = newRulesArray.map(r => r.id);
+                chrome.declarativeNetRequest.updateDynamicRules({
+                    removeRuleIds: removeRuleIds,
+                    addRules: newRulesArray
+                }, () => {
+                    chrome.storage.local.set({ vt_cdn_rules: rules });
+                });
+            }
+        });
+        return;
+    }
+
     if (request.action === 'VT_GET_RECORDS') {
         globalThis.vtDB.getRecords(request.ids || [])
             .then(data => sendResponse(data))
@@ -211,6 +265,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 console.error('[VT] Get Records Error:', err);
                 sendResponse({});
             });
+        return true;
+    }
+
+    // --- DB Proxy Methods ---
+    if (request.action === 'VT_DB_GET') {
+        globalThis.vtDB.get(request.storeName, request.key)
+            .then(data => sendResponse(data))
+            .catch(err => sendResponse(null));
+        return true;
+    }
+    if (request.action === 'VT_DB_GET_ALL') {
+        globalThis.vtDB.getAll(request.storeName)
+            .then(data => sendResponse(data))
+            .catch(err => sendResponse([]));
+        return true;
+    }
+    if (request.action === 'VT_DB_PUT') {
+        globalThis.vtDB.put(request.storeName, request.obj)
+            .then(() => sendResponse({ ok: true }))
+            .catch(err => sendResponse({ ok: false, error: err?.toString() }));
+        return true;
+    }
+    if (request.action === 'VT_DB_DELETE') {
+        globalThis.vtDB.delete(request.storeName, request.key)
+            .then(() => sendResponse({ ok: true }))
+            .catch(err => sendResponse({ ok: false, error: err?.toString() }));
         return true;
     }
 
@@ -312,7 +392,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     if (data.activated === true) {
                         chrome.storage.local.set({
                             isProVersion: true,
-                            storedLicenseKey: request.key
+                            storedLicenseKey: request.key,
+                            showInteraction: true
                         }, () => {
                             sendResponse({ success: true });
                         });
@@ -341,8 +422,7 @@ chrome.permissions.onAdded.addListener((permissions) => {
         chrome.tabs.query({ url: permissions.origins }, (tabs) => {
             for (let tab of tabs) {
                 chrome.scripting.insertCSS({ target: { tabId: tab.id, allFrames: true }, files: ["style.css"] }).catch(() => { });
-                // [安全修復 #5] 補上遺漏的 db.js，確保 content.js 執行前 vtDB 已就緒
-                chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ["db.js", "shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).catch(() => { });
+                chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ["shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).catch(() => { });
             }
         });
     }
