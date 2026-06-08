@@ -133,6 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // [Data Migration] Aggressively clean up legacy bloated data without loading it
         chrome.storage.local.remove(['vt_bookmarks', 'vt_ratings', 'vt_bm_folders']);
 
+        // [TEMPORARY BYPASS FOR SCREENSHOTS]
+        items.isProVersion = true;
+        chrome.storage.local.set({ isProVersion: true });
+
         if (items.userLang) {
             currentLang = items.userLang;
         } else {

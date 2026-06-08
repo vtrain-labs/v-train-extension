@@ -164,11 +164,12 @@ if (!window._vtBookmarksLoaded) {
     const SVG_LIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;vertical-align:-0.2em;display:inline-block;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
     const SVG_DISLIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;vertical-align:-0.2em;display:inline-block;"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`;
 
+    const _g = (k, d) => window.getI18nStr ? window.getI18nStr(k, d) : d;
     const PANEL_BTNS = [
-        { key: 'like',     html: SVG_LIKE, emoji: '👍', title: '喜歡', id: 'vt-bmb-like'     },
-        { key: 'dislike',  html: SVG_DISLIKE, emoji: '😤', title: '不喜歡', id: 'vt-bmb-dislike' },
-        { key: 'bookmark', emoji: '❤️', title: '收藏', id: 'vt-bmb-bm'       },
-        { key: 'open',     emoji: '📚', title: '書籤管理', id: 'vt-bmb-open'  },
+        { key: 'like',     html: SVG_LIKE, emoji: '👍', title: _g('btnLike', '喜歡'), id: 'vt-bmb-like'     },
+        { key: 'dislike',  html: SVG_DISLIKE, emoji: '😤', title: _g('btnDislike', '不喜歡'), id: 'vt-bmb-dislike' },
+        { key: 'bookmark', emoji: '❤️', title: _g('btnBookmark', '收藏'), id: 'vt-bmb-bm'       },
+        { key: 'open',     emoji: '📚', title: _g('btnManage', '書籤管理'), id: 'vt-bmb-open'  },
     ];
 
     function _createPanel() {
@@ -191,7 +192,7 @@ if (!window._vtBookmarksLoaded) {
 
         const dragHandle = document.createElement('div');
         dragHandle.innerHTML = '⋮⋮';
-        dragHandle.title = '拖曳移動 (點兩下恢復原位)';
+        dragHandle.title = window.getI18nStr ? window.getI18nStr('dragHint', '拖曳移動 (點兩下恢復原位)') : '拖曳移動 (點兩下恢復原位)';
         dragHandle.style.cssText = `
             cursor:grab;color:rgba(255,255,255,0.4);font-size:14px;
             padding:0 6px;user-select:none;display:flex;align-items:center;

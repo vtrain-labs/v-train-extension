@@ -28,22 +28,7 @@ if (!window._vtUrlParserLoaded) {
         return null;
     }
 
-    // [新增] 動態特徵鎖生成器：分析訓練 ID，產生專屬的 Regex 白名單
-    const generateGuardRegex = (targetId) => {
-        if (!targetId || typeof targetId !== 'string') return null;
-        const chars = new Set(targetId.split(''));
-        let pattern = "";
-        chars.forEach(c => {
-            if (/[a-zA-Z0-9]/.test(c)) return;
-            // 轉義特殊字元，確保 Regex 安全性
-            if (/^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/.test(c)) {
-                 pattern += "\\" + c;
-            }
-        });
-        return `^[a-zA-Z0-9${pattern}]+$`;
-    };
-
-    // [強化] CWS 審查級別的 ID 校驗器
+    // [強化] CWS 審查級別的 ID 校驗器 (純粹位置提取，僅保留 XSS 與垃圾字串防禦)
     function validateIdByGuard(id, guard) {
         if (!id || typeof id !== 'string') return false;
 
@@ -54,25 +39,11 @@ if (!window._vtUrlParserLoaded) {
             return false;
         }
 
-        // [新增] 嚴格拒絕包含網址結構的垃圾字串
-        if (/[/?=&]/.test(id)) return false;
+        // 2. 嚴格拒絕包含網址結構的垃圾字串 (移除 '=' 攔截以支援 Base64 ID)
+        if (/[/?&]/.test(id)) return false;
 
-        if (!guard) return true; // 舊規則相容模式
-
-        // 2. 長度過濾
-        if (guard.minLen && id.length < guard.minLen) return false;
-        if (guard.maxLen && id.length > guard.maxLen) return false;
-
-        // 3. 動態特徵鎖 (Adaptive Whitelist)
-        if (guard.regex) {
-            try {
-                const regex = new RegExp(guard.regex);
-                if (!regex.test(id)) return false;
-            } catch (e) {
-                return false;
-            }
-        }
-        return true;
+        // 3. 完全移除長度與 Regex 特徵鎖，實現真正的 100% Adaptive 位置提取
+        return true; 
     }
 
     function detectFlank(raw, target) {
@@ -87,11 +58,7 @@ if (!window._vtUrlParserLoaded) {
         return {
             left,
             right,
-            guard: {
-                minLen: Math.max(2, Math.floor(target.length * 0.7)),
-                maxLen: target.length * 3 + 10,
-                regex: "^[a-zA-Z0-9\\-_\\.]+$",
-            },
+            guard: { isPositional: true }
         };
     }
 
@@ -186,15 +153,8 @@ if (!window._vtUrlParserLoaded) {
 
         let rule = _detect();
         if (rule && !rule.guard) {
-            // [動態優化] 訓練階段：自動分析並生成針對該站點 ID 格式的專屬特徵鎖
-            rule.guard = {
-                // 1. 下限：根據 ID 長度動態設定最小門檻
-                minLen: Math.max(2, targetId.length > 20 ? 5 : targetId.length - 3),
-                // 2. 上限：設定安全邊界，防止惡意超長字串
-                maxLen: Math.max(150, targetId.length + 50),
-                // 3. [關鍵改動]：不再根據英數字判斷，而是直接「學習」該 ID 出現過的字元特徵
-                regex: generateGuardRegex(targetId)
-            };
+            // [極致優化] 訓練階段：不再綁定任何 ID 格式與長度限制，100% 信任 DOM 位置提取
+            rule.guard = { isPositional: true };
         }
         return rule;
     };

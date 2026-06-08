@@ -2,8 +2,7 @@
 // background.js - 確保所有網域都在白名單，並支援多國語言錯誤代碼傳遞
 importScripts("db.js", "shared_i18n.js");
 
-// [Test Bypass] 測試階段自動解鎖 Pro 版本
-chrome.storage.local.set({ isProVersion: true, storedLicenseKey: 'TEST-BYPASS', showInteraction: true });
+
 
 let _vtSaveLock = Promise.resolve(); // [架構師注入] 全域存檔隊列鎖，確保非同步存取順序性
 

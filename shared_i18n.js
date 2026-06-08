@@ -29,7 +29,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "Privacy & Data Policy",
             policy1: "<b>Zero-Server Architecture:</b> All data is stored in a local sandbox. Neither the developer nor any third party can access your viewing privacy.",
             policy2: "<b>Data Sovereignty:</b> Uninstalling the extension will clear local data. Please use the 'Export' function for manual backups.",
-            policy3: "<b>License Protection:</b> To maintain data integrity, the serial key is bound to a single device. Self-service reset is supported when switching devices.",
+            policy3: "<b>License Protection:</b> The serial key is used strictly for device binding and verification. It does not access, collect, or transmit any of your personal data or browsing history.",
             buyWarning: "⚠️ Compatibility Check: Please ensure the free version works on your target site before upgrading.",
             buyLink: "No license key? Buy now ($4.99)",
             cancel: "Cancel",
@@ -178,7 +178,24 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvPageHint: "Use keyboard {key} to turn pages",
             bvGrid: "Grid View",
             bvList: "List View",
-            clickToHeal: "Click to heal"
+            clickToHeal: "Click to heal",
+
+            // --- Newly Added Keys ---
+            bvVideoCount: "{num} Videos",
+            bvJumpHint: "Enter page number and press Enter",
+            bvDelFolderConfirm: "Delete '{name}'?",
+            bvDelFolderDesc: "Bookmarks will be moved to Uncategorized, and subfolders will be deleted.",
+            bvToastFolderDel: "🗑 Folder deleted",
+            bvToastBookmarkDel: "🗑 Bookmark deleted",
+            bvToastMoved: "✅ Bookmark moved",
+            bvMoveTitle: "🗂 Move Bookmark",
+            bvBtnMove: "Confirm Move",
+            btnLike: "Like",
+            btnDislike: "Dislike",
+            btnBookmark: "Bookmark",
+            btnManage: "Manage Bookmarks",
+            dragHint: "Drag to move (Double click to reset)"
+
 
         },
         "zh-TW": {
@@ -191,7 +208,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "隱私權與資料政策",
             policy1: "<b>零伺服器架構：</b>所有數據均儲存於本地沙盒，開發者及第三方均無法存取您的觀看隱私。",
             policy2: "<b>數據控制權：</b>移除擴充將導致本地資料清空。請善用「匯出」功能進行手動備份。",
-            policy3: "<b>授權保護：</b>為維護數據唯一性，序號採單一設備綁定。更換裝置時，支援隨時自助重置授權。",
+            policy3: "<b>授權保護：</b>序號僅用於裝置綁定與驗證，絕不會存取、收集或外洩您的任何個人資料與瀏覽紀錄。",
             buyWarning: "⚠️ 相容性提醒：升級前，請務必先確保免費版在您的目標網站標記與追蹤功能運作正常。",
             buyLink: "沒有序號？立即購買 ($4.99)", cancel: "取消", confirm: "確認",
             msgIncorrectPass: "❌ 密碼錯誤", msgVerifySuccess: "✅ 驗證成功！", msgLimitReached: "❌ 已達設備綁定上限",
@@ -300,7 +317,24 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvPageHint: "使用鍵盤上的 {key} 鍵來翻頁",
             bvGrid: "格狀檢視",
             bvList: "列表檢視",
-            clickToHeal: "點擊修復"
+            clickToHeal: "點擊修復",
+
+            // --- Newly Added Keys ---
+            bvVideoCount: "{num} 部影片",
+            bvJumpHint: "輸入頁碼後按 Enter 跳轉",
+            bvDelFolderConfirm: "刪除「{name}」？",
+            bvDelFolderDesc: "此資料夾內的書籤將移至「未分類」，子資料夾也會一併刪除。",
+            bvToastFolderDel: "🗑 資料夾已刪除",
+            bvToastBookmarkDel: "🗑 書籤已刪除",
+            bvToastMoved: "✅ 書籤已移動",
+            bvMoveTitle: "🗂 移動書籤",
+            bvBtnMove: "確認移動",
+            btnLike: "喜歡",
+            btnDislike: "不喜歡",
+            btnBookmark: "收藏",
+            btnManage: "書籤管理",
+            dragHint: "拖曳移動 (點兩下恢復原位)"
+
 
         },
         "zh-CN": {
@@ -313,7 +347,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "隐私与数据政策",
             policy1: "<b>零服务器架构：</b>所有数据均存储于本地沙盒，开发者及第三方均无法访问您的观看隐私。",
             policy2: "<b>数据控制权：</b>卸载扩展将导致本地资料清空。请善用“导出”功能进行手动备份。",
-            policy3: "<b>授权保护：</b>为维护数据唯一性，序列号采用单一设备绑定。更换装置时，支持随时自助重置授权。",
+            policy3: "<b>授权保护：</b>序列号仅用于设备绑定与验证，绝不会访问、收集或泄露您的任何个人资料与浏览记录。",
             buyWarning: "⚠️ 兼容性提醒：升级前，请务必先确保免费版在您的目标网站标记与追踪功能运作正常。",
             buyLink: "没有序列号？立即购买 ($4.99)", cancel: "取消", confirm: "确认",
             msgIncorrectPass: "❌ 密码错误", msgVerifySuccess: "✅ 验证成功！", msgLimitReached: "❌ 已达设备绑定上限",
@@ -422,7 +456,24 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvPageHint: "使用键盘上的 {key} 键来翻页",
             bvGrid: "网格视图",
             bvList: "列表视图",
-            clickToHeal: "点击修复"
+            clickToHeal: "点击修复",
+
+            // --- Newly Added Keys ---
+            bvVideoCount: "{num} 部影片",
+            bvJumpHint: "输入页码后按 Enter 跳转",
+            bvDelFolderConfirm: "删除“{name}”？",
+            bvDelFolderDesc: "此文件夹内的书签将移至“未分类”，子文件夹也会一并删除。",
+            bvToastFolderDel: "🗑 文件夹已删除",
+            bvToastBookmarkDel: "🗑 书签已删除",
+            bvToastMoved: "✅ 书签已移动",
+            bvMoveTitle: "🗂 移动书签",
+            bvBtnMove: "确认移动",
+            btnLike: "喜欢",
+            btnDislike: "不喜欢",
+            btnBookmark: "收藏",
+            btnManage: "书签管理",
+            dragHint: "拖拽移动 (双击恢复原位)"
+
 
         },
         "ja": {
@@ -435,7 +486,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "プライバシーとデータポリシー",
             policy1: "<b>サーバーレス構成：</b>すべてのデータはローカルのサンドボックスに保存され、開発者や第三者が閲覧履歴にアクセスすることはできません。",
             policy2: "<b>データ・コントロール権：</b>拡張機能を削除するとローカルデータが消去されます。「エクスポート」機能を利用して手動でバックアップを行ってください。",
-            policy3: "<b>ライセンス保護：</b>データの唯一性を維持するため、シリアルキーは1台のデバイスに紐付けられます。デバイス変更時はいつでもセルフリセットが可能です。",
+            policy3: "<b>ライセンス保護：</b>シリアルキーはデバイスの紐付けと検証にのみ使用され、個人データや閲覧履歴にアクセス、収集、送信することは一切ありません。",
             buyWarning: "⚠️ 互換性の確認：アップグレードする前に、対象サイトで無料版のマーキングとトラッキング機能が正常に動作することを確認してください。",
             buyLink: "ライセンスキーがない？ 購入 ($4.99)", cancel: "キャンセル", confirm: "確認",
             msgIncorrectPass: "❌ パスコードが違います", msgVerifySuccess: "✅ 認証成功！", msgLimitReached: "❌ デバイス制限に達しました",
@@ -544,7 +595,24 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvPageHint: "キーボードの {key} キーでページをめくる",
             bvGrid: "グリッド表示",
             bvList: "リスト表示",
-            clickToHeal: "クリックして修復"
+            clickToHeal: "クリックして修復",
+
+            // --- Newly Added Keys ---
+            bvVideoCount: "{num} 本の動画",
+            bvJumpHint: "ページ番号を入力して Enter で移動",
+            bvDelFolderConfirm: "「{name}」を削除しますか？",
+            bvDelFolderDesc: "このフォルダ内のブックマークは「未分類」に移動し、サブフォルダも削除されます。",
+            bvToastFolderDel: "🗑 フォルダを削除しました",
+            bvToastBookmarkDel: "🗑 ブックマークを削除しました",
+            bvToastMoved: "✅ ブックマークを移動しました",
+            bvMoveTitle: "🗂 ブックマークの移動",
+            bvBtnMove: "移動を確認",
+            btnLike: "いいね",
+            btnDislike: "よくないね",
+            btnBookmark: "ブックマーク",
+            btnManage: "ブックマーク管理",
+            dragHint: "ドラッグして移動 (ダブルクリックで元に戻す)"
+
 
         },
         "ko": {
@@ -557,7 +625,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "개인정보 및 데이터 정책",
             policy1: "<b>제로 서버 아키텍처:</b> 모든 데이터는 로컬 샌드박스에 저장되며, 개발자나 제3자가 사용자의 시청 기록에 접근할 수 없습니다.",
             policy2: "<b>데이터 주권:</b> 확장 프로그램을 삭제하면 로컬 데이터가 삭제됩니다. '내보내기' 기능을 사용하여 수동으로 백업하시기 바랍니다.",
-            policy3: "<b>라이선스 보호:</b> 데이터의 무결성을 유지하기 위해 시리얼 키는 단일 기기에 바인딩됩니다. 기기 교체 시 언제든지 셀프 리셋을 지원합니다.",
+            policy3: "<b>라이선스 보호:</b> 시리얼 키는 기기 바인딩 및 검증에만 사용되며, 개인 데이터나 브라우징 기록에 접근, 수집, 전송하지 않습니다.",
             buyWarning: "⚠️ 호환성 확인: 업그레이드 전, 무료 버전이 대상 사이트의 마킹 및 추적 기능에서 정상적으로 작동하는지 확인하십시오.",
             buyLink: "라이선스 키가 없나요? 지금 구매 ($4.99)", cancel: "취소", confirm: "확인",
             msgIncorrectPass: "❌ 비밀번호가 틀렸습니다", msgVerifySuccess: "✅ 인증 성공!", msgLimitReached: "❌ 기기 제한 도달",
@@ -666,7 +734,24 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvPageHint: "키보드의 {key} 키를 사용하여 페이지를 넘기세요",
             bvGrid: "그리드 보기",
             bvList: "목록 보기",
-            clickToHeal: "클릭하여 복구"
+            clickToHeal: "클릭하여 복구",
+
+            // --- Newly Added Keys ---
+            bvVideoCount: "{num} 개의 동영상",
+            bvJumpHint: "페이지 번호를 입력하고 Enter를 누르세요",
+            bvDelFolderConfirm: "'{name}'을(를) 삭제하시겠습니까?",
+            bvDelFolderDesc: "이 폴더의 북마크는 '미분류'로 이동되며, 하위 폴더도 삭제됩니다.",
+            bvToastFolderDel: "🗑 폴더가 삭제되었습니다",
+            bvToastBookmarkDel: "🗑 북마크가 삭제되었습니다",
+            bvToastMoved: "✅ 북마크가 이동되었습니다",
+            bvMoveTitle: "🗂 북마크 이동",
+            bvBtnMove: "이동 확인",
+            btnLike: "좋아요",
+            btnDislike: "싫어요",
+            btnBookmark: "북마크",
+            btnManage: "북마크 관리",
+            dragHint: "드래그하여 이동 (두 번 클릭하여 초기화)"
+
 
         },
         "es": {
@@ -679,7 +764,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "Política de Privacidad y Datos",
             policy1: "<b>Arquitectura Sin Servidor:</b> Todos los datos se almacenan en un entorno de pruebas local. Ni el desarrollador ni terceros pueden acceder a su privacidad de visualización.",
             policy2: "<b>Soberanía de Datos:</b> Desinstalar la extensión borrará los datos locales. Por favor, use la función de 'Exportar' para copias de seguridad manuales.",
-            policy3: "<b>Protección de Licencia:</b> Para mantener la integridad de los datos, la clave de serie se vincula a un solo dispositivo. Se permite el reinicio manual al cambiar de dispositivo.",
+            policy3: "<b>Protección de Licencia:</b> La clave de serie se utiliza estrictamente para la vinculación del dispositivo y la verificación. No accede, recopila ni transmite datos personales ni historial de navegación.",
             buyWarning: "⚠️ Aviso de compatibilidad: Por favor, asegúrese de que la version gratuita funcione correctamente en su sitio antes de actualizar.",
             buyLink: "¿Sin clave? Comprar ahora ($4.99)", cancel: "Cancelar", confirm: "Confirmar",
             msgIncorrectPass: "❌ Código Incorrecto", msgVerifySuccess: "✅ ¡Verificado!", msgLimitReached: "❌ Límite de dispositivo alcanzado",
@@ -788,7 +873,24 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvPageHint: "Usa las teclas {key} para cambiar de página",
             bvGrid: "Vista de Cuadrícula",
             bvList: "Vista de Lista",
-            clickToHeal: "Haz clic para reparar"
+            clickToHeal: "Haz clic para reparar",
+
+            // --- Newly Added Keys ---
+            bvVideoCount: "{num} Videos",
+            bvJumpHint: "Introduzca el número de página y pulse Enter",
+            bvDelFolderConfirm: "¿Eliminar '{name}'?",
+            bvDelFolderDesc: "Los marcadores se moverán a Sin categoría y las subcarpetas se eliminarán.",
+            bvToastFolderDel: "🗑 Carpeta eliminada",
+            bvToastBookmarkDel: "🗑 Marcador eliminado",
+            bvToastMoved: "✅ Marcador movido",
+            bvMoveTitle: "🗂 Mover Marcador",
+            bvBtnMove: "Confirmar",
+            btnLike: "Me gusta",
+            btnDislike: "No me gusta",
+            btnBookmark: "Marcador",
+            btnManage: "Gestionar",
+            dragHint: "Arrastrar para mover (Doble clic para restablecer)"
+
 
         },
         "fr": {
@@ -801,7 +903,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "Politique de confidentialité",
             policy1: "<b>Architecture sans serveur :</b> Toutes les données sont stockées dans un bac à sable local. Ni le développeur ni aucun tiers ne peut accéder à l'historique de vos visionnages.",
             policy2: "<b>Souveraineté des données :</b> La désinstallation de l'extension effacera les données locales. Veuillez utiliser la fonction « Exporter » pour des sauvegardes manuelles.",
-            policy3: "<b>Protection de licence :</b> Pour préserver l'intégrité des données, la clé de série est liée à un seul appareil. La réinitialisation en libre-service est prise en charge lors du changement d'appareil.",
+            policy3: "<b>Protection de licence :</b> La clé de série est utilisée strictement pour la liaison de l'appareil et la vérification. Elle n'accède, ne collecte ni ne transmet aucune donnée personnelle ou historique de navigation.",
             buyWarning: "⚠️ Avis de compatibilité : veuillez vous assurer que la version gratuite fonctionne correctement sur votre site avant de passer à la version Pro.",
             buyLink: "Pas de clé ? Acheter ($4.99)", cancel: "Annuler", confirm: "Confirmer",
             msgIncorrectPass: "❌ Code incorrect", msgVerifySuccess: "✅ Vérifié avec succès !", msgLimitReached: "❌ Limite d'appareils atteinte",
@@ -910,7 +1012,24 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvPageHint: "Utilisez les touches {key} pour tourner les pages",
             bvGrid: "Vue en Grille",
             bvList: "Vue en Liste",
-            clickToHeal: "Cliquez pour réparer"
+            clickToHeal: "Cliquez pour réparer",
+
+            // --- Newly Added Keys ---
+            bvVideoCount: "{num} Vidéos",
+            bvJumpHint: "Entrez le numéro de page et appuyez sur Entrée",
+            bvDelFolderConfirm: "Supprimer '{name}'?",
+            bvDelFolderDesc: "Les favoris seront déplacés vers Non classé, et les sous-dossiers seront supprimés.",
+            bvToastFolderDel: "🗑 Dossier supprimé",
+            bvToastBookmarkDel: "🗑 Favori supprimé",
+            bvToastMoved: "✅ Favori déplacé",
+            bvMoveTitle: "🗂 Déplacer le favori",
+            bvBtnMove: "Confirmer",
+            btnLike: "J'aime",
+            btnDislike: "Je n'aime pas",
+            btnBookmark: "Favori",
+            btnManage: "Gérer",
+            dragHint: "Faites glisser pour déplacer (Double clic pour réinitialiser)"
+
 
         },
         "de": {
@@ -923,7 +1042,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             policyTitle: "Datenschutzrichtlinie",
             policy1: "<b>Serverlose Architektur:</b> Alle Daten werden in einer lokalen Sandbox gespeichert. Weder der Entwickler noch Dritte haben Zugriff auf Ihre persönliche Seh-Historie.",
             policy2: "<b>Datenhoheit:</b> Wenn Sie die Erweiterung deinstallieren, werden die lokalen Daten gelöscht. Bitte verwenden Sie die Funktion 'Exportieren' für manuelle Backups.",
-            policy3: "<b>Lizenzschutz:</b> Um die Datenintegrität zu wahren, ist der Lizenzschlüssel an ein einziges Gerät gebunden. Bei einem Gerätewechsel wird ein Self-Service-Reset unterstützt.",
+            policy3: "<b>Lizenzschutz:</b> Der Lizenzschlüssel wird ausschließlich für die Gerätebindung und Verifizierung verwendet. Er greift auf keine persönlichen Daten oder den Browserverlauf zu, sammelt oder überträgt diese.",
             buyWarning: "⚠️ Kompatibilitätshinweis: Bitte stellen Sie sicher, dass die kostenlose Version auf Ihrer Website ordnungsgemäß funktioniert, bevor Sie ein Upgrade durchführen.",
             buyLink: "Kein Schlüssel? Jetzt kaufen ($4.99)", cancel: "Abbrechen", confirm: "Bestätigen",
             msgIncorrectPass: "❌ Falscher Passcode", msgVerifySuccess: "✅ Erfolgreich verifiziert!", msgLimitReached: "❌ Gerätelimit erreicht",

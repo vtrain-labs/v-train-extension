@@ -355,7 +355,7 @@ function renderSubfolders() {
         const countText = document.createElement('div');
         countText.className = 'bv-subfolder-card-count';
         const directCount = _allBookmarks.filter(b => b.folderId === f.id).length;
-        countText.textContent = `${directCount} 部影片`;
+        countText.textContent = getLang('bvVideoCount', '{num} 部影片').replace('{num}', directCount);
 
         info.append(name, countText);
         card.append(icon, info);
@@ -492,7 +492,7 @@ function _renderPagination(totalItems, totalPages) {
     jumpInput.max = totalPages;
     jumpInput.placeholder = '';
     jumpInput.className = 'bv-page-jump-input';
-    jumpInput.title = '輸入頁碼後按 Enter 跳轉';
+    jumpInput.title = getLang('bvJumpHint', '輸入頁碼後按 Enter 跳轉');
     
     jumpInput.onkeydown = (e) => {
         if (e.key === 'Enter') {
@@ -734,8 +734,8 @@ function showFolderModal(editId = null, parentId = null) {
 
 async function deleteFolder(folderId, folderName) {
     showConfirm(
-        `刪除「${folderName}」？`,
-        '此資料夾內的書籤將移至「未分類」，子資料夾也會一併刪除。',
+        getLang('bvDelFolderConfirm', '刪除「{name}」？').replace('{name}', folderName),
+        getLang('bvDelFolderDesc', '此資料夾內的書籤將移至「未分類」，子資料夾也會一併刪除。'),
         async () => {
             // 移動書籤到未分類
             const allSubIds = _getAllSubfolderIds(folderId);
@@ -759,7 +759,7 @@ async function deleteFolder(folderId, folderName) {
                 _activeFolderId = '__all__';
             }
             renderAll();
-            showToast('🗑 資料夾已刪除');
+            showToast(getLang('bvToastFolderDel', '🗑 資料夾已刪除'));
         }
     );
 }
@@ -776,7 +776,7 @@ async function deleteBookmark(bookmarkId, title) {
                 notifySync();
             }
             renderAll();
-            showToast('🗑 書籤已刪除');
+            showToast(getLang('bvToastBookmarkDel', '🗑 書籤已刪除'));
         }
     );
 }
@@ -828,7 +828,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
     const hdr = document.createElement('div');
     hdr.style.cssText = 'padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;';
     const htitle = document.createElement('h3');
-    htitle.textContent = '🗂 移動書籤';
+    htitle.textContent = getLang('bvMoveTitle', '🗂 移動書籤');
     htitle.style.margin = '0';
     const xBtn = document.createElement('button');
     xBtn.textContent = '✕';
@@ -843,12 +843,12 @@ function showMoveModal(bookmarkId, currentFolderId) {
     confirmRow.style.cssText = 'padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;';
     
     const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = '取消';
+    cancelBtn.textContent = getLang('btnCancel', '取消');
     cancelBtn.className = 'bv-btn bv-btn-ghost';
     cancelBtn.onclick = () => overlay.remove();
     
     const confirmBtn = document.createElement('button');
-    confirmBtn.textContent = '確認移動';
+    confirmBtn.textContent = getLang('bvBtnMove', '確認移動');
     confirmBtn.className = 'bv-btn bv-btn-accent';
     confirmBtn.onclick = async () => {
         const bm = _allBookmarks.find(b => b.id === bookmarkId);
@@ -857,7 +857,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
             await window.vtDB.put('vt_bookmarks', bm);
             notifySync();
             renderAll();
-            showToast('✅ 書籤已移動');
+            showToast(getLang('bvToastMoved', '✅ 書籤已移動'));
         }
         overlay.remove();
     };
