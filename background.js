@@ -208,6 +208,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
     }
 
+    if (request.action === 'VT_CAPTURE_TAB') {
+        chrome.tabs.captureVisibleTab(null, { format: 'jpeg', quality: 50 }, (dataUrl) => {
+            if (chrome.runtime.lastError) {
+                // Ignore the error (usually missing <all_urls> permission), just return null to trigger fallback
+                sendResponse({ dataUrl: null, error: chrome.runtime.lastError.message });
+            } else {
+                sendResponse({ dataUrl: dataUrl || null });
+            }
+        });
+        return true; // 非同步回覆
+    }
+
+    if (request.action === 'VT_FETCH_IMAGE') {
+        fetch(request.url)
+            .then(r => r.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => sendResponse({ dataUrl: reader.result, type: blob.type });
+                reader.readAsDataURL(blob);
+            })
+            .catch(err => sendResponse({ error: err.message }));
+        return true;
+    }
+
     // [動態 CDN 自學引擎]
     // 接收來自書籤頁或 Content Script 的配對資料，動態建立 DNR 規則，徹底解耦特定成人網站的硬編碼
     if (request.action === 'VT_SYNC_CDNS') {
@@ -224,24 +248,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
             for (let imgHost in cdnMap) {
                 const pageHost = cdnMap[imgHost];
-                if (!rules[imgHost] || rules[imgHost].referer !== pageHost) {
-                    const ruleId = rules[imgHost] ? rules[imgHost].ruleId : nextRuleId++;
-                    rules[imgHost] = { referer: pageHost, ruleId: ruleId };
-                    newRulesArray.push({
-                        id: ruleId,
-                        priority: 1,
-                        action: {
-                            type: "modifyHeaders",
-                            requestHeaders: [{ header: "Referer", operation: "set", value: pageHost }]
-                        },
-                        condition: {
-                            urlFilter: "||" + imgHost,
-                            initiatorDomains: [chrome.runtime.id],
-                            resourceTypes: ["image"]
-                        }
-                    });
-                    changed = true;
-                }
+                // 為了確保新的 resourceTypes (xmlhttprequest) 生效，強制重新註冊
+                const ruleId = rules[imgHost] ? rules[imgHost].ruleId : nextRuleId++;
+                rules[imgHost] = { referer: pageHost, ruleId: ruleId };
+                newRulesArray.push({
+                    id: ruleId,
+                    priority: 1,
+                    action: {
+                        type: "modifyHeaders",
+                        requestHeaders: [{ header: "Referer", operation: "set", value: pageHost }]
+                    },
+                    condition: {
+                        urlFilter: "||" + imgHost,
+                        resourceTypes: ["xmlhttprequest", "image"]
+                    }
+                });
+                changed = true;
             }
 
             if (changed && newRulesArray.length > 0) {

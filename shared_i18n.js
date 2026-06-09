@@ -193,6 +193,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnLike: "Like",
             btnDislike: "Dislike",
             btnBookmark: "Bookmark",
+            btnSnapshot: "Take/Replace Cover (Auto Bookmark)",
             btnManage: "Manage Bookmarks",
             dragHint: "Drag to move (Double click to reset)"
 
@@ -332,6 +333,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnLike: "喜歡",
             btnDislike: "不喜歡",
             btnBookmark: "收藏",
+            btnSnapshot: "拍攝/替換封面 (自動收藏)",
             btnManage: "書籤管理",
             dragHint: "拖曳移動 (點兩下恢復原位)"
 
@@ -471,6 +473,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnLike: "喜欢",
             btnDislike: "不喜欢",
             btnBookmark: "收藏",
+            btnSnapshot: "拍攝/替換封面 (自動收藏)",
             btnManage: "书签管理",
             dragHint: "拖拽移动 (双击恢复原位)"
 
@@ -610,6 +613,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnLike: "いいね",
             btnDislike: "よくないね",
             btnBookmark: "ブックマーク",
+            btnSnapshot: "カバーを撮影/置換 (自動ブックマーク)",
             btnManage: "ブックマーク管理",
             dragHint: "ドラッグして移動 (ダブルクリックで元に戻す)"
 
@@ -749,6 +753,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnLike: "좋아요",
             btnDislike: "싫어요",
             btnBookmark: "북마크",
+            btnSnapshot: "커버 촬영/교체 (자동 북마크)",
             btnManage: "북마크 관리",
             dragHint: "드래그하여 이동 (두 번 클릭하여 초기화)"
 
@@ -888,6 +893,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnLike: "Me gusta",
             btnDislike: "No me gusta",
             btnBookmark: "Marcador",
+            btnSnapshot: "Tomar/Reemplazar Portada (Marcador Automático)",
             btnManage: "Gestionar",
             dragHint: "Arrastrar para mover (Doble clic para restablecer)"
 

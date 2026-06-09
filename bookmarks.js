@@ -575,37 +575,55 @@ function _makeCard(bm) {
     const thumbWrap = document.createElement('div');
     thumbWrap.className = 'bv-card-thumb-wrap';
 
-    if (bm.thumbnail) {
-        const img = document.createElement('img');
-        img.className = 'bv-card-thumb';
-        img.referrerPolicy = 'no-referrer'; // 繞過 CDN 防盜鏈檢查
-        img.loading = 'lazy';
-        
-        img.onerror = () => {
-            const ph = document.createElement('div');
-            ph.className = 'bv-card-thumb-placeholder';
-            ph.style.cssText = 'display:flex; flex-direction:column; justify-content:center; align-items:center; background:#1a1a1a; padding:10px; text-align:center; height:100%;';
-            ph.innerHTML = `<span style="font-size:24px;margin-bottom:8px;">🪄</span><span style="color:#00e676; font-size:12px; font-weight:bold; line-height:1.4;">${getLang('clickToHeal', '點擊觀看以修復縮圖')}</span>`;
-            img.replaceWith(ph);
-        };
-        
-        // [效能升級] 優先從分離資料庫提取二進位縮圖
-        window.vtDB.get('vt_thumbnails', bm.videoId).then(data => {
-            if (data && data.thumbnail) {
-                img.src = data.thumbnail;
-            } else {
-                img.src = bm.thumbnail; // fallback
-            }
-        }).catch(() => {
-            img.src = bm.thumbnail;
-        });
-
-        thumbWrap.appendChild(img);
-    } else {
-        const ph = _makePlaceholder();
+    const img = document.createElement('img');
+    img.className = 'bv-card-thumb';
+    img.referrerPolicy = 'no-referrer'; // 繞過 CDN 防盜鏈檢查
+    img.loading = 'lazy';
+    
+    const showPlaceholder = (isMagic = false) => {
+        const ph = document.createElement('div');
         ph.className = 'bv-card-thumb-placeholder';
-        thumbWrap.appendChild(ph);
-    }
+        ph.style.cssText = 'display:flex; flex-direction:column; justify-content:center; align-items:center; background:#1a1a1a; padding:10px; text-align:center; height:100%; cursor:pointer;';
+        if (isMagic) {
+            ph.innerHTML = `<span style="font-size:24px;margin-bottom:8px;">🪄</span><span style="color:#00e676; font-size:12px; font-weight:bold; line-height:1.4;">${getLang('clickToHeal', '點擊觀看以修復縮圖')}</span>`;
+            ph.onclick = (e) => {
+                e.stopPropagation();
+                try {
+                    const healUrl = new URL(bm.url);
+                    healUrl.hash = 'vt_heal=' + encodeURIComponent(bm.videoId);
+                    chrome.tabs.create({ url: healUrl.href });
+                } catch(err) {
+                    chrome.tabs.create({ url: bm.url + '#vt_heal=' + encodeURIComponent(bm.videoId) });
+                }
+            };
+        } else {
+            ph.innerHTML = `<span style="font-size:32px;margin-bottom:12px;opacity:0.5;">🎬</span><span style="color:#888; font-size:12px;">No Thumbnail</span>`;
+        }
+        if (img.isConnected) img.replaceWith(ph);
+        else thumbWrap.appendChild(ph);
+    };
+
+    img.onerror = () => showPlaceholder(!!bm.thumbnail);
+
+    // [效能升級] 優先從分離資料庫提取二進位縮圖
+    window.vtDB.get('vt_thumbnails', bm.videoId).then(data => {
+        if (data && data.thumbnail) {
+            img.src = data.thumbnail;
+            thumbWrap.appendChild(img);
+        } else if (bm.thumbnail) {
+            img.src = bm.thumbnail; // fallback
+            thumbWrap.appendChild(img);
+        } else {
+            showPlaceholder(false);
+        }
+    }).catch(() => {
+        if (bm.thumbnail) {
+            img.src = bm.thumbnail;
+            thumbWrap.appendChild(img);
+        } else {
+            showPlaceholder(false);
+        }
+    });
     
     thumbWrap.appendChild(badges);
     card.appendChild(thumbWrap);

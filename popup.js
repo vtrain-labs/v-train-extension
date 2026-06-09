@@ -1,5 +1,5 @@
 // [架構師更新] Lemon Squeezy 正式結帳連結 (VT Pro - $4.99)
-const BUY_URL = `https://ivr-extension.lemonsqueezy.com/checkout/buy/3e17b694-3f55-4e64-8aa6-bd6244bf1af4`;
+const BUY_URL = `https://v-train.lemonsqueezy.com/checkout/buy/3dbcb93a-052c-433c-9adb-5fdcf221cc17`;
 
 // [XSS 修復] HTML 安全轉義工具函式，封鎖所有來自 storage 的動態內容
 function escapeHtml(str) {
@@ -133,9 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // [Data Migration] Aggressively clean up legacy bloated data without loading it
         chrome.storage.local.remove(['vt_bookmarks', 'vt_ratings', 'vt_bm_folders']);
 
-        // [TEMPORARY BYPASS FOR SCREENSHOTS]
-        items.isProVersion = true;
-        chrome.storage.local.set({ isProVersion: true });
+
 
         if (items.userLang) {
             currentLang = items.userLang;
@@ -812,6 +810,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     isFirst = false;
                 }
 
+
                 // Export Video Records
                 const records = await window.vtDB.getAllRecords();
                 for (const item of records) {
@@ -1006,8 +1005,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function showModal(title, desc, isPrompt = false, placeholder = "", showBuyLink = false) {
         return new Promise((resolve) => {
             mTitle.textContent = title;
-            // [安全修復 #1] 消滅 mDesc.innerHTML = desc 這個危險出口，統一改用 textContent
-            mDesc.textContent = desc;
+            // [修復] 因為描述文字都來自我們自己寫死的 i18n 翻譯檔，含有 <br> 換行，因此安全恢復使用 innerHTML
+            mDesc.innerHTML = desc;
 
             if (isPrompt) {
                 mInput.classList.remove('hidden');

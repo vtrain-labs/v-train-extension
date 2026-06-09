@@ -164,12 +164,16 @@ if (!window._vtBookmarksLoaded) {
     const SVG_LIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;vertical-align:-0.2em;display:inline-block;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
     const SVG_DISLIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;vertical-align:-0.2em;display:inline-block;"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`;
 
-    const _g = (k, d) => window.getI18nStr ? window.getI18nStr(k, d) : d;
+    const _g = (k, d) => {
+        const lang = window._vtCurrentLang || 'zh-TW';
+        return typeof getLangText === 'function' ? getLangText(lang, k) : d;
+    };
     const PANEL_BTNS = [
-        { key: 'like',     html: SVG_LIKE, emoji: '👍', title: _g('btnLike', '喜歡'), id: 'vt-bmb-like'     },
-        { key: 'dislike',  html: SVG_DISLIKE, emoji: '😤', title: _g('btnDislike', '不喜歡'), id: 'vt-bmb-dislike' },
-        { key: 'bookmark', emoji: '❤️', title: _g('btnBookmark', '收藏'), id: 'vt-bmb-bm'       },
-        { key: 'open',     emoji: '📚', title: _g('btnManage', '書籤管理'), id: 'vt-bmb-open'  },
+        { key: 'like',     html: SVG_LIKE, emoji: '👍', titleKey: 'btnLike', titleDef: '喜歡', id: 'vt-bmb-like'     },
+        { key: 'dislike',  html: SVG_DISLIKE, emoji: '😤', titleKey: 'btnDislike', titleDef: '不喜歡', id: 'vt-bmb-dislike' },
+        { key: 'bookmark', emoji: '❤️', titleKey: 'btnBookmark', titleDef: '收藏', id: 'vt-bmb-bm'       },
+        { key: 'snapshot', emoji: '📸', titleKey: 'btnSnapshot', titleDef: '拍攝/替換封面 (自動收藏)', id: 'vt-bmb-snapshot' },
+        { key: 'open',     emoji: '📚', titleKey: 'btnManage', titleDef: '書籤管理', id: 'vt-bmb-open'  },
     ];
 
     function _createPanel() {
@@ -184,10 +188,10 @@ if (!window._vtBookmarksLoaded) {
         p.style.cssText = `
             position:fixed;bottom:82px;right:15px;display:none;
             align-items:center;gap:2px;padding:5px 8px;
-            background:rgba(12,12,20,0.93);
+            background:rgba(12,12,20,0.98);
             border-left:4px solid #e91e8c;border-radius:12px;
-            z-index:2147483646;box-shadow:0 4px 20px rgba(0,0,0,0.7);
-            backdrop-filter:blur(6px);
+            z-index:2147483646;box-shadow:0 4px 20px rgba(0,0,0,0.85);
+            will-change:transform;backface-visibility:hidden;transform:translateZ(0);
         `;
 
         const dragHandle = document.createElement('div');
@@ -256,20 +260,25 @@ if (!window._vtBookmarksLoaded) {
             chrome.storage.local.remove('vt_panel_pos');
         };
 
-        PANEL_BTNS.forEach(({ html, emoji, title, id, key }) => {
+        PANEL_BTNS.forEach(({ html, emoji, titleKey, titleDef, id, key }) => {
             const btn = document.createElement('button');
             btn.id = id;
-            btn.title = title;
+            btn.title = _g(titleKey, titleDef);
             if (html) btn.innerHTML = html; else btn.textContent = emoji;
             btn.dataset.key = key;
             btn.style.cssText = `
                 background:none;border:none;font-size:18px;cursor:pointer;
                 padding:5px 7px;border-radius:8px;
-                transition:background 0.15s,transform 0.1s,opacity 0.15s;
-                opacity:0.6;filter:grayscale(0.4);
+                transition:background 0.15s,transform 0.1s;
             `;
-            btn.onmouseenter = () => { if (!btn.dataset.active) btn.style.opacity = '0.9'; };
-            btn.onmouseleave = () => { if (!btn.dataset.active) { btn.style.opacity = '0.6'; btn.style.transform = ''; } };
+            if (key === 'snapshot' || key === 'open') {
+                btn.style.opacity = '1';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.filter = 'grayscale(0.4)';
+            }
+            btn.onmouseenter = () => { if (!btn.dataset.active) btn.style.background = 'rgba(255,255,255,0.1)'; };
+            btn.onmouseleave = () => { if (!btn.dataset.active) { btn.style.background = 'none'; btn.style.transform = ''; } };
             btn.onmousedown = () => { btn.style.transform = 'scale(0.88)'; };
             btn.onmouseup = () => { btn.style.transform = 'scale(1)'; };
             p.appendChild(btn);
@@ -297,7 +306,28 @@ if (!window._vtBookmarksLoaded) {
             }
         };
         p.querySelector('#vt-bmb-open').onclick = () => {
-            chrome.runtime.sendMessage({ action: 'VT_OPEN_BOOKMARKS' });
+            chrome.runtime.sendMessage({ action: 'VT_OPEN_BOOKMARKS' }).catch(()=>{});
+        };
+
+        p.querySelector('#vt-bmb-snapshot').onclick = async () => {
+            if (!await _checkPro() || !_currentId) return;
+            if (!_panelBookmarked) {
+                await _addBookmark(_currentId, location.href, document.title, '', 'default');
+                _panelBookmarked = true;
+                _renderPanelState();
+            }
+            const btn = p.querySelector('#vt-bmb-snapshot');
+            if (btn.textContent === '⏳') return; // 防止連點
+            btn.textContent = '⏳';
+            btn.style.pointerEvents = 'none';
+            _takeVideoSnapshot(_currentId).then(success => {
+                btn.textContent = success ? '✅' : '❌';
+                if (success) notifySync();
+                setTimeout(() => {
+                    btn.textContent = '📸';
+                    btn.style.pointerEvents = 'auto';
+                }, 1500);
+            });
         };
 
         (document.body || document.documentElement).appendChild(p);
@@ -318,32 +348,21 @@ if (!window._vtBookmarksLoaded) {
                 _panel.style.right = 'auto';
                 _panel.style.bottom = 'auto';
             }
+        } else if (_panel) {
+            // 預設固定在右下角
+            _panel.style.bottom = '82px';
+            _panel.style.right = '15px';
+            _panel.style.top = 'auto';
+            _panel.style.left = 'auto';
         }
 
         const sync = () => {
             _panelSyncLoop = requestAnimationFrame(sync);
-            if (!_panel || _panel.style.display === 'none' || !window.sysState?._activeEl) return;
+            if (!_panel || _panel.style.display === 'none') return;
             
-            if (window._vtPanelDragged) return; // 使用者已手動拖曳，停止自動對齊
-            
-            const video = window.sysState._activeEl;
-            const rect = video.getBoundingClientRect();
-            
-            // 如果處於全螢幕，退回螢幕右下角固定顯示 (因為全螢幕時外面看不到)
-            if (document.fullscreenElement) {
-                _panel.style.bottom = '82px';
-                _panel.style.right = '15px';
-                _panel.style.top = 'auto';
-                _panel.style.left = 'auto';
-            } else {
-                // 一般模式下，懸掛在影片右下方 (外面)
-                const rightOffset = window.innerWidth - rect.right;
-                const topOffset = rect.bottom + 12; // 距離影片底部 12px
-                
-                _panel.style.top = topOffset + 'px';
-                _panel.style.right = rightOffset + 'px';
-                _panel.style.bottom = 'auto';
-                _panel.style.left = 'auto';
+            // [SPA 修復] 檢查是否還在畫面上，不在就補回去
+            if (!_panel.isConnected) {
+                (document.body || document.documentElement).appendChild(_panel);
             }
         };
         _panelSyncLoop = requestAnimationFrame(sync);
@@ -360,7 +379,6 @@ if (!window._vtBookmarksLoaded) {
             const btn = _panel.querySelector(`[data-key="${key}"]`);
             if (!btn) continue;
             btn.dataset.active = cfg.active ? 'true' : '';
-            btn.style.opacity = cfg.active ? '1' : '0.6';
             btn.style.filter = cfg.active ? 'none' : 'grayscale(0.4)';
             btn.style.background = cfg.active ? cfg.bg : 'none';
         }
@@ -603,6 +621,69 @@ if (!window._vtBookmarksLoaded) {
         }
     });
 
+    // ─── 核心截圖引擎 (分離自 forceHeal 以供全域呼叫) ──────────────────
+    async function _takeVideoSnapshot(targetVideoId) {
+        try {
+            const videoEl = window.sysState?._activeEl || document.querySelector('video');
+            if (videoEl && videoEl.tagName === 'VIDEO' && videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
+                return new Promise((resolve) => {
+                    chrome.runtime.sendMessage({ action: "VT_CAPTURE_TAB" }, (res) => {
+                        if (res && res.dataUrl) {
+                            const rect = videoEl.getBoundingClientRect();
+                            const img = new Image();
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const ratioX = img.width / window.innerWidth;
+                                const ratioY = img.height / window.innerHeight;
+                                const sx = rect.left * ratioX;
+                                const sy = rect.top * ratioY;
+                                const sw = rect.width * ratioX;
+                                const sh = rect.height * ratioY;
+                                
+                                let dw = rect.width;
+                                let dh = rect.height;
+                                if (dw > 320) { dh = Math.round((dh * 320) / dw); dw = 320; }
+                                canvas.width = dw; canvas.height = dh;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+                                const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                if (thumbUrl.length > 500) {
+                                    vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
+                                    resolve(true); 
+                                } else {
+                                    resolve(false);
+                                }
+                            };
+                            img.onerror = () => {
+                                resolve(false);
+                            }
+                            img.src = res.dataUrl;
+                        } else {
+                            try {
+                                const canvas = document.createElement('canvas');
+                                let dw = 320;
+                                let dh = Math.round((videoEl.videoHeight * 320) / videoEl.videoWidth);
+                                canvas.width = dw; canvas.height = dh;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(videoEl, 0, 0, dw, dh);
+                                const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                if (thumbUrl.length > 500) {
+                                    vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
+                                    resolve(true);
+                                    return;
+                                }
+                            } catch (e) {
+                            }
+                            resolve(false);
+                        }
+                    });
+                });
+            }
+        } catch (e) {
+        } 
+        return false;
+    }
+
     // ─── 公開 API（供 vt_tracker.js 呼叫）────────────────────────────────
     window.vtBookmarkPanel = {
         async setVideo(videoId) {
@@ -635,20 +716,24 @@ if (!window._vtBookmarksLoaded) {
                             if (imgs.length > 0) ogImg = imgs[0].src;
                         }
                         if (ogImg && ogImg.startsWith('http')) {
-                            fetch(ogImg).then(r => {
-                                if (!r.ok) throw new Error('Fetch failed');
-                                return r.blob();
-                            }).then(blob => {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                    vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: reader.result }).catch(()=>{});
-                                };
-                                reader.readAsDataURL(blob);
-                            }).catch(()=>{
-                                _heal(attempt + 1); // 如果抓取失敗 (例如廣告阻擋)，稍後再試
+                            chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: ogImg }, async (res) => {
+                                if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
+                                    const dataUrl = await _compressImage(res.dataUrl);
+                                    vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: dataUrl }).catch(()=>{});
+                                    notifySync(); 
+                                } else {
+                                    if (await _takeVideoSnapshot(videoId)) { notifySync(); return; }
+                                    _heal(attempt + 1); 
+                                }
                             });
                         } else {
-                            _heal(attempt + 1); // 如果 DOM 還沒生出圖片標籤，也稍後再試
+                            _takeVideoSnapshot(videoId).then(success => {
+                                if (success) {
+                                    notifySync();
+                                } else {
+                                    _heal(attempt + 1);
+                                }
+                            });
                         }
                     }, attempt === 1 ? 300 : 3000 * (attempt - 1)); // 第一次 0.3 秒，第二次 3 秒，第三次 6 秒
                 };
