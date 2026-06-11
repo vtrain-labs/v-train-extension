@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCommunityRules) {
         btnCommunityRules.addEventListener('click', () => {
             // [架構師修復] 確保連結與實際 GitHub 倉庫路徑一致，防止 404
-            chrome.tabs.create({ url: 'https://github.com/ivr-labs/community-rules' });
+            chrome.tabs.create({ url: 'https://github.com/vtrain-labs/community-rules' });
         });
     }
 
