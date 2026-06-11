@@ -14,15 +14,16 @@
 ---
 
 ## 📖 目錄
-1. [特色介紹](#核心特色)
-2. [安裝指南](#安裝指南)
-3. [快速開始教學](#快速開始教學)
-4. [PRO 版專屬功能](#pro-版專屬功能)
-5. [系統架構亮點](#系統架構亮點)
-6. [授權條款](#授權條款-license)
+1. [特色介紹](#core-features)
+2. [安裝指南](#install-guide)
+3. [快速開始教學](#quick-start)
+4. [PRO 版專屬功能](#pro-features)
+5. [系統架構亮點](#architecture)
+6. [授權條款](#license)
 
 ---
 
+<a id="core-features"></a>
 ## ✨ 核心特色
 
 * **🎥 零侵入式進度追蹤**：智慧分析影片播放頁面，記錄精確的觀看進度，並在影片縮圖上自動覆蓋進度條。
@@ -32,6 +33,7 @@
 
 ---
 
+<a id="install-guide"></a>
 ## 🚀 安裝指南
 
 ### 方式一：官方商店安裝 (推薦)
@@ -48,6 +50,7 @@
 
 ---
 
+<a id="quick-start"></a>
 ## 📚 快速開始教學
 
 > [!TIP]
@@ -76,6 +79,7 @@
 
 ---
 
+<a id="pro-features"></a>
 ## 👑 PRO 版專屬功能
 
 V-Train 提供了一次性買斷的 PRO 版本，為重度使用者與注重隱私的玩家提供更強大的控制權與收藏體驗：
@@ -105,11 +109,13 @@ V-Train 提供了一次性買斷的 PRO 版本，為重度使用者與注重隱�
 
 ---
 
+<a id="architecture"></a>
 ## 🛠️ 系統架構亮點
 
 * **Manifest V3 完美支援**：完全符合 Google 最新的安全規範。
 * **混合式高效儲存 (Hybrid IndexedDB)**：結合 `chrome.storage.local` 與 `IndexedDB`，確保龐大的影片資料也能流暢讀寫。
 * **效能優化 (Performance)**：大量運用 `requestAnimationFrame` 進行 DOM 批次讀寫，避免 Layout Thrashing；運用 `Promise` 鎖 (Lock) 機制確保非同步寫入不衝突。
 
+<a id="license"></a>
 ## 📜 授權條款 (License)
 本專案採用 [MIT License](LICENSE) 授權條款。
