@@ -9,6 +9,9 @@
   <a href="#">
     <img src="https://img.shields.io/badge/GitHub-開源專案-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
   </a>
+  
+  <br>
+  <p><b>🌍 Languages:</b> <span>繁體中文</span> | <a href="README_EN.md">English</a></p>
 </div>
 
 ---
