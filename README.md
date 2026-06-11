@@ -68,7 +68,7 @@
   <img src="assets/training.png" alt="規則自學引擎展示" width="800">
 </div>
 
-接著，系統會自動擷取並解析 URL，你只需要確認 ID 正確，點擊儲存到對應的模組，系統就會永久記憶該網站的進度條規則！
+接著，系統會自動擷取並解析 URL。若系統未能精準抓取，你也可以**手動編輯欄位**來協助 VT 找到正確的影片 ID。確認 ID 無誤後，點擊儲存到對應的模組，系統就會永久記憶該網站的進度條規則！
 
 <div align="center">
   <img src="assets/training-save.png" alt="儲存 ID 規則介面" width="800">
@@ -97,7 +97,7 @@ V-Train 提供了一次性買斷的 PRO 版本，為重度使用者與注重隱�
 </div>
 
 ### 3. 隱私密碼鎖定 (Passcode Protection)
-你的收藏庫屬於你的個人隱私。PRO 版允許你設定專屬密碼，任何人在開啟你的書籤管理中心之前都必須先經過驗證。
+你的觀看隱私至關重要。PRO 版允許你設定專屬密碼，任何人在開啟**擴充功能主控面板**之前都必須先經過驗證，徹底保護你的設定與收藏庫不被窺探。
 
 <div align="center">
   <img src="assets/pro-password.png" alt="隱私密碼保護" width="800">
