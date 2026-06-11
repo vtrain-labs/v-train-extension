@@ -123,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mBtnBuy) {
         mBtnBuy.addEventListener('click', (e) => {
             e.preventDefault();
-            chrome.tabs.create({ url: BUY_URL });
+            const lsLocale = 'en'; // Lemon Squeezy does not support zh-CN/zh-TW; fallback to English to prevent locale mismatch
+            chrome.tabs.create({ url: BUY_URL + '?locale=' + lsLocale });
         });
     }
 
@@ -221,7 +222,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = getLangText(lang, key);
-            else el.innerHTML = getLangText(lang, key);
+            else {
+                const val = getLangText(lang, key);
+                if (val.includes('<')) el.innerHTML = val;
+                else el.textContent = val;
+            }
         });
     }
 

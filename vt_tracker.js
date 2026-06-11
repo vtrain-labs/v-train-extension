@@ -203,15 +203,16 @@ if (!window._vtTrackerLoaded) {
             let videos = Array.from(document.querySelectorAll("video")).filter(
                 (v) =>
                     !v.closest('a, iframe, [class*="sponsor"]') &&
-                    (v.offsetWidth >= 340 || v.videoWidth >= 340),
+                    (v.offsetWidth >= 340 || (v.offsetWidth === 0 && v.videoWidth >= 340)),
             );
             if (videos.length === 0) {
                 const targetId = sysState._cachedId || sysState.activeVideoId;
-                if (window === window.top && targetId) {
+                // [防誤判修復] 必須畫面上存在大型 iframe (外嵌播放器) 或大型 canvas (VR 播放器) 才允許無影片 Bypass
+                const hasLargePlayer = Array.from(document.querySelectorAll('iframe, canvas')).some(el => el.offsetWidth >= 340);
+                if (window === window.top && targetId && hasLargePlayer) {
                     if (!/^(REC|FLASH)$/.test(sysState._lastState)) {
                         updateDebugStatus("Waiting", "m1");
                     }
-                    // [VR/Iframe 修復] 雖然頂層沒有影片元素，但既然成功提取了 ID 或是 iframe 傳回了進度，代表這是內嵌影片
                     window.vtBookmarkPanel?.setVideo(targetId);
                 } else {
                     window.vtBookmarkPanel?.hide(); // 無影片且無 ID 時隱藏書籤面板

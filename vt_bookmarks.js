@@ -73,6 +73,23 @@ if (!window._vtBookmarksLoaded) {
         }, 150); // 稍微延遲避免快速滑過
     }
 
+    function _compressImage(dataUrl) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let dw = 320;
+                let dh = Math.round((img.height * 320) / img.width);
+                canvas.width = dw; canvas.height = dh;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, dw, dh);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.onerror = () => resolve(dataUrl);
+            img.src = dataUrl;
+        });
+    }
+
     // ─── 評分操作 ────────────────────────────────────────────────────────
     async function _setRating(videoId, rating) {
         if (!window._vtRatingsCache) await _loadCache();
@@ -252,12 +269,18 @@ if (!window._vtBookmarksLoaded) {
             dragHandle.style.cursor = 'grab';
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
-            chrome.storage.local.set({ vt_panel_pos: { left: p.style.left, top: p.style.top } });
+            window._vtPanelPos = { left: p.style.left, top: p.style.top };
+            chrome.storage.local.set({ vt_panel_pos: window._vtPanelPos });
         }
         
         dragHandle.ondblclick = () => {
             window._vtPanelDragged = false;
+            window._vtPanelPos = null;
             chrome.storage.local.remove('vt_panel_pos');
+            p.style.bottom = '82px';
+            p.style.right = '15px';
+            p.style.top = 'auto';
+            p.style.left = 'auto';
         };
 
         PANEL_BTNS.forEach(({ html, emoji, titleKey, titleDef, id, key }) => {
@@ -312,7 +335,7 @@ if (!window._vtBookmarksLoaded) {
         p.querySelector('#vt-bmb-snapshot').onclick = async () => {
             if (!await _checkPro() || !_currentId) return;
             if (!_panelBookmarked) {
-                await _addBookmark(_currentId, location.href, document.title, '', 'default');
+                await _addBookmark(_currentId, location.href, document.title, '', null);
                 _panelBookmarked = true;
                 _renderPanelState();
             }
@@ -474,13 +497,12 @@ if (!window._vtBookmarksLoaded) {
 
             // [無痛快取機制] 擷取圖片轉換為二進位存入快取資料庫
             if (ogImg && ogImg.startsWith('http')) {
-                fetch(ogImg).then(r => r.blob()).then(blob => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: reader.result }).catch(()=>{});
-                    };
-                    reader.readAsDataURL(blob);
-                }).catch(()=>{});
+                chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: ogImg }, async (res) => {
+                    if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
+                        const compressed = await _compressImage(res.dataUrl);
+                        vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: compressed }).catch(()=>{});
+                    }
+                });
             }
 
             await _addBookmark(videoId, url, title, ogImg, selectedFolderId);
@@ -587,10 +609,11 @@ if (!window._vtBookmarksLoaded) {
             });
         }
 
-        chrome.storage.local.get(['vt_bookmarks'], (data) => {
-            const bm = (data.vt_bookmarks || []).find(b => b.videoId === videoId);
-            if (bm) selectedFolderId = bm.folderId;
-            else selectedFolderId = null;
+        vtDBProxy.get('vt_bookmarks', videoId).then(bm => {
+            selectedFolderId = bm?.folderId || null;
+            _renderTree();
+        }).catch(() => {
+            selectedFolderId = null;
             _renderTree();
         });
     }
@@ -598,15 +621,7 @@ if (!window._vtBookmarksLoaded) {
     // ─── 監控 Storage 變化，同步快取 + 刷新角標 ─────────────────────────
     chrome.storage.onChanged.addListener((changes) => {
         if (!chrome.runtime?.id) return;
-        if (changes.vt_ratings) {
-            window._vtRatingsCache = changes.vt_ratings.newValue || {};
-            window._vtRefreshAllBadges?.();
-        }
-        if (changes.vt_bookmarks) {
-            const bm = changes.vt_bookmarks.newValue || [];
-            window._vtBookmarkedSet = new Set(bm.map(b => b.videoId).filter(Boolean));
-            window._vtRefreshAllBadges?.();
-        }
+
         if (changes.showInteraction) {
             window._vtShowInteraction = !!changes.showInteraction.newValue;
             if (!window._vtShowInteraction && _panel) {
@@ -708,6 +723,7 @@ if (!window._vtBookmarksLoaded) {
                 const _heal = (attempt = 1) => {
                     if (attempt > 3) return; // 最多嘗試 3 次
                     setTimeout(() => {
+                        if (_currentId !== videoId) return; // [SPA 保護] 避免在延遲期間用戶切換了影片，導致張冠李戴
                         let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
                                     document.querySelector('meta[property="og:image:secure_url"]')?.content ||
                                     document.querySelector('meta[name="twitter:image"]')?.content || '';

@@ -33,6 +33,31 @@ if (!window._vtTrainerLoaded) {
                     }, 3000);
                 };
 
+                const _vtCustomConfirm = (msg) => new Promise(resolve => {
+                    const bg = document.createElement('div');
+                    bg.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:sans-serif;backdrop-filter:blur(2px);';
+                    const box = document.createElement('div');
+                    box.style.cssText = 'background:#1e1e1e;color:white;padding:24px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.5);max-width:320px;text-align:center;border:1px solid #333;';
+                    const text = document.createElement('div');
+                    text.style.cssText = 'margin-bottom:24px;font-size:16px;line-height:1.5;word-break:break-all;';
+                    text.innerText = msg;
+                    const btnRow = document.createElement('div');
+                    btnRow.style.cssText = 'display:flex;justify-content:center;gap:12px;';
+                    const btnCancel = document.createElement('button');
+                    btnCancel.innerText = txt.cancel || 'Cancel';
+                    btnCancel.style.cssText = 'padding:10px 20px;background:#333;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;flex:1;';
+                    const btnOk = document.createElement('button');
+                    btnOk.innerText = txt.ok || 'OK';
+                    btnOk.style.cssText = 'padding:10px 20px;background:#ff5252;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;flex:1;';
+                    const close = (res) => { bg.remove(); resolve(res); };
+                    btnCancel.onclick = () => close(false);
+                    btnOk.onclick = () => close(true);
+                    btnRow.append(btnCancel, btnOk);
+                    box.append(text, btnRow);
+                    bg.append(box);
+                    document.body.appendChild(bg);
+                });
+
                 const isStealth =
                     res.isStealthMode === undefined ? true : res.isStealthMode;
                 if (isStealth) return showToast(txt.sw);
@@ -989,7 +1014,7 @@ if (!window._vtTrainerLoaded) {
 
                         chrome.storage.local.get(
                             ["site_config", "enabledSites"],
-                            (saveRes) => {
+                            async (saveRes) => {
                                 let d = getBaseDomain(location.hostname);
                                 let config = saveRes.site_config || {};
                                 let arr = Array.isArray(config[d])
@@ -1002,7 +1027,7 @@ if (!window._vtTrainerLoaded) {
                                     arr[slotIndex] &&
                                     (arr[slotIndex].urlRule || arr[slotIndex].pRule)
                                 ) {
-                                    if (!confirm(`${txt.cf1}${slotIndex + 1}${txt.cf2}`))
+                                    if (!(await _vtCustomConfirm(`${txt.cf1}${slotIndex + 1}${txt.cf2}`)))
                                         return;
                                 }
                                 let curHosts = (arr[slotIndex] && arr[slotIndex].hosts) || [];

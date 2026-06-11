@@ -40,7 +40,7 @@ if (!window._vtUrlParserLoaded) {
         }
 
         // 2. 嚴格拒絕包含網址結構的垃圾字串 (移除 '=' 攔截以支援 Base64 ID)
-        if (/[/?&]/.test(id)) return false;
+        if (/^[/?&]/.test(id) || /[?&]/.test(id)) return false;
 
         // 3. 完全移除長度與 Regex 特徵鎖，實現真正的 100% Adaptive 位置提取
         return true; 

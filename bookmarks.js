@@ -945,7 +945,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
             tree.appendChild(item);
         };
 
-        renderItem('📥 未分類（根目錄）', null, 0, false);
+        renderItem('📥 ' + getLang('bvUncategorizedRoot', '未分類（根目錄）'), null, 0, false);
 
         const renderLevel = (parentId, depth) => {
             const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));

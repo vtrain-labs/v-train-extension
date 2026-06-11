@@ -203,8 +203,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (request.action === 'VT_OPEN_BUY_PAGE') {
-        const BUY_URL = 'https://ivr-extension.lemonsqueezy.com/checkout/buy/3e17b694-3f55-4e64-8aa6-bd6244bf1af4';
-        chrome.tabs.create({ url: BUY_URL });
+        const BUY_URL = 'https://v-train.lemonsqueezy.com/checkout/buy/3dbcb93a-052c-433c-9adb-5fdcf221cc17';
+        chrome.storage.local.get(['userLang'], (res) => {
+            const lsLocale = 'en'; // Lemon Squeezy does not support zh-CN/zh-TW; fallback to English
+            chrome.tabs.create({ url: BUY_URL + '?locale=' + lsLocale });
+        });
         return;
     }
 
@@ -454,5 +457,5 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 function runOptimizedGC() {
-    runOptimizedGCInsideLock();
+    _vtSaveLock = _vtSaveLock.then(runOptimizedGCInsideLock).catch(() => {});
 }
