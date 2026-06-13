@@ -213,11 +213,9 @@ if (!window._vtUrlParserLoaded) {
                 return raw;
             } else if (rule.type === "p") {
                 const segs = u.pathname.split("/").filter((x) => x);
-                // [segCount 結構守衛] 只接受路徑深度相同的 URL
-                // 當 B站 V2 縮圖的 URL 比訓練用的 URL 多一個路徑段（如 /video/v2/xxx vs /video/xxx），
-                // 此守衛會拒絕提取，避免抓到 "v2" 這個路徑段關鍵字當作 ID
-                // 舊規則（無 segCount 欄位）自動跳過此檢查，完全向後相容
-                if (rule.guard?.segCount !== undefined && segs.length !== rule.guard.segCount) return null;
+                // [移除 segCount 守衛]
+                // 為了適應 MissAV 同時存在 1段、2段、3段 網址的狀況，我們不再強制限制路徑長度。
+                // B站的 V2 廣告卡交由下方的 kwPrefix 守衛負責攔截 ("video" != "sync")。
                 const tIdx = rule.idx < 0 ? segs.length + rule.idx : rule.idx;
                 // [修正] 檢查索引是否在合法範圍內
                 if (tIdx < 0 || tIdx >= segs.length) return null;
