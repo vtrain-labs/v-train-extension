@@ -42,7 +42,13 @@ if (!window._vtUrlParserLoaded) {
         // 2. 嚴格拒絕包含網址結構的垃圾字串 (移除 '=' 攔截以支援 Base64 ID)
         if (/^[/?&]/.test(id) || /[?&]/.test(id)) return false;
 
-        // 3. 完全移除長度與 Regex 特徵鎖，實現真正的 100% Adaptive 位置提取
+        // 3. [向後相容] minLen 對舊規則仍有效，新規則已不再寫入 minLen
+        //    主要守衛改為 segCount：對於 path 型規則，segCount 已足夠辨別不同 URL 結構
+        //    B站 V2 促銷卡的實際 href = cm.bilibili.com/api/fees/pc/sync/v2 (segCount=5)
+        //    和訓練用的正常卡 segCount=2 完全不同，segCount 已經擋掉，minLen 對 B站是多餘的
+        //    Odysee 的影片標题長短差異極大，minLen 會誤傷短標題影片，導致用戶需要重複訓練多個 Slot
+        if (guard && guard.minLen !== undefined && id.length < guard.minLen) return false;
+
         return true; 
     }
 
@@ -96,10 +102,7 @@ if (!window._vtUrlParserLoaded) {
                             return {
                                 type: "hash_path",
                                 idx: i - hashSegs.length,
-                                guard: {
-                                    minLen: Math.max(2, targetId.length - 3),
-                                    maxLen: targetId.length + 20,
-                                },
+                                guard: { isPositional: true },
                             };
                     }
                 }
@@ -113,7 +116,25 @@ if (!window._vtUrlParserLoaded) {
             try { segs = segs.map(s => decodeURIComponent(s)); } catch(e) {}
 
             for (let i = 0; i < segs.length; i++) {
-                if (segs[i] === targetId) return { type: "p", idx: i - segs.length };
+                // [關鍵字前綴守衛] 判斷 ID 的前一段是否為固定關鍵字（純小寫字母/底線/連字號）
+                // 解決同段數、同位置但不同意義的 URL（例如 MissAV /watch/ABC-123 vs /categories/ABC-123）
+                let kwPrefix = null;
+                if (i > 0 && /^[a-z_-]+$/.test(segs[i-1])) {
+                    kwPrefix = segs[i-1];
+                }
+
+                if (segs[i] === targetId) return {
+                    type: "p",
+                    idx: i - segs.length,
+                    // [segCount 守衛] 僅用路徑段數判斷 URL 結構，不加 minLen
+                    // B站 V2 卡 href 為 cm.bilibili.com/api/.../v2 (segCount=5)，和訓練用 segCount=2 不同，自動擋掉
+                    // 不加 minLen 是為了讓 Odysee 長短標题影片都能由同一個 Slot 覆蓋
+                    guard: {
+                        isPositional: true,
+                        segCount: segs.length,
+                        ...(kwPrefix && { kwPrefix })
+                    },
+                };
                 if (segs[i] && segs[i].includes(targetId)) {
                     const flank = detectFlank(segs[i], targetId);
                     if (flank) {
@@ -125,8 +146,21 @@ if (!window._vtUrlParserLoaded) {
                                     idx: i - segs.length,
                                     sep: r.sep,
                                     sepIdx: r.sepIdx,
+                                    guard: {
+                                        isPositional: true,
+                                        segCount: segs.length,
+                                        ...(kwPrefix && { kwPrefix })
+                                    },
                                 };
-                            return { type: "p", idx: i - segs.length };
+                            return {
+                                type: "p",
+                                idx: i - segs.length,
+                                guard: {
+                                    isPositional: true,
+                                    segCount: segs.length,
+                                    ...(kwPrefix && { kwPrefix })
+                                },
+                            };
                         }
                         return {
                             type: "flank",
@@ -153,7 +187,8 @@ if (!window._vtUrlParserLoaded) {
 
         let rule = _detect();
         if (rule && !rule.guard) {
-            // [極致優化] 訓練階段：不再綁定任何 ID 格式與長度限制，100% 信任 DOM 位置提取
+            // [Fallback Guard] query string / hash / flank 等類型的統一 fallback
+            // 相比 path 類型，這些類型不需要 segCount（結構守衛已由各自類型處理）
             rule.guard = { isPositional: true };
         }
         return rule;
@@ -178,9 +213,21 @@ if (!window._vtUrlParserLoaded) {
                 return raw;
             } else if (rule.type === "p") {
                 const segs = u.pathname.split("/").filter((x) => x);
+                // [segCount 結構守衛] 只接受路徑深度相同的 URL
+                // 當 B站 V2 縮圖的 URL 比訓練用的 URL 多一個路徑段（如 /video/v2/xxx vs /video/xxx），
+                // 此守衛會拒絕提取，避免抓到 "v2" 這個路徑段關鍵字當作 ID
+                // 舊規則（無 segCount 欄位）自動跳過此檢查，完全向後相容
+                if (rule.guard?.segCount !== undefined && segs.length !== rule.guard.segCount) return null;
                 const tIdx = rule.idx < 0 ? segs.length + rule.idx : rule.idx;
                 // [修正] 檢查索引是否在合法範圍內
                 if (tIdx < 0 || tIdx >= segs.length) return null;
+
+                // [kwPrefix 結構守衛] 檢查 ID 的前一個路徑段是否符合訓練時記錄的關鍵字
+                // 例如：訓練時是 /watch/123，執行時若是 /categories/123 則會被擋掉
+                if (rule.guard?.kwPrefix && tIdx > 0) {
+                    if (segs[tIdx - 1] !== rule.guard.kwPrefix) return null;
+                }
+
                 raw = segs[tIdx] || null;
             } else if (rule.type === "flank") {
                 const segs = u.pathname.split("/").filter((x) => x);
