@@ -21,7 +21,8 @@ if (!window._vtTrackerLoaded) {
                 entries.forEach((e) => {
                     let el = e.target;
                     if (e.isIntersecting) {
-                        if (el.closest("video, .plyr, .vjs-tech, #player")) return;
+                        const hasLargePlayer = Array.from(el.querySelectorAll("video, iframe")).some(child => child.offsetWidth >= 340);
+                        if (el.closest("video, .plyr, .vjs-tech, #player") || el.querySelector(".plyr, .vjs-tech, #player") || hasLargePlayer) return;
                         let w = driver.wrapper(el),
                             id = driver.idParser(el);
                         if (w && id && w.offsetHeight >= (driver.minHeight || 40)) {
@@ -506,7 +507,7 @@ if (!window._vtTrackerLoaded) {
     }
 
     function createDebugPanel() {
-        if (debugPanel) return;
+        if (debugPanel || window !== window.top) return;
         window.debugPanel = document.createElement("div");
         debugPanel.style.cssText = `position:fixed; bottom:15px; right:15px; padding:16px 24px; background:rgba(15,15,15,0.9); font-family:sans-serif; font-size:26px; font-weight:bold; border-left:8px solid #4fc3f7; border-radius:12px; z-index:2147483647; pointer-events:none; box-shadow:0 8px 24px rgba(0,0,0,0.7); backdrop-filter:blur(2px);`;
         (document.body || document.documentElement).appendChild(debugPanel);

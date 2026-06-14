@@ -67,10 +67,6 @@ if (!window._vtInjected) {
             let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
                         document.querySelector('meta[property="og:image:secure_url"]')?.content ||
                         document.querySelector('meta[name="twitter:image"]')?.content || '';
-            if (!ogImg) {
-                const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
-                if (imgs.length > 0) ogImg = imgs[0].src;
-            }
             sendResponse({ ogImg: ogImg });
             return;
         }
@@ -145,7 +141,7 @@ if (!window._vtInjected) {
     // ─── 系統初始化 ────────────────────────────────────────────────
     function initSystem() {
         if (!chrome.runtime?.id) return;
-        createDebugPanel(); // 由 vt_tracker.js 提供
+        if (window === window.top) createDebugPanel(); // 由 vt_tracker.js 提供
         chrome.storage.local.get(
             [
                 "site_config",

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extName__",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "__MSG_extDesc__",
   "homepage_url": "https://github.com/vtrain-labs/v-train-extension",
   "permissions": [
@@ -15,11 +15,10 @@
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
-  "host_permissions": [],
-  "optional_host_permissions": [
-    "https://*/*",
-    "http://*/*"
+  "host_permissions": [
+    "<all_urls>"
   ],
+  "optional_host_permissions": [],
   "incognito": "spanning",
   "action": {
     "default_popup": "popup.html",

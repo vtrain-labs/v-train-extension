@@ -288,7 +288,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!r) return null;
                 const type = r.type || '?';
                 const idx = r.idx ?? -1;
-                if (type === 'p') return `${getLangText(lang, 'ruleUrlPath')} ${idx === -1 ? getLangText(lang, 'rulePathLast') : idx === 0 ? getLangText(lang, 'rulePathFirst') : `[${idx}]`}`;
+                if (type === 'p') {
+                    let desc = `${getLangText(lang, 'ruleUrlPath')} ${idx === -1 ? getLangText(lang, 'rulePathLast') : idx === 0 ? getLangText(lang, 'rulePathFirst') : `[${idx}]`}`;
+                    if (r.sep) desc += getLangText(lang, 'loc_path_sep', { sep: r.sep, sepIdx: r.sepIdx });
+                    return desc;
+                }
                 if (type === 'q') return `${getLangText(lang, 'ruleQuery')}${r.key ? ` "${r.key}"` : ''}`;
                 if (type === 'hash') return `Hash [${idx}]`;
                 if (type === 'flank') return getLangText(lang, 'ruleFlank');

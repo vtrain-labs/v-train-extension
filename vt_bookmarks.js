@@ -194,6 +194,7 @@ if (!window._vtBookmarksLoaded) {
     ];
 
     function _createPanel() {
+        if (window !== window.top) return;
         if (_panel) {
             if (!_panel.isConnected) {
                 (document.body || document.documentElement).appendChild(_panel);
@@ -357,8 +358,8 @@ if (!window._vtBookmarksLoaded) {
                 btn.style.pointerEvents = 'auto';
             };
 
-            // [跨 Iframe 截圖修復] 如果目前是 Top Window，且找不到影片，就廣播給所有 iframe 代為截圖
-            if (window === window.top && !document.querySelector('video')) {
+            // [跨 Iframe 截圖修復] 如果目前是 Top Window，且自己並沒有追蹤中的影片，就廣播給所有 iframe 代為截圖
+            if (window === window.top && !window.sysState?._activeEl) {
                 let answered = false;
                 const iframes = document.querySelectorAll('iframe');
                 let pendingCount = iframes.length;
@@ -699,232 +700,144 @@ if (!window._vtBookmarksLoaded) {
 
     // ─── 核心截圖引擎 (分離自 forceHeal 以供全域呼叫) ──────────────────
     async function _takeVideoSnapshot(targetVideoId) {
-        let dbg = [];
-        const log = (msg) => dbg.push(msg);
-        log(`_takeVideoSnapshot started for ${targetVideoId}`);
-
-        const showDebugOverlay = (title) => {
-            const overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;top:10%;left:10%;width:80%;height:80%;background:rgba(0,0,0,0.9);color:#0f0;font-family:monospace;font-size:12px;z-index:9999999;overflow:auto;padding:20px;border:2px solid red;';
-            overlay.innerHTML = `<button style="position:absolute;top:10px;right:10px;background:red;color:white;border:none;padding:5px 10px;cursor:pointer;">X 關閉</button>
-            <h3 style="color:white;margin-top:0;">${title}</h3>
-            <pre style="white-space:pre-wrap;">${dbg.join('\n')}</pre>`;
-            overlay.querySelector('button').onclick = () => overlay.remove();
-            document.body.appendChild(overlay);
-        };
-
         try {
             const videoEl = window.sysState?._activeEl || document.querySelector('video');
             if (videoEl && videoEl.tagName === 'VIDEO') {
-                log(`video tag found. readyState=${videoEl.readyState}`);
-
-                // [終極備案 0] 直接提取影片本身的 poster 屬性 (最常見於 iframe 播放器)
+                
+                // [1] 嘗試抓取影片原生 poster
                 let posterUrl = videoEl.getAttribute('poster') || videoEl.poster;
-                log(`video.poster = ${posterUrl}`);
-
-                // [增強 1] 如果沒有 poster，試著在目前的 document 內找出面積最大的圖片 (某些播放器用 img 墊底)
-                if (!posterUrl) {
-                    const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 150 && img.height > 100);
-                    log(`found ${imgs.length} large images`);
-                    if (imgs.length > 0) {
-                        const largestImg = imgs.reduce((prev, current) => (prev.width * prev.height > current.width * current.height) ? prev : current);
-                        posterUrl = largestImg.src;
-                        log(`largest image = ${posterUrl}`);
-                    }
-                }
-
-                // [增強 2] 如果還是沒有，掃描所有元素的 background-image (JWPlayer, Video.js 等常用手法)
-                if (!posterUrl) {
-                    const els = document.querySelectorAll('*');
-                    log(`scanning background-image on ${els.length} elements`);
-                    for (let el of els) {
-                        const bg = window.getComputedStyle(el).backgroundImage;
-                        if (bg && bg !== 'none' && bg.startsWith('url(')) {
-                            let url = bg.slice(4, -1).replace(/["']/g, "");
-                            if (url.startsWith('http') && !url.includes('data:image')) {
-                                posterUrl = url;
-                                log(`found bg image = ${posterUrl}`);
-                                break;
-                            }
-                        }
-                    }
-                }
 
                 if (posterUrl && posterUrl.startsWith('http')) {
-                    log(`attempting to fetch posterUrl: ${posterUrl}`);
                     const success = await new Promise((resolve) => {
                         let isResolved = false;
-                        const timer = setTimeout(() => {
-                            if (!isResolved) {
-                                isResolved = true;
-                                log(`fetch posterUrl TIMEOUT`);
-                                resolve(false);
-                            }
-                        }, 2500); // 2.5 秒超時
-                        
+                        const timer = setTimeout(() => { if (!isResolved) { isResolved = true; resolve(false); } }, 2500);
                         chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: posterUrl }, async (res) => {
                             if (isResolved) return;
                             isResolved = true;
                             clearTimeout(timer);
                             if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
-                                log(`fetch successful, compressing...`);
                                 const compressed = await _compressImage(res.dataUrl);
                                 vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: compressed }).catch(()=>{});
                                 resolve(true);
-                            } else {
-                                log(`fetch failed: err=${res?.error}, type=${res?.type}`);
-                                resolve(false);
-                            }
+                            } else resolve(false);
                         });
                     });
-                    if (success) {
-                        log(`success from posterUrl`);
-                        return true;
-                    }
+                    if (success) return true;
                 }
 
-                // [終極截圖修復] 向 Top Window 請求當前 iframe 的偏移量
-                log(`getting iframe offset...`);
-                const getIframeOffset = () => new Promise(resolve => {
-                    if (window === window.top) { log(`is top window`); return resolve({ left: 0, top: 0 }); }
-                    try {
-                        const channel = new MessageChannel();
-                        channel.port1.onmessage = (e) => {
-                            log(`got offset: ${e.data.rect?.left}, ${e.data.rect?.top}`);
-                            resolve(e.data.rect || { left: 0, top: 0 });
-                        };
-                        window.top.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
-                        setTimeout(() => { log(`offset timeout`); resolve({ left: 0, top: 0 }); }, 300);
-                    } catch(err) { log(`offset err: ${err}`); resolve({ left: 0, top: 0 }); }
+                // 定義終極備案：抓取最上層網頁的 og:image
+                const fallbackToOgImage = () => new Promise((resolve) => {
+                    if (window !== window.top && chrome.runtime?.id) {
+                        chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
+                            if (res && res.ogImg) {
+                                let isResolved = false;
+                                const timer = setTimeout(() => { if (!isResolved) { isResolved = true; resolve(false); } }, 2500);
+                                chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: res.ogImg }, async (imgRes) => {
+                                    if (isResolved) return;
+                                    isResolved = true;
+                                    clearTimeout(timer);
+                                    if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
+                                        const compressed = await _compressImage(imgRes.dataUrl);
+                                        vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: compressed }).catch(()=>{});
+                                        resolve(true);
+                                    } else resolve(false);
+                                });
+                            } else resolve(false);
+                        });
+                    } else resolve(false);
                 });
 
-                log(`calling VT_CAPTURE_TAB...`);
+                // [2] 嘗試使用 Canvas 直接繪製當前影片幀 (不受硬體加速黑屏影響，但可能受 CORS 阻擋)
+                if (videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        let dw = 320;
+                        let dh = Math.round((videoEl.videoHeight * 320) / videoEl.videoWidth);
+                        canvas.width = dw; canvas.height = dh;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(videoEl, 0, 0, dw, dh);
+                        const thumbUrl = canvas.toDataURL('image/jpeg', 0.7); // 若 CORS 會在此拋出 SecurityError
+                        if (thumbUrl.length > 500) {
+                            vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
+                            return true;
+                        }
+                    } catch (e) { /* CORS error */ }
+                }
+
+                // [3] 取得 Iframe 偏移量，準備截取整個瀏覽器畫面 (可能遇到黑屏)
+                const offset = await new Promise(resolve => {
+                    if (window === window.top) return resolve({ left: 0, top: 0 });
+                    try {
+                        const channel = new MessageChannel();
+                        channel.port1.onmessage = (e) => resolve(e.data.rect || { left: 0, top: 0 });
+                        window.top.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
+                        setTimeout(() => resolve({ left: 0, top: 0 }), 300);
+                    } catch(err) { resolve({ left: 0, top: 0 }); }
+                });
+
                 return new Promise((resolve) => {
                     chrome.runtime.sendMessage({ action: "VT_CAPTURE_TAB" }, (res) => {
-                        
-                        const fallbackToOgImage = () => {
-                            log(`fallbackToOgImage started`);
-                            try {
-                                if (videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
-                                    log(`attempting canvas drawImage`);
-                                    const canvas = document.createElement('canvas');
-                                    let dw = 320;
-                                    let dh = Math.round((videoEl.videoHeight * 320) / videoEl.videoWidth);
-                                    canvas.width = dw; canvas.height = dh;
-                                    const ctx = canvas.getContext('2d');
-                                    ctx.drawImage(videoEl, 0, 0, dw, dh);
-                                    const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
-                                    if (thumbUrl.length > 500) {
-                                        log(`canvas drawImage success`);
-                                        vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
-                                        resolve(true);
-                                        return;
-                                    }
-                                } else {
-                                    log(`video not ready for canvas. width=${videoEl.videoWidth}, state=${videoEl.readyState}`);
-                                }
-                            } catch (e) { log(`canvas error: ${e.message}`); }
-                            
-                            if (window !== window.top && chrome.runtime?.id) {
-                                log(`requesting VT_GET_TOP_OG_IMAGE`);
-                                chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
-                                    if (res && res.ogImg) {
-                                        log(`top ogImg found: ${res.ogImg}`);
-                                        let isResolved = false;
-                                        const timer = setTimeout(() => {
-                                            if (!isResolved) {
-                                                isResolved = true;
-                                                log(`top ogImg fetch TIMEOUT`);
-                                                showDebugOverlay('[VT_DEBUG] Capture Failed');
-                                                resolve(false);
-                                            }
-                                        }, 2500);
-
-                                        chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: res.ogImg }, async (imgRes) => {
-                                            if (isResolved) return;
-                                            isResolved = true;
-                                            clearTimeout(timer);
-                                            if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
-                                                log(`top ogImg fetch success`);
-                                                const compressed = await _compressImage(imgRes.dataUrl);
-                                                vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: compressed }).catch(()=>{});
-                                                resolve(true);
-                                            } else {
-                                                log(`top ogImg fetch failed: err=${imgRes?.error}, type=${imgRes?.type}`);
-                                                showDebugOverlay('[VT_DEBUG] Capture Failed');
-                                                resolve(false);
-                                            }
-                                        });
-                                    } else {
-                                        log(`top ogImg returned null`);
-                                        showDebugOverlay('[VT_DEBUG] Capture Failed');
-                                        resolve(false);
-                                    }
-                                });
-                            } else {
-                                log(`not in iframe or no runtime`);
-                                showDebugOverlay('[VT_DEBUG] Capture Failed');
-                                resolve(false);
-                            }
-                        };
-
                         if (res && res.dataUrl) {
-                            log(`VT_CAPTURE_TAB success, getting bounds`);
                             const rect = videoEl.getBoundingClientRect();
-                            getIframeOffset().then(iframeOffset => {
-                                const img = new Image();
-                                img.onload = () => {
-                                    try {
-                                        log(`cropping captureVisibleTab`);
-                                        const canvas = document.createElement('canvas');
-                                        const ratioX = img.width / window.innerWidth;
-                                        const ratioY = img.height / window.innerHeight;
-                                        const sx = Math.max(0, (rect.left + iframeOffset.left) * ratioX);
-                                        const sy = Math.max(0, (rect.top + iframeOffset.top) * ratioY);
-                                        const sw = Math.min(img.width - sx, rect.width * ratioX);
-                                        const sh = Math.min(img.height - sy, rect.height * ratioY);
-                                        
-                                        let dw = 320;
-                                        let dh = Math.round((sh * 320) / sw);
-                                        if (isNaN(dh) || dh <= 0) dh = 180;
-                                        canvas.width = dw; canvas.height = dh;
-                                        const ctx = canvas.getContext('2d');
-                                        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
-                                        const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
-                                        
-                                        if (thumbUrl.length > 500) {
-                                            log(`cropping success`);
-                                            vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
-                                            resolve(true);
-                                        } else {
-                                            log(`cropping result too small`);
-                                            fallbackToOgImage();
-                                        }
-                                    } catch (e) {
-                                        log(`cropping error: ${e.message}`);
-                                        fallbackToOgImage();
-                                    }
-                                };
-                                img.onerror = () => {
-                                    log(`failed to load captureVisibleTab image`);
-                                    fallbackToOgImage();
+                            const img = new Image();
+                            img.onload = async () => {
+                                const canvas = document.createElement('canvas');
+                                const ratioX = window.devicePixelRatio || 1;
+                                const ratioY = window.devicePixelRatio || 1;
+                                const sx = (offset.left + rect.left) * ratioX;
+                                const sy = (offset.top + rect.top) * ratioY;
+                                const sw = rect.width * ratioX;
+                                const sh = rect.height * ratioY;
+                                
+                                // 檢查截圖是否為黑屏 (硬體加速導致的純黑)
+                                const testCanvas = document.createElement('canvas');
+                                testCanvas.width = 50; testCanvas.height = 50;
+                                const testCtx = testCanvas.getContext('2d');
+                                testCtx.drawImage(img, sx, sy, sw, sh, 0, 0, 50, 50);
+                                const imgData = testCtx.getImageData(0, 0, 50, 50).data;
+                                let pureBlackPixels = 0;
+                                for (let i = 0; i < imgData.length; i += 4) {
+                                    if (imgData[i] <= 2 && imgData[i+1] <= 2 && imgData[i+2] <= 2) pureBlackPixels++;
                                 }
-                                img.src = res.dataUrl;
-                            });
+                                
+                                // 如果超過 98% 是純黑色 (2450/2500)，視為硬體加速黑屏，啟用 og:image 備案
+                                if (pureBlackPixels > 2450) {
+                                    console.error('[VT] Hardware acceleration black screen detected.');
+                                    resolve(await fallbackToOgImage());
+                                    return;
+                                }
+
+                                let dw = rect.width;
+                                let dh = rect.height;
+                                if (dw > 320) { dh = Math.round((dh * 320) / dw); dw = 320; }
+                                canvas.width = dw; canvas.height = dh;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+                                const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                if (thumbUrl.length > 500) {
+                                    vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
+                                    resolve(true); 
+                                } else {
+                                    console.error('[VT] Canvas generated empty image (length: ' + thumbUrl.length + '). dw=' + dw + ', dh=' + dh);
+                                    resolve(await fallbackToOgImage());
+                                }
+                            };
+                            img.onerror = async () => {
+                                console.error('[VT] Image failed to load dataUrl');
+                                resolve(await fallbackToOgImage());
+                            };
+                            img.src = res.dataUrl;
                         } else {
-                            log(`VT_CAPTURE_TAB returned no dataUrl. err=${res?.error}`);
-                            fallbackToOgImage();
+                            console.error('[VT] captureVisibleTab failed:', res?.error || 'Unknown error');
+                            fallbackToOgImage().then(resolve);
                         }
                     });
                 });
-            } else {
-                log(`videoEl not found or not VIDEO tag`);
             }
         } catch (e) {
-            log(`Outer catch: ${e.message}`);
-        } 
+            console.error('[VT] Snapshot Error:', e);
+        }
         
-        showDebugOverlay('[VT_DEBUG] Instant Fail');
         return false;
     }
 
@@ -962,10 +875,6 @@ if (!window._vtBookmarksLoaded) {
                             let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
                                         document.querySelector('meta[property="og:image:secure_url"]')?.content ||
                                         document.querySelector('meta[name="twitter:image"]')?.content || '';
-                            if (!ogImg) {
-                                const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
-                                if (imgs.length > 0) ogImg = imgs[0].src;
-                            }
                             if (ogImg && ogImg.startsWith('http')) {
                                 chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: ogImg }, async (res) => {
                                     if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
@@ -1027,16 +936,44 @@ if (!window._vtBookmarksLoaded) {
         takeSnapshot: _takeVideoSnapshot // Expose for cross-frame calls
     };
 
-    // [跨 Iframe 截圖修復] 聽取來自 Top Window 的截圖請求
+    // [跨 Iframe 截圖修復] 聽取來自上層 Window 的截圖請求，並遞迴向下傳遞
     window.addEventListener('message', async (e) => {
         if (e.data && e.data.type === 'VT_TAKE_SNAPSHOT' && e.ports && e.ports[0]) {
-            // 只有當這個 iframe 真的有影片時才嘗試截圖
-            const videoEl = window.sysState?._activeEl || document.querySelector('video');
-            if (videoEl) {
-                const success = await _takeVideoSnapshot(e.data.id);
-                e.ports[0].postMessage({ success });
+            const port = e.ports[0];
+            const targetId = e.data.id;
+            const videoEl = window.sysState?._activeEl;
+            
+            // 只有當這個 iframe 真的有追蹤中的影片時才嘗試截圖
+            if (videoEl && videoEl.tagName === 'VIDEO') {
+                const success = await _takeVideoSnapshot(targetId);
+                if (port) port.postMessage({ success });
             } else {
-                e.ports[0].postMessage({ success: false });
+                // 如果找不到，則繼續向下層 iframe 廣播
+                const frames = document.querySelectorAll('iframe');
+                if (frames.length === 0) {
+                    if (port) port.postMessage({ success: false });
+                    return;
+                }
+                
+                let resolved = false;
+                let pending = frames.length;
+                frames.forEach(f => {
+                    try {
+                        const channel = new MessageChannel();
+                        channel.port1.onmessage = (res) => {
+                            if (res.data && res.data.success) {
+                                if (!resolved) { resolved = true; if(port) port.postMessage({ success: true }); }
+                            } else {
+                                pending--;
+                                if (pending <= 0 && !resolved) { resolved = true; if(port) port.postMessage({ success: false }); }
+                            }
+                        };
+                        f.contentWindow.postMessage({ type: 'VT_TAKE_SNAPSHOT', id: targetId }, '*', [channel.port2]);
+                    } catch(err) {
+                        pending--;
+                        if (pending <= 0 && !resolved) { resolved = true; if(port) port.postMessage({ success: false }); }
+                    }
+                });
             }
         }
     });
