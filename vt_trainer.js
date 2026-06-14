@@ -47,7 +47,7 @@ if (!window._vtTrainerLoaded) {
                     btnCancel.innerText = txt.cancel || 'Cancel';
                     btnCancel.style.cssText = 'padding:10px 20px;background:#333;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;flex:1;';
                     const btnOk = document.createElement('button');
-                    btnOk.innerText = txt.ok || 'OK';
+                    btnOk.innerText = txt.confirm || 'OK';
                     btnOk.style.cssText = 'padding:10px 20px;background:#ff5252;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;flex:1;';
                     const close = (res) => { bg.remove(); resolve(res); };
                     btnCancel.onclick = () => close(false);
@@ -1011,6 +1011,10 @@ if (!window._vtTrainerLoaded) {
                                 idx: finalUrlRule.idx,
                             };
                         window._vtDetectedUrlRule = null;
+
+                        if (!chrome.runtime?.id) {
+                            return setSaveMsg("⚠️ 擴充功能已更新，請重新整理網頁！", "#ff5252");
+                        }
 
                         chrome.storage.local.get(
                             ["site_config", "enabledSites"],

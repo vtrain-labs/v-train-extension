@@ -252,6 +252,10 @@ function showContextMenu(x, y, folderId, folderName) {
         cm.classList.add('hidden');
         showFolderModal(folderId);
     };
+    document.getElementById('cmMoveFolder').onclick = () => {
+        cm.classList.add('hidden');
+        showMoveFolderModal(folderId, folderName);
+    };
     document.getElementById('cmDelete').onclick = () => {
         cm.classList.add('hidden');
         deleteFolder(folderId, folderName);
@@ -889,6 +893,143 @@ function showMoveModal(bookmarkId, currentFolderId) {
         const oldScroll = tree.scrollTop;
         tree.innerHTML = '';
         const folders = _allFolders;
+
+        const renderItem = (label, id, depth, hasKids) => {
+            const item = document.createElement('div');
+            item.style.cssText = `
+                display:flex;align-items:center;padding:7px 12px 7px ${12 + depth * 20}px;
+                border-radius:8px;margin-bottom:2px;cursor:pointer;user-select:none;
+                transition:background 0.15s; position:relative;
+                ${selectedFolderId === id ? 'background:rgba(233,30,140,0.15);' : ''}
+            `;
+
+            item.onmouseenter = () => { if (selectedFolderId !== id) item.style.background = 'var(--bg4)'; };
+            item.onmouseleave = () => { if (selectedFolderId !== id) item.style.background = 'none'; };
+
+            const chevron = document.createElement('span');
+            chevron.style.cssText = 'display:inline-block;width:16px;color:var(--text3);font-size:12px;transition:transform 0.2s;text-align:center;';
+            if (hasKids) {
+                chevron.textContent = '▶';
+                if (_expandedFolders.has(id)) chevron.style.transform = 'rotate(90deg)';
+            }
+            chevron.onclick = (e) => {
+                if (hasKids) {
+                    e.stopPropagation();
+                    if (_expandedFolders.has(id)) _expandedFolders.delete(id);
+                    else _expandedFolders.add(id);
+                    _renderTree();
+                }
+            };
+
+            const lbl = document.createElement('span');
+            lbl.textContent = label;
+            lbl.style.cssText = 'flex:1;color:var(--text);font-size:13px;margin-left:6px;';
+
+            const radio = document.createElement('div');
+            radio.style.cssText = `
+                width:16px;height:16px;border-radius:50%;border:2px solid ${selectedFolderId === id ? 'var(--accent)' : 'var(--text3)'};
+                display:flex;align-items:center;justify-content:center;
+            `;
+            if (selectedFolderId === id) {
+                const dot = document.createElement('div');
+                dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--accent);';
+                radio.appendChild(dot);
+            }
+
+            item.onclick = () => {
+                if (hasKids) {
+                    if (_expandedFolders.has(id)) _expandedFolders.delete(id);
+                    else _expandedFolders.add(id);
+                }
+                selectedFolderId = id;
+                _renderTree();
+            };
+
+            item.append(chevron, lbl, radio);
+            tree.appendChild(item);
+        };
+
+        renderItem('📥 ' + getLang('bvUncategorizedRoot', '未分類（根目錄）'), null, 0, false);
+
+        const renderLevel = (parentId, depth) => {
+            const kids = folders.filter(f => f.parentId === parentId).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            kids.forEach(f => {
+                const hasKids = folders.some(sub => sub.parentId === f.id);
+                renderItem('📁 ' + f.name, f.id, depth, hasKids);
+                if (hasKids && _expandedFolders.has(f.id)) {
+                    renderLevel(f.id, depth + 1);
+                }
+            });
+        };
+        renderLevel(null, 1);
+        requestAnimationFrame(() => tree.scrollTop = oldScroll);
+    }
+    
+    _renderTree();
+}
+
+async function showMoveFolderModal(folderIdToMove, folderName) {
+    let selectedFolderId = null;
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'bv-modal-overlay';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:var(--bg2);width:400px;max-height:80vh;border-radius:16px;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,0.5);border:1px solid var(--border);';
+    
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;';
+    const htitle = document.createElement('div');
+    htitle.textContent = getLang('bvMoveFolder', '移動資料夾') + ' - ' + folderName;
+    htitle.style.cssText = 'font-size:16px;font-weight:bold;color:var(--text);';
+    htitle.style.margin = '0';
+    const xBtn = document.createElement('button');
+    xBtn.textContent = '✕';
+    xBtn.style.cssText = 'background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;';
+    xBtn.onclick = () => overlay.remove();
+    hdr.append(htitle, xBtn);
+
+    const tree = document.createElement('div');
+    tree.style.cssText = 'flex:1;overflow-y:auto;padding:8px;';
+    
+    const confirmRow = document.createElement('div');
+    confirmRow.style.cssText = 'padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = getLang('btnCancel', '取消');
+    cancelBtn.className = 'bv-btn bv-btn-ghost';
+    cancelBtn.onclick = () => overlay.remove();
+    
+    const confirmBtn = document.createElement('button');
+    confirmBtn.textContent = getLang('bvBtnMove', '確認移動');
+    confirmBtn.className = 'bv-btn bv-btn-accent';
+    confirmBtn.onclick = async () => {
+        const f = _allFolders.find(x => x.id === folderIdToMove);
+        if (f) {
+            if (f.parentId !== selectedFolderId) {
+                f.parentId = selectedFolderId;
+                await window.vtDB.put('vt_bm_folders', f);
+                notifySync();
+                renderAll();
+                showToast(getLang('bvToastMovedFolder', '✅ 資料夾已移動'));
+            }
+        }
+        overlay.remove();
+    };
+    confirmRow.append(cancelBtn, confirmBtn);
+    
+    modal.append(hdr, tree, confirmRow);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    function _renderTree() {
+        const oldScroll = tree.scrollTop;
+        tree.innerHTML = '';
+        
+        const invalidTargets = _getAllSubfolderIds(folderIdToMove);
+        invalidTargets.add(folderIdToMove);
+        
+        const folders = _allFolders.filter(f => !invalidTargets.has(f.id));
 
         const renderItem = (label, id, depth, hasKids) => {
             const item = document.createElement('div');

@@ -67,6 +67,21 @@ if (!window._vtInjected) {
             let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
                         document.querySelector('meta[property="og:image:secure_url"]')?.content ||
                         document.querySelector('meta[name="twitter:image"]')?.content || '';
+            if (!ogImg) {
+                try {
+                    const ldJsons = document.querySelectorAll('script[type="application/ld+json"]');
+                    for (const script of ldJsons) {
+                        const data = JSON.parse(script.textContent);
+                        if (data && data.thumbnailUrl) {
+                            ogImg = Array.isArray(data.thumbnailUrl) ? data.thumbnailUrl[0] : data.thumbnailUrl;
+                            break;
+                        } else if (data && data.image) {
+                            ogImg = Array.isArray(data.image) ? (data.image[0].url || data.image[0]) : (data.image.url || data.image);
+                            break;
+                        }
+                    }
+                } catch(e) {}
+            }
             sendResponse({ ogImg: ogImg });
             return;
         }

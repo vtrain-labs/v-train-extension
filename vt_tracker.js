@@ -215,8 +215,8 @@ if (!window._vtTrackerLoaded) {
                         updateDebugStatus("Waiting", "m1");
                     }
                     window.vtBookmarkPanel?.setVideo(targetId);
-                } else {
-                    window.vtBookmarkPanel?.hide(); // 無影片且無 ID 時隱藏書籤面板
+                } else if (window === window.top && !targetId) {
+                    window.vtBookmarkPanel?.setVideo(null);
                 }
                 return;
             }

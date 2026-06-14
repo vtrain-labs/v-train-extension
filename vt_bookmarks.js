@@ -220,7 +220,10 @@ if (!window._vtBookmarksLoaded) {
             padding:0 6px;user-select:none;display:flex;align-items:center;
             transition:color 0.2s;height:100%;
         `;
-        dragHandle.onmouseenter = () => dragHandle.style.color = 'rgba(255,255,255,0.8)';
+        dragHandle.onmouseenter = () => {
+            dragHandle.style.color = 'rgba(255,255,255,0.8)';
+            dragHandle.title = window.getI18nStr ? window.getI18nStr('dragHint', '拖曳移動 (點兩下恢復原位)') : '拖曳移動 (點兩下恢復原位)';
+        };
         dragHandle.onmouseleave = () => dragHandle.style.color = 'rgba(255,255,255,0.4)';
         p.appendChild(dragHandle);
 
@@ -301,7 +304,10 @@ if (!window._vtBookmarksLoaded) {
                 btn.style.opacity = '1';
                 btn.style.filter = 'grayscale(0.4)';
             }
-            btn.onmouseenter = () => { if (!btn.dataset.active) btn.style.background = 'rgba(255,255,255,0.1)'; };
+            btn.onmouseenter = () => { 
+                btn.title = _g(titleKey, titleDef);
+                if (!btn.dataset.active) btn.style.background = 'rgba(255,255,255,0.1)'; 
+            };
             btn.onmouseleave = () => { if (!btn.dataset.active) { btn.style.background = 'none'; btn.style.transform = ''; } };
             btn.onmousedown = () => { btn.style.transform = 'scale(0.88)'; };
             btn.onmouseup = () => { btn.style.transform = 'scale(1)'; };

@@ -356,7 +356,7 @@ html, body {
 .bv-grid.list-view .bv-card {
     display: flex; align-items: center; border-radius: 10px;
 }
-.bv-grid.list-view .bv-card-thumb,
+.bv-grid.list-view .bv-card-thumb-wrap,
 .bv-grid.list-view .bv-card-thumb-placeholder {
     width: 120px; aspect-ratio: 16/9; flex-shrink: 0;
     border-right: 1px solid var(--border); border-bottom: none;
