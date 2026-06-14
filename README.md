@@ -3,10 +3,10 @@
   <h1>V-Train (VT) 智慧影片收藏與進度追蹤</h1>
   <p>一個強大且輕量級的 Chrome 擴充功能，專為提升網頁影片瀏覽體驗所設計。</p>
   
-  <a href="#">
+  <a href="https://chromewebstore.google.com/detail/v-train-adaptive-video-ba/cikabjkegiefjgalfncfoehmkpmkoiaf">
     <img src="https://img.shields.io/badge/Chrome_Web_Store-前往下載-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome Web Store">
   </a>
-  <a href="#">
+  <a href="https://github.com/vtrain-labs/v-train-extension">
     <img src="https://img.shields.io/badge/GitHub-開源專案-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
   </a>
   
@@ -41,7 +41,7 @@
 
 ### 方式一：官方商店安裝 (推薦)
 最簡單的方式，支援自動更新。
-1. 前往 [Chrome 應用程式商店](#) (連結待補)。
+1. 前往 [Chrome 應用程式商店](https://chromewebstore.google.com/detail/v-train-adaptive-video-ba/cikabjkegiefjgalfncfoehmkpmkoiaf)。
 2. 點擊 **「加到 Chrome」**。
 
 ### 方式二：手動安裝 (搶鮮版/開發者模式)

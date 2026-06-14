@@ -3,10 +3,10 @@
   <h1>V-Train (VT) Smart Video Bookmarks & Progress Tracker</h1>
   <p>A powerful and lightweight Chrome extension designed to elevate your web video browsing experience.</p>
   
-  <a href="#">
+  <a href="https://chromewebstore.google.com/detail/v-train-adaptive-video-ba/cikabjkegiefjgalfncfoehmkpmkoiaf">
     <img src="https://img.shields.io/badge/Chrome_Web_Store-Download-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome Web Store">
   </a>
-  <a href="#">
+  <a href="https://github.com/vtrain-labs/v-train-extension">
     <img src="https://img.shields.io/badge/GitHub-Open_Source-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
   </a>
   
@@ -41,7 +41,7 @@
 
 ### Method 1: Chrome Web Store (Recommended)
 The easiest way with automatic updates.
-1. Go to the [Chrome Web Store](#) (Link pending).
+1. Go to the [Chrome Web Store](https://chromewebstore.google.com/detail/v-train-adaptive-video-ba/cikabjkegiefjgalfncfoehmkpmkoiaf).
 2. Click **"Add to Chrome"**.
 
 ### Method 2: Manual Installation (Developer Mode)
