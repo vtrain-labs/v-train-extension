@@ -63,6 +63,18 @@ if (!window._vtInjected) {
             return;
         }
 
+        if (request.action === "VT_EXTRACT_OG_IMAGE") {
+            let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+                        document.querySelector('meta[property="og:image:secure_url"]')?.content ||
+                        document.querySelector('meta[name="twitter:image"]')?.content || '';
+            if (!ogImg) {
+                const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
+                if (imgs.length > 0) ogImg = imgs[0].src;
+            }
+            sendResponse({ ogImg: ogImg });
+            return;
+        }
+
         if (request.action === "RESET_BINDING") location.reload();
     });
 
@@ -106,6 +118,21 @@ if (!window._vtInjected) {
             } else {
                 updateDebugStatus("REC", `[${e.data.id}] ${e.data.pct}%`);
             }
+        }
+
+        // [終極截圖修復] 處理 iframe 請求自身絕對座標，以精確裁切 captureVisibleTab
+        if (e.data && e.data.type === 'VT_GET_IFRAME_RECT' && window === window.top) {
+            try {
+                const iframes = document.querySelectorAll('iframe');
+                for (let i = 0; i < iframes.length; i++) {
+                    if (iframes[i].contentWindow === e.source) {
+                        const rect = iframes[i].getBoundingClientRect();
+                        e.ports[0].postMessage({ rect: { left: rect.left, top: rect.top } });
+                        return;
+                    }
+                }
+            } catch(err) {}
+            e.ports[0]?.postMessage({ rect: { left: 0, top: 0 } });
         }
     });
 

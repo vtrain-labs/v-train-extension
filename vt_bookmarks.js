@@ -343,14 +343,63 @@ if (!window._vtBookmarksLoaded) {
             if (btn.textContent === '⏳') return; // 防止連點
             btn.textContent = '⏳';
             btn.style.pointerEvents = 'none';
-            _takeVideoSnapshot(_currentId).then(success => {
+
+            const handleResult = (success) => {
                 btn.textContent = success ? '✅' : '❌';
-                if (success) notifySync();
+                if (success) {
+                    _panelBookmarked = true;
+                    _renderPanelState();
+                    notifySync();
+                    setTimeout(() => btn.textContent = '📸', 2000);
+                } else {
+                    setTimeout(() => btn.textContent = '📸', 2000);
+                }
+                btn.style.pointerEvents = 'auto';
+            };
+
+            // [跨 Iframe 截圖修復] 如果目前是 Top Window，且找不到影片，就廣播給所有 iframe 代為截圖
+            if (window === window.top && !document.querySelector('video')) {
+                let answered = false;
+                const iframes = document.querySelectorAll('iframe');
+                let pendingCount = iframes.length;
+                
+                const fallbackToTopWindow = () => {
+                    if (answered) return;
+                    answered = true;
+                    // Iframe 無法處理 (通常是因為權限不足未被注入)，退回使用 Top Window 的備案 (例如抓 og:image)
+                    _takeVideoSnapshot(_currentId).then(success => handleResult(success));
+                };
+
+                if (pendingCount === 0) {
+                    fallbackToTopWindow();
+                    return;
+                }
+
+                iframes.forEach(f => {
+                    try {
+                        const channel = new MessageChannel();
+                        channel.port1.onmessage = (e) => {
+                            if (answered) return;
+                            if (e.data.success) {
+                                answered = true;
+                                handleResult(true);
+                            } else {
+                                pendingCount--;
+                                if (pendingCount === 0 && !answered) fallbackToTopWindow();
+                            }
+                        };
+                        f.contentWindow.postMessage({ type: 'VT_TAKE_SNAPSHOT', id: _currentId }, '*', [channel.port2]);
+                    } catch(err) {
+                        pendingCount--;
+                        if (pendingCount === 0 && !answered) fallbackToTopWindow();
+                    }
+                });
                 setTimeout(() => {
-                    btn.textContent = '📸';
-                    btn.style.pointerEvents = 'auto';
-                }, 1500);
-            });
+                    if (!answered) fallbackToTopWindow();
+                }, 3000); // 縮短超時為 3 秒，提升體驗
+            } else {
+                _takeVideoSnapshot(_currentId).then(success => handleResult(success));
+            }
         };
 
         (document.body || document.documentElement).appendChild(p);
@@ -404,6 +453,18 @@ if (!window._vtBookmarksLoaded) {
             btn.dataset.active = cfg.active ? 'true' : '';
             btn.style.filter = cfg.active ? 'none' : 'grayscale(0.4)';
             btn.style.background = cfg.active ? cfg.bg : 'none';
+        }
+
+        // 判斷是否需要顯示解鎖按鈕
+        const btnUnlock = _panel.querySelector('#vt-bmb-unlock');
+        if (btnUnlock) {
+            const hasVideo = !!document.querySelector('video');
+            const hasIframes = document.querySelectorAll('iframe').length > 0;
+            if (window === window.top && !hasVideo && hasIframes) {
+                btnUnlock.style.display = 'inline-block';
+            } else {
+                btnUnlock.style.display = 'none';
+            }
         }
     }
 
@@ -638,64 +699,232 @@ if (!window._vtBookmarksLoaded) {
 
     // ─── 核心截圖引擎 (分離自 forceHeal 以供全域呼叫) ──────────────────
     async function _takeVideoSnapshot(targetVideoId) {
+        let dbg = [];
+        const log = (msg) => dbg.push(msg);
+        log(`_takeVideoSnapshot started for ${targetVideoId}`);
+
+        const showDebugOverlay = (title) => {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:10%;left:10%;width:80%;height:80%;background:rgba(0,0,0,0.9);color:#0f0;font-family:monospace;font-size:12px;z-index:9999999;overflow:auto;padding:20px;border:2px solid red;';
+            overlay.innerHTML = `<button style="position:absolute;top:10px;right:10px;background:red;color:white;border:none;padding:5px 10px;cursor:pointer;">X 關閉</button>
+            <h3 style="color:white;margin-top:0;">${title}</h3>
+            <pre style="white-space:pre-wrap;">${dbg.join('\n')}</pre>`;
+            overlay.querySelector('button').onclick = () => overlay.remove();
+            document.body.appendChild(overlay);
+        };
+
         try {
             const videoEl = window.sysState?._activeEl || document.querySelector('video');
-            if (videoEl && videoEl.tagName === 'VIDEO' && videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
-                return new Promise((resolve) => {
-                    chrome.runtime.sendMessage({ action: "VT_CAPTURE_TAB" }, (res) => {
-                        if (res && res.dataUrl) {
-                            const rect = videoEl.getBoundingClientRect();
-                            const img = new Image();
-                            img.onload = () => {
-                                const canvas = document.createElement('canvas');
-                                const ratioX = img.width / window.innerWidth;
-                                const ratioY = img.height / window.innerHeight;
-                                const sx = rect.left * ratioX;
-                                const sy = rect.top * ratioY;
-                                const sw = rect.width * ratioX;
-                                const sh = rect.height * ratioY;
-                                
-                                let dw = rect.width;
-                                let dh = rect.height;
-                                if (dw > 320) { dh = Math.round((dh * 320) / dw); dw = 320; }
-                                canvas.width = dw; canvas.height = dh;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
-                                const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
-                                if (thumbUrl.length > 500) {
-                                    vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
-                                    resolve(true); 
-                                } else {
-                                    resolve(false);
-                                }
-                            };
-                            img.onerror = () => {
+            if (videoEl && videoEl.tagName === 'VIDEO') {
+                log(`video tag found. readyState=${videoEl.readyState}`);
+
+                // [終極備案 0] 直接提取影片本身的 poster 屬性 (最常見於 iframe 播放器)
+                let posterUrl = videoEl.getAttribute('poster') || videoEl.poster;
+                log(`video.poster = ${posterUrl}`);
+
+                // [增強 1] 如果沒有 poster，試著在目前的 document 內找出面積最大的圖片 (某些播放器用 img 墊底)
+                if (!posterUrl) {
+                    const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 150 && img.height > 100);
+                    log(`found ${imgs.length} large images`);
+                    if (imgs.length > 0) {
+                        const largestImg = imgs.reduce((prev, current) => (prev.width * prev.height > current.width * current.height) ? prev : current);
+                        posterUrl = largestImg.src;
+                        log(`largest image = ${posterUrl}`);
+                    }
+                }
+
+                // [增強 2] 如果還是沒有，掃描所有元素的 background-image (JWPlayer, Video.js 等常用手法)
+                if (!posterUrl) {
+                    const els = document.querySelectorAll('*');
+                    log(`scanning background-image on ${els.length} elements`);
+                    for (let el of els) {
+                        const bg = window.getComputedStyle(el).backgroundImage;
+                        if (bg && bg !== 'none' && bg.startsWith('url(')) {
+                            let url = bg.slice(4, -1).replace(/["']/g, "");
+                            if (url.startsWith('http') && !url.includes('data:image')) {
+                                posterUrl = url;
+                                log(`found bg image = ${posterUrl}`);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (posterUrl && posterUrl.startsWith('http')) {
+                    log(`attempting to fetch posterUrl: ${posterUrl}`);
+                    const success = await new Promise((resolve) => {
+                        let isResolved = false;
+                        const timer = setTimeout(() => {
+                            if (!isResolved) {
+                                isResolved = true;
+                                log(`fetch posterUrl TIMEOUT`);
                                 resolve(false);
                             }
-                            img.src = res.dataUrl;
-                        } else {
-                            try {
-                                const canvas = document.createElement('canvas');
-                                let dw = 320;
-                                let dh = Math.round((videoEl.videoHeight * 320) / videoEl.videoWidth);
-                                canvas.width = dw; canvas.height = dh;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(videoEl, 0, 0, dw, dh);
-                                const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
-                                if (thumbUrl.length > 500) {
-                                    vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
-                                    resolve(true);
-                                    return;
-                                }
-                            } catch (e) {
+                        }, 2500); // 2.5 秒超時
+                        
+                        chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: posterUrl }, async (res) => {
+                            if (isResolved) return;
+                            isResolved = true;
+                            clearTimeout(timer);
+                            if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
+                                log(`fetch successful, compressing...`);
+                                const compressed = await _compressImage(res.dataUrl);
+                                vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: compressed }).catch(()=>{});
+                                resolve(true);
+                            } else {
+                                log(`fetch failed: err=${res?.error}, type=${res?.type}`);
+                                resolve(false);
                             }
-                            resolve(false);
+                        });
+                    });
+                    if (success) {
+                        log(`success from posterUrl`);
+                        return true;
+                    }
+                }
+
+                // [終極截圖修復] 向 Top Window 請求當前 iframe 的偏移量
+                log(`getting iframe offset...`);
+                const getIframeOffset = () => new Promise(resolve => {
+                    if (window === window.top) { log(`is top window`); return resolve({ left: 0, top: 0 }); }
+                    try {
+                        const channel = new MessageChannel();
+                        channel.port1.onmessage = (e) => {
+                            log(`got offset: ${e.data.rect?.left}, ${e.data.rect?.top}`);
+                            resolve(e.data.rect || { left: 0, top: 0 });
+                        };
+                        window.top.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
+                        setTimeout(() => { log(`offset timeout`); resolve({ left: 0, top: 0 }); }, 300);
+                    } catch(err) { log(`offset err: ${err}`); resolve({ left: 0, top: 0 }); }
+                });
+
+                log(`calling VT_CAPTURE_TAB...`);
+                return new Promise((resolve) => {
+                    chrome.runtime.sendMessage({ action: "VT_CAPTURE_TAB" }, (res) => {
+                        
+                        const fallbackToOgImage = () => {
+                            log(`fallbackToOgImage started`);
+                            try {
+                                if (videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
+                                    log(`attempting canvas drawImage`);
+                                    const canvas = document.createElement('canvas');
+                                    let dw = 320;
+                                    let dh = Math.round((videoEl.videoHeight * 320) / videoEl.videoWidth);
+                                    canvas.width = dw; canvas.height = dh;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx.drawImage(videoEl, 0, 0, dw, dh);
+                                    const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                    if (thumbUrl.length > 500) {
+                                        log(`canvas drawImage success`);
+                                        vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
+                                        resolve(true);
+                                        return;
+                                    }
+                                } else {
+                                    log(`video not ready for canvas. width=${videoEl.videoWidth}, state=${videoEl.readyState}`);
+                                }
+                            } catch (e) { log(`canvas error: ${e.message}`); }
+                            
+                            if (window !== window.top && chrome.runtime?.id) {
+                                log(`requesting VT_GET_TOP_OG_IMAGE`);
+                                chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
+                                    if (res && res.ogImg) {
+                                        log(`top ogImg found: ${res.ogImg}`);
+                                        let isResolved = false;
+                                        const timer = setTimeout(() => {
+                                            if (!isResolved) {
+                                                isResolved = true;
+                                                log(`top ogImg fetch TIMEOUT`);
+                                                showDebugOverlay('[VT_DEBUG] Capture Failed');
+                                                resolve(false);
+                                            }
+                                        }, 2500);
+
+                                        chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: res.ogImg }, async (imgRes) => {
+                                            if (isResolved) return;
+                                            isResolved = true;
+                                            clearTimeout(timer);
+                                            if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
+                                                log(`top ogImg fetch success`);
+                                                const compressed = await _compressImage(imgRes.dataUrl);
+                                                vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: compressed }).catch(()=>{});
+                                                resolve(true);
+                                            } else {
+                                                log(`top ogImg fetch failed: err=${imgRes?.error}, type=${imgRes?.type}`);
+                                                showDebugOverlay('[VT_DEBUG] Capture Failed');
+                                                resolve(false);
+                                            }
+                                        });
+                                    } else {
+                                        log(`top ogImg returned null`);
+                                        showDebugOverlay('[VT_DEBUG] Capture Failed');
+                                        resolve(false);
+                                    }
+                                });
+                            } else {
+                                log(`not in iframe or no runtime`);
+                                showDebugOverlay('[VT_DEBUG] Capture Failed');
+                                resolve(false);
+                            }
+                        };
+
+                        if (res && res.dataUrl) {
+                            log(`VT_CAPTURE_TAB success, getting bounds`);
+                            const rect = videoEl.getBoundingClientRect();
+                            getIframeOffset().then(iframeOffset => {
+                                const img = new Image();
+                                img.onload = () => {
+                                    try {
+                                        log(`cropping captureVisibleTab`);
+                                        const canvas = document.createElement('canvas');
+                                        const ratioX = img.width / window.innerWidth;
+                                        const ratioY = img.height / window.innerHeight;
+                                        const sx = Math.max(0, (rect.left + iframeOffset.left) * ratioX);
+                                        const sy = Math.max(0, (rect.top + iframeOffset.top) * ratioY);
+                                        const sw = Math.min(img.width - sx, rect.width * ratioX);
+                                        const sh = Math.min(img.height - sy, rect.height * ratioY);
+                                        
+                                        let dw = 320;
+                                        let dh = Math.round((sh * 320) / sw);
+                                        if (isNaN(dh) || dh <= 0) dh = 180;
+                                        canvas.width = dw; canvas.height = dh;
+                                        const ctx = canvas.getContext('2d');
+                                        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+                                        const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                        
+                                        if (thumbUrl.length > 500) {
+                                            log(`cropping success`);
+                                            vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
+                                            resolve(true);
+                                        } else {
+                                            log(`cropping result too small`);
+                                            fallbackToOgImage();
+                                        }
+                                    } catch (e) {
+                                        log(`cropping error: ${e.message}`);
+                                        fallbackToOgImage();
+                                    }
+                                };
+                                img.onerror = () => {
+                                    log(`failed to load captureVisibleTab image`);
+                                    fallbackToOgImage();
+                                }
+                                img.src = res.dataUrl;
+                            });
+                        } else {
+                            log(`VT_CAPTURE_TAB returned no dataUrl. err=${res?.error}`);
+                            fallbackToOgImage();
                         }
                     });
                 });
+            } else {
+                log(`videoEl not found or not VIDEO tag`);
             }
         } catch (e) {
+            log(`Outer catch: ${e.message}`);
         } 
+        
+        showDebugOverlay('[VT_DEBUG] Instant Fail');
         return false;
     }
 
@@ -720,40 +949,71 @@ if (!window._vtBookmarksLoaded) {
             // [自癒機制 Self-Healing] 如果此影片已在書籤庫中，於背景靜默重新抓取縮圖並寫入快取庫。
             // 加入溫和的重試機制，最多 3 次，避免被當作 DDoS 攻擊，同時能繞過廣告延遲。
             if (_panelBookmarked) {
-                const _heal = (attempt = 1) => {
-                    if (attempt > 3) return; // 最多嘗試 3 次
-                    setTimeout(() => {
-                        if (_currentId !== videoId) return; // [SPA 保護] 避免在延遲期間用戶切換了影片，導致張冠李戴
-                        let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
-                                    document.querySelector('meta[property="og:image:secure_url"]')?.content ||
-                                    document.querySelector('meta[name="twitter:image"]')?.content || '';
-                        if (!ogImg) {
-                            const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
-                            if (imgs.length > 0) ogImg = imgs[0].src;
-                        }
-                        if (ogImg && ogImg.startsWith('http')) {
-                            chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: ogImg }, async (res) => {
-                                if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
-                                    const dataUrl = await _compressImage(res.dataUrl);
-                                    vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: dataUrl }).catch(()=>{});
-                                    notifySync(); 
+                vtDBProxy.get('vt_thumbnails', videoId).then(existingThumb => {
+                    // [Bug 修復] 如果資料庫裡已經有一張正常的縮圖，就「絕對不要」發動自癒機制去覆蓋它
+                    if (existingThumb && existingThumb.thumbnail && existingThumb.thumbnail.length > 500) {
+                        return; 
+                    }
+
+                    const _heal = (attempt = 1) => {
+                        if (attempt > 3) return; // 最多嘗試 3 次
+                        setTimeout(() => {
+                            if (_currentId !== videoId) return; // [SPA 保護] 避免在延遲期間用戶切換了影片，導致張冠李戴
+                            let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+                                        document.querySelector('meta[property="og:image:secure_url"]')?.content ||
+                                        document.querySelector('meta[name="twitter:image"]')?.content || '';
+                            if (!ogImg) {
+                                const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
+                                if (imgs.length > 0) ogImg = imgs[0].src;
+                            }
+                            if (ogImg && ogImg.startsWith('http')) {
+                                chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: ogImg }, async (res) => {
+                                    if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
+                                        const dataUrl = await _compressImage(res.dataUrl);
+                                        vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: dataUrl }).catch(()=>{});
+                                        notifySync(); 
+                                    } else {
+                                        if (await _takeVideoSnapshot(videoId)) { notifySync(); return; }
+                                        _heal(attempt + 1); 
+                                    }
+                                });
+                            } else {
+                                // [Iframe 跨域修復] 在 iframe 中找不到 og:image 時，改請求 Top Window 的 og:image
+                                if (window !== window.top && chrome.runtime?.id) {
+                                    chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
+                                        if (res && res.ogImg) {
+                                            chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: res.ogImg }, async (imgRes) => {
+                                                if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
+                                                    const compressed = await _compressImage(imgRes.dataUrl);
+                                                    vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: compressed }).catch(()=>{});
+                                                    notifySync();
+                                                    return;
+                                                } else {
+                                                    _takeVideoSnapshotFallback();
+                                                }
+                                            });
+                                        } else {
+                                            _takeVideoSnapshotFallback();
+                                        }
+                                    });
                                 } else {
-                                    if (await _takeVideoSnapshot(videoId)) { notifySync(); return; }
-                                    _heal(attempt + 1); 
+                                    _takeVideoSnapshotFallback();
                                 }
-                            });
-                        } else {
-                            _takeVideoSnapshot(videoId).then(success => {
-                                if (success) {
-                                    notifySync();
-                                } else {
-                                    _heal(attempt + 1);
+                                
+                                function _takeVideoSnapshotFallback() {
+                                    _takeVideoSnapshot(videoId).then(success => {
+                                        if (success) {
+                                            notifySync();
+                                        } else {
+                                            _heal(attempt + 1);
+                                        }
+                                    });
                                 }
-                            });
-                        }
-                    }, attempt === 1 ? 300 : 3000 * (attempt - 1)); // 第一次 0.3 秒，第二次 3 秒，第三次 6 秒
-                };
-                _heal();
+                            }
+                        }, attempt === 1 ? 300 : 3000 * (attempt - 1)); // 第一次 0.3 秒，第二次 3 秒，第三次 6 秒
+                    };
+                    _heal();
+                }); // Close vtDBProxy.get
             }
 
             _createPanel();
@@ -763,8 +1023,23 @@ if (!window._vtBookmarksLoaded) {
             if (_panel) _panel.style.display = 'none';
             _currentId = null;
         },
-        async loadCache() { await _loadCache(); }
+        async loadCache() { await _loadCache(); },
+        takeSnapshot: _takeVideoSnapshot // Expose for cross-frame calls
     };
+
+    // [跨 Iframe 截圖修復] 聽取來自 Top Window 的截圖請求
+    window.addEventListener('message', async (e) => {
+        if (e.data && e.data.type === 'VT_TAKE_SNAPSHOT' && e.ports && e.ports[0]) {
+            // 只有當這個 iframe 真的有影片時才嘗試截圖
+            const videoEl = window.sysState?._activeEl || document.querySelector('video');
+            if (videoEl) {
+                const success = await _takeVideoSnapshot(e.data.id);
+                e.ports[0].postMessage({ success });
+            } else {
+                e.ports[0].postMessage({ success: false });
+            }
+        }
+    });
 
     // 啟動時預載入快取
     _loadCache();

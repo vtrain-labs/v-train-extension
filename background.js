@@ -123,17 +123,31 @@ chrome.runtime.onInstalled.addListener((details) => {
 // [架構師無障礙版] 色盲友善高對比藍色，動態判斷系統語言，加大字體
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "mark_vt_thumbnail" && tab.url && tab.url.startsWith('http')) {
+        const originsToRequest = [];
+        
+        // 1. Top Window Origin
         const urlObj = new URL(tab.url);
         const baseDomain = urlObj.hostname.replace(/^(www\.|m\.)/i, '');
-        const origin = `${urlObj.protocol}//*.${baseDomain}/*`;
+        originsToRequest.push(`${urlObj.protocol}//*.${baseDomain}/*`);
+        
+        // 2. Iframe Origin (如果使用者是在 Iframe 裡面按右鍵)
+        if (info.frameUrl && info.frameUrl.startsWith('http')) {
+            const frameUrlObj = new URL(info.frameUrl);
+            const frameBaseDomain = frameUrlObj.hostname.replace(/^(www\.|m\.)/i, '');
+            const frameOrigin = `${frameUrlObj.protocol}//*.${frameBaseDomain}/*`;
+            if (!originsToRequest.includes(frameOrigin)) {
+                originsToRequest.push(frameOrigin);
+            }
+        }
+
         const reqTime = Date.now();
-        chrome.permissions.request({ origins: [origin] }, (granted) => {
+        chrome.permissions.request({ origins: originsToRequest }, (granted) => {
             if (!granted) return;
             const isNewGrant = (Date.now() - reqTime) > 500; // [BUG 修復] 語意修正：時間差大代表使用者剛完成新授權
             chrome.storage.local.set({ isStealthMode: false }, () => {
-                chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ["style.css"] }).catch(() => { });
+                chrome.scripting.insertCSS({ target: { tabId: tab.id, allFrames: true }, files: ["style.css"] }).catch(() => { });
 
-                chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).then(() => {
+                chrome.scripting.executeScript({ target: { tabId: tab.id, allFrames: true }, files: ["shared_i18n.js", "vt_utils.js", "vt_url_parser.js", "vt_tracker.js", "vt_bookmarks.js", "vt_trainer.js", "content.js"] }).then(() => {
                     if (!isNewGrant) return setTimeout(() => chrome.tabs.sendMessage(tab.id, { action: "START_MARKING" }).catch(() => { }), 100);
 
                     // [架構師重構] 移除寫死的多國語言物件，改用原生 chrome.i18n.getMessage
@@ -223,6 +237,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true; // 非同步回覆
     }
 
+
     if (request.action === 'VT_FETCH_IMAGE') {
         fetch(request.url)
             .then(r => r.blob())
@@ -233,6 +248,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             })
             .catch(err => sendResponse({ error: err.message }));
         return true;
+    }
+
+    if (request.action === 'VT_GET_TOP_OG_IMAGE') {
+        if (sender && sender.tab && sender.tab.id) {
+            chrome.tabs.sendMessage(sender.tab.id, { action: 'VT_EXTRACT_OG_IMAGE' }, { frameId: 0 }, (response) => {
+                if (chrome.runtime.lastError) {
+                    sendResponse({ ogImg: null });
+                } else {
+                    sendResponse(response || { ogImg: null });
+                }
+            });
+            return true;
+        } else {
+            sendResponse({ ogImg: null });
+        }
     }
 
     // [動態 CDN 自學引擎]
@@ -338,9 +368,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         _swCache.isPro = !!res.isProVersion;
                         _swCache.isLoaded = true;
                     }
-
-                    await vtDB.putRecord(id, data);
+                    // [Partial Update 修復] 先讀取舊資料，再合併新的進度資料，避免進度自動存檔覆蓋掉截圖與書籤
+                    const oldRecords = await vtDB.getRecords([id]);
+                    const oldData = oldRecords[id] || {};
+                    const mergedData = { ...oldData, ...data };
                     
+                    await vtDB.putRecord(id, mergedData);
                     const count = await vtDB.count();
                     chrome.storage.local.set({ vt_video_count: count });
                     
