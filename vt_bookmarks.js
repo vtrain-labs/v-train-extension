@@ -34,7 +34,22 @@ if (!window._vtBookmarksLoaded) {
         delete: (storeName, key) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_DELETE', storeName, key }, r))
     };
 
-
+    // ─── 本地拉取圖片避免 Extension 報錯 ───────────────────────────────────────────
+    async function _fetchImageBase64Local(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const blob = await response.blob();
+            if (blob.type.includes('html')) return null;
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve({ dataUrl: reader.result, type: blob.type });
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) {
+            return null; // Silent fail in console
+        }
+    }
 
     // ─── 載入快取 ────────────────────────────────────────────────────────
     async function _loadCache() {
@@ -565,7 +580,7 @@ if (!window._vtBookmarksLoaded) {
 
             // [無痛快取機制] 擷取圖片轉換為二進位存入快取資料庫
             if (ogImg && ogImg.startsWith('http')) {
-                chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: ogImg }, async (res) => {
+                _fetchImageBase64Local(ogImg).then(async (res) => {
                     if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
                         const compressed = await _compressImage(res.dataUrl);
                         vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: compressed }).catch(()=>{});
@@ -717,7 +732,7 @@ if (!window._vtBookmarksLoaded) {
                     const success = await new Promise((resolve) => {
                         let isResolved = false;
                         const timer = setTimeout(() => { if (!isResolved) { isResolved = true; resolve(false); } }, 2500);
-                        chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: posterUrl }, async (res) => {
+                        _fetchImageBase64Local(posterUrl).then(async (res) => {
                             if (isResolved) return;
                             isResolved = true;
                             clearTimeout(timer);
@@ -738,7 +753,7 @@ if (!window._vtBookmarksLoaded) {
                             if (res && res.ogImg) {
                                 let isResolved = false;
                                 const timer = setTimeout(() => { if (!isResolved) { isResolved = true; resolve(false); } }, 2500);
-                                chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: res.ogImg }, async (imgRes) => {
+                                _fetchImageBase64Local(res.ogImg).then(async (imgRes) => {
                                     if (isResolved) return;
                                     isResolved = true;
                                     clearTimeout(timer);
@@ -882,7 +897,7 @@ if (!window._vtBookmarksLoaded) {
                                         document.querySelector('meta[property="og:image:secure_url"]')?.content ||
                                         document.querySelector('meta[name="twitter:image"]')?.content || '';
                             if (ogImg && ogImg.startsWith('http')) {
-                                chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: ogImg }, async (res) => {
+                                _fetchImageBase64Local(ogImg).then(async (res) => {
                                     if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
                                         const dataUrl = await _compressImage(res.dataUrl);
                                         vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: dataUrl }).catch(()=>{});
@@ -897,7 +912,7 @@ if (!window._vtBookmarksLoaded) {
                                 if (window !== window.top && chrome.runtime?.id) {
                                     chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
                                         if (res && res.ogImg) {
-                                            chrome.runtime.sendMessage({ action: 'VT_FETCH_IMAGE', url: res.ogImg }, async (imgRes) => {
+                                            _fetchImageBase64Local(res.ogImg).then(async (imgRes) => {
                                                 if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
                                                     const compressed = await _compressImage(imgRes.dataUrl);
                                                     vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: compressed }).catch(()=>{});

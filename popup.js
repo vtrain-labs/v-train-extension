@@ -779,188 +779,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 匯出
-    btnExport.addEventListener('click', () => {
-        const oldTxt = btnExport.innerHTML;
-        btnExport.textContent = getLangText(currentLang, 'exporting');
-        btnExport.disabled = true;
+    btnExport.addEventListener('click', async () => {
+        const exportCore = document.getElementById('chkExportCore') ? document.getElementById('chkExportCore').checked : true;
+        const exportImages = document.getElementById('chkExportImages') ? document.getElementById('chkExportImages').checked : false;
 
-        const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
-
-        chrome.storage.local.get(sysKeys, async (sysData) => {
-            let chunks = ["{"];
-            let isFirst = true;
-
-            for (const k of sysKeys) {
-                if (sysData[k] !== undefined) {
-                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify(k)}:${JSON.stringify(sysData[k])}`);
-                    isFirst = false;
-                }
-            }
-
-            try {
-                // Export Bookmarks
-                const bookmarks = await window.vtDB.getAll('vt_bookmarks');
-                if (bookmarks.length > 0) {
-                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify('vt_bookmarks')}:${JSON.stringify(bookmarks)}`);
-                    isFirst = false;
-                }
-                // Export Ratings
-                const ratings = await window.vtDB.getAll('vt_ratings');
-                if (ratings.length > 0) {
-                    const ratingsObj = {};
-                    ratings.forEach(r => ratingsObj[r.videoId] = r.rating);
-                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify('vt_ratings')}:${JSON.stringify(ratingsObj)}`);
-                    isFirst = false;
-                }
-                // Export Folders
-                const folders = await window.vtDB.getAll('vt_bm_folders');
-                if (folders.length > 0) {
-                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify('vt_bm_folders')}:${JSON.stringify(folders)}`);
-                    isFirst = false;
-                }
-
-
-                // Export Video Records
-                const records = await window.vtDB.getAllRecords();
-                for (const item of records) {
-                    const k = item.id;
-                    const val = { ...item };
-                    delete val.id;
-                    chunks.push(`${isFirst ? "" : ","}${JSON.stringify(k)}:${JSON.stringify(val)}`);
-                    isFirst = false;
-                }
-            } catch (e) {
-                console.error('[VT Export] IndexedDB error:', e);
-            }
-
-            chunks.push("}");
-            const blob = new Blob(chunks, { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `VTrain_Backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 60000); // [CWS BUG 修復] 從 5s 延長至 60s，防止使用者選擇儲存路徑超時導致下載失敗
-
-            btnExport.innerHTML = oldTxt;
-            btnExport.disabled = false;
-        });
+        if (!exportCore && !exportImages) return;
+        
+        chrome.tabs.create({ url: chrome.runtime.getURL(`backup.html?action=export&core=${exportCore}&images=${exportImages}&lang=${currentLang}`) });
     });
 
-    // 匯入 (先確認再選檔)
+    // 匯入
     btnImport.addEventListener('click', async () => {
         const confirm = await showModal(getLangText(currentLang, 'modalImport'), getLangText(currentLang, 'modalImportDesc'));
-        if (confirm) fileInput.click();
-    });
-
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                let data = JSON.parse(event.target.result);
-
-                const isFullBackup = data.hasOwnProperty('vt_video_count') || data.hasOwnProperty('vt_index') || data.hasOwnProperty('isStealthMode');
-                if (!isFullBackup) {
-                    throw new Error("Invalid Full Backup Signature. Please use Rule Import for rule files.");
-                }
-
-                chrome.storage.local.get(['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_instance_id'], async (config) => {
-                    const licenseKeys = ['isProVersion', 'storedLicenseKey', 'remainingUses', 'userPassword', 'vt_instance_id'];
-                    licenseKeys.forEach(k => delete data[k]);
-
-                    let videoRecordCount = 0;
-                    const sysKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'vt_ratings', 'vt_bookmarks', 'vt_bm_folders'];
-                    const dataKeys = Object.keys(data);
-                    const batchSize = 10000;
-                    let currentIdx = 0;
-
-                    const processCleanBatch = () => {
-                        return new Promise((resolve) => {
-                            const batch = dataKeys.slice(currentIdx, currentIdx + batchSize);
-                            for (const k of batch) {
-                                if (!sysKeys.includes(k) && !licenseKeys.includes(k)) {
-                                    let record = data[k];
-                                    if (typeof record === 'object' && record !== null) {
-                                        if (typeof record.progress !== 'number' || record.progress <= 0 || record.progress > 100) {
-                                            delete data[k];
-                                        } else if (typeof record.lastUpdated !== 'number' || record.lastUpdated > Date.now() + 86400000) {
-                                            delete data[k];
-                                        } else {
-                                            videoRecordCount++;
-                                        }
-                                    } else {
-                                        delete data[k];
-                                    }
-                                }
-                            }
-                            currentIdx += batchSize;
-                            setTimeout(resolve, 15);
-                        });
-                    };
-
-                    while (currentIdx < dataKeys.length) {
-                        await processCleanBatch();
-                    }
-
-                    if (data.site_config && typeof data.site_config === 'object') {
-                        Object.keys(data.site_config).forEach(domain => {
-                            let rules = data.site_config[domain];
-                            let rulesArr = Array.isArray(rules) ? rules : [rules];
-                            rulesArr.forEach(r => {
-                                if (r && r.s) {
-                                    try { document.createDocumentFragment().querySelector(r.s); }
-                                    catch (e) { delete data.site_config[domain]; }
-                                }
-                            });
-                        });
-                    }
-
-                    if (!config.isProVersion && videoRecordCount > 200) {
-                        const confirm = await showModal(getLangText(currentLang, 'modalFreeLimit'), getLangText(currentLang, 'modalFreeLimitDesc'));
-                        if (!confirm) return;
-                    }
-
-                    chrome.storage.local.clear(async () => {
-                        const mergedData = { ...config };
-                        const storageKeys = ['isStealthMode', 'enabledSites', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count'];
-                        for (const k of storageKeys) {
-                            if (data[k] !== undefined) mergedData[k] = data[k];
-                        }
-
-                        await new Promise(r => chrome.storage.local.set(mergedData, r));
-                        await window.vtDB.clearRecords();
-                        await window.vtDB.clear('vt_bookmarks');
-                        await window.vtDB.clear('vt_ratings');
-                        await window.vtDB.clear('vt_bm_folders');
-
-                        // Import Bookmarks
-                        if (data.vt_bookmarks && Array.isArray(data.vt_bookmarks)) {
-                            await window.vtDB.putBulk('vt_bookmarks', data.vt_bookmarks);
-                        }
-                        if (data.vt_ratings && typeof data.vt_ratings === 'object') {
-                            const ratingsArray = Object.entries(data.vt_ratings).map(([videoId, rating]) => ({ videoId, rating, timestamp: Date.now() }));
-                            await window.vtDB.putBulk('vt_ratings', ratingsArray);
-                        }
-                        if (data.vt_bm_folders && Array.isArray(data.vt_bm_folders)) {
-                            await window.vtDB.putBulk('vt_bm_folders', data.vt_bm_folders);
-                        }
-
-                        const finalKeys = Object.keys(data).filter(k => !sysKeys.includes(k) && !licenseKeys.includes(k));
-                        for (const k of finalKeys) {
-                            await window.vtDB.putRecord(k, data[k]);
-                        }
-
-                        showToast(btnImport, getLangText(currentLang, 'msgImportSuccess'));
-                        chrome.runtime.sendMessage({ action: "VT_REBUILD_INDEX" });
-                        setTimeout(() => chrome.runtime.reload(), 1500);
-                    });
-                });
-            } catch (err) { showToast(btnImport, getLangText(currentLang, 'msgImportFail')); }
-        };
-        reader.readAsText(file);
-        fileInput.value = '';
+        if (confirm) {
+            chrome.tabs.create({ url: chrome.runtime.getURL(`backup.html?action=import&lang=${currentLang}`) });
+        }
     });
 
     // 輔助函式

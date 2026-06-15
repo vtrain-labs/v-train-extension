@@ -128,11 +128,21 @@
                         <div class="backup-title">
                             <span data-i18n="localBackup">💾 Local Backup</span>
                         </div>
+                        <div style="margin-bottom: 12px; font-size: 13px; margin-top: 5px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;">
+                                <input type="checkbox" id="chkExportCore" checked style="transform: scale(1.5); margin-right: 12px; margin-left: 5px;"> 
+                                <span data-i18n="exportCoreData">Export Core Data</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="chkExportImages" style="transform: scale(1.5); margin-right: 12px; margin-left: 5px;"> 
+                                <span data-i18n="exportImages">Export Images</span>
+                            </label>
+                        </div>
                         <div class="backup-btns">
                             <button id="btnExport" class="btn-backup" data-i18n="exportJson">📥 Export JSON</button>
                             <button id="btnImport" class="btn-restore" data-i18n="importJson">📤 Import JSON</button>
                         </div>
-                        <input type="file" id="fileInput" accept=".json">
+
                     </div>
 
                     <div class="info-section">
