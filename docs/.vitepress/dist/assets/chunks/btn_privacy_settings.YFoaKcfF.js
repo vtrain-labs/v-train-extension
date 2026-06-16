@@ -1,0 +1,1 @@
+const s="/v-train-extension/assets/manual/dashboard_main.png",n="/v-train-extension/assets/manual/toggle_monitoring.png",t="/v-train-extension/assets/manual/btn_rule_mgmt.png",a="/v-train-extension/assets/manual/btn_privacy_settings.png";export{s as _,n as a,t as b,a as c};

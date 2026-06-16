@@ -1,0 +1,26 @@
+---
+layout: home
+
+hero:
+  name: "V-Train"
+  text: "影片進度適應器"
+  tagline: "智慧影片收藏與進度追蹤，完全掌控你的觀影體驗"
+  image:
+    src: /icon.png
+    alt: V-Train Logo
+  actions:
+    - theme: brand
+      text: 快速上手
+      link: /guide/installation
+    - theme: alt
+      text: 前往 GitHub
+      link: https://github.com/vtrain-labs/v-train-extension
+
+features:
+  - title: 萬能適應引擎
+    details: 無論是什麼影音網站，透過適應引擎手動訓練，30秒內即可賦予它進度條追蹤功能。
+  - title: 書籤庫與截圖
+    details: 在影片最精彩的一刻按讚、收藏，並原生無損截圖，打造屬於你的極致影片收藏庫。
+  - title: 絕對隱私與安全
+    details: 零伺服器架構，所有資料僅存在您的本地瀏覽器。支援密碼鎖與完整的 ZIP 備份還原。
+---

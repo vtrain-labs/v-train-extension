@@ -1,0 +1,30 @@
+{
+  "name": "vt",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">   <img src=\"icon-128.png\" alt=\"V-Train Logo\" width=\"128\" height=\"128\">   <h1>V-Train (VT) 智慧影片收藏與進度追蹤</h1>   <p>一個強大且輕量級的 Chrome 擴充功能，專為提升網頁影片瀏覽體驗所設計。</p>",
+  "main": "background.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vtrain-labs/v-train-extension.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vtrain-labs/v-train-extension/issues"
+  },
+  "homepage": "https://github.com/vtrain-labs/v-train-extension#readme",
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.38"
+  }
+}
