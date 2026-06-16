@@ -1,0 +1,39 @@
+# Changelog
+
+## [1.0.5] - 2026-06-15
+
+### Added
+- **All-New Independent ZIP Backup Center**: Created a full-screen, immersive independent backup control panel. Fully supports instant switching between 8 languages.
+- **Extreme Compression & Data Separation Engine**: Solved the issue of legacy single JSON backup files causing crashes due to excessive size. The system now intelligently separates "Core Settings & Bookmarks (core_data.json)" and the "Binary Image Library (images_part_X.json)". It supports in-memory chunked packing and compression for up to 100,000 images, ensuring a smooth and crash-free experience under extreme data loads.
+
+### Fixed
+- **CORS Cross-Origin Blocking Error Fix**: Migrated the image fetching logic from the extension background to the content script, completely resolving the annoying issue where bookmarking caused massive red text errors in the extension management page (`chrome://extensions`) due to site cross-origin policies.
+- **Legacy Base64 Auto-Migration**: Implemented an automated cleansing engine targeting the legacy system architecture. When users import legacy backups or export data, the system automatically extracts bloated Base64 image encodings from bookmarks and transfers them to the new `vt_thumbnails` image library, permanently optimizing the user's local database performance.
+
+## [1.0.4] - 2026-06-14
+
+### Added
+- **Bookmark Vault - Move Folder Functionality**: Added a "Move Folder" feature to the folder right-click context menu in the local bookmark vault (`bookmarks.html`). It supports completely moving an entire folder (including its internal video bookmarks and subfolders) under another folder, and fully supports 8 language packs for UI display.
+
+### Fixed
+- **Video Thumbnail Accuracy Optimization**: Fixed an issue where clicking bookmark on certain video sites would mistakenly capture the thumbnail of a recommended video in the sidebar. Optimized the script's fetching weight to prioritize parsing the page's `schema.org` and `og:image` metadata, ensuring accurate capture of the currently playing main video's preview image.
+
+## [1.0.3] - 2026-06-14
+
+### Fixed
+- **Cross-Origin Video Snapshot**: Deeply refactored the snapshot system by implementing a "Cross-Frame Message Relay". Snapshot commands from the external panel can now accurately penetrate multiple layers of iframes, reaching the deepest original video environment to perform native Canvas snapshots, perfectly bypassing black screen limitations caused by Chrome hardware acceleration.
+- **Prevent Fake Video Misjudgment**: Enhanced the snapshot decision logic via `sysState._activeEl` to ensure screenshots are only taken for videos currently being tracked, avoiding interference from hidden ads or dummy video tags at the top layer of the web page that used to cause screenshot failures (Red X).
+- **Cleaned Up Duplicate Panels**: Fixed a UI overlap error where two floating control panels (one external, one internal to the video) would be generated when a video is wrapped inside an iframe.
+
+## [1.0.2] - 2026-06-14
+
+### Fixed
+- **Critical Bug**: Fixed an error where the system's automatic progress saving during video playback would overwrite and clear the user's custom "Bookmark Thumbnail", "Title", and "Bookmark Status". Database writes have now been changed to "Partial Update", perfectly preserving the user's customized covers and rating states.
+- Removed the incomplete experimental Cross-Origin Iframe unlock feature to maintain a clean main interface and extension stability.
+
+## [1.0.1] - 2026-06-10
+
+### Added
+- Initial release to the Chrome Web Store.
+- Support for PRO version features: "Bookmark Management Center" and "Privacy Passcode Lock".
+- Support for progress bar overlay and tracking on major video websites.
