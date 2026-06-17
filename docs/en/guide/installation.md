@@ -1,7 +1,13 @@
-# 1. Quick Start
+# Quick Start (Installation & Setup)
 
-### Installation and Authorization
-1. After installing V-Train from the Chrome Web Store, click the extension icon in the top right corner of your browser to open the **Dashboard**.
-2. When you visit a new video website, click the **"Authorize & Enable Current Site"** button in the top right corner of the dashboard.
+Welcome to V-Train! This is a magical little tool that will make watching videos super fun!
+
+### Step 1: Install & Open
+1. After installing V-Train from the Chrome Web Store, click the puzzle icon in the top right corner of your browser and pin V-Train so you can always see it.
+2. Click the V-Train icon, and our **Dashboard** will pop up!
+
+### Step 2: Authorize Your Favorite Sites
+1. When you visit a website where you want to watch videos, open the V-Train Dashboard.
+2. Click the **"Authorize & Enable Current Site"** button in the top right corner.
    > ![Authorize Button](/assets/manual/btn_authorize.png)
-3. After granting permissions, V-Train will run on that site. If the site already has built-in rules, you will immediately see a red progress bar under the video thumbnails!
+3. Once you allow it, V-Train will start working its magic on that site! If we already know the website, you will immediately see a **red progress bar** appear under the video thumbnails! It's that easy!

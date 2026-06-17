@@ -1,18 +1,22 @@
-# 3. Adaptive Engine: Training New Sites
+# Adaptive Engine: Training New Sites
 
-If you encounter a video website that V-Train cannot automatically identify, you can manually train it using the exclusive "Adaptive Engine"!
+If you come across a video site that V-Train doesn't recognize yet (meaning no progress bars appear), don't worry! You can "train" it yourself and teach it how to work on this site!
 
 > ![Training Mode Overview](/assets/manual/training_mode_overview.png)
 
-### Training Steps:
-1. **Start Engine**: On the target website, **right-click on any video thumbnail**, then choose a module (Mod 1 ~ Mod 4) to save to from the V-Train panel in the bottom left.
-2. **Visual Capture**:
+### The Training Steps:
+1. **Start the Engine**: On the website's homepage, **right-click on ANY video thumbnail**, and then in the small V-Train black window in the bottom left, choose a module to save it to (Mod 1 ~ Mod 4).
+2. **Catch It with the Box (Visual Capture)**:
    > ![Visual Capture Box](/assets/manual/visual_capture_box.png)
-   A green or red selection box will appear on the screen.
-   * Use the keyboard **`↑` (Up) / `↓` (Down)** arrow keys to expand or shrink the selection range.
-   * Please ensure the selection box **exactly covers the entire thumbnail image**, without selecting the text title outside.
-   * Press **`Enter`** to confirm when adjusted.
-3. **Input Video URL**: Click the thumbnail to enter the video playback page, copy the full URL from the address bar, and paste it into the V-Train panel.
-4. **Bind ID**: The system will analyze the URL and list possible ID segments. Please click the segment that looks most like the "unique video ID".
+   A green (or red) selection box will appear on the screen.
+   * Use the **`↑` (Up) / `↓` (Down)** keys on your keyboard to make the box bigger or smaller.
+   * Make sure the box **exactly wraps the entire picture**! A cyan box means it's perfect; a red box means you grabbed the wrong part.
+   * Once it's right, press **`Enter`** to confirm.
+3. **Paste the Video URL**: Click on the picture you just caught to go to the video player page. Copy the "full URL" from the address bar at the top and paste it into the V-Train box.
+4. **Tell It Who the ID Is**: V-Train is very smart; it will automatically chop the URL into pieces. You just need to click the piece that looks most like "the unique ID number of this video"! (Whether the URL uses `?v=`, slashes `/`, or even custom underscores `_`, it can learn it).
    > ![Bind ID](/assets/manual/bind_id.png)
-5. **Finish Training**: Click save. Now return to the homepage, and you will find that all videos on the site have successfully been hooked with a progress bar!
+5. **Finish Training**: Click Save! Now go back to the homepage, and you will find that all the videos on this site have grown red progress bars!
+
+### Share Your Training Results (Share Rule Code)
+After training a site, do you feel proud and want to share it with your friends?
+Go to "Trained Sites" in the Control Panel and click the copy button. You will get a mysterious code like `VT-RULE-XXXX...`. Just ask your friends to paste this code into their V-Train, and they will immediately have the results of your hard work!
