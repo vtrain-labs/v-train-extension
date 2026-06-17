@@ -76,7 +76,7 @@ if (!window._vtBookmarksLoaded) {
     let _leaveTimer = null;
 
     function _handleVideoHover(e) {
-        if (!window._vtShowInteraction || !window._vtIsPro) return;
+        if (!window._vtShowInteraction) return;
         const target = e.target;
         const videoId = window._vtParseVideoId(target.closest('a')?.href || target.href);
         if (!videoId) return;
@@ -146,6 +146,7 @@ if (!window._vtBookmarksLoaded) {
         if (window._vtBookmarkedSet) window._vtBookmarkedSet.add(videoId);
         if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
         notifySync();
+        chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{});
     }
 
     async function _removeBookmark(videoId) {
@@ -153,6 +154,7 @@ if (!window._vtBookmarksLoaded) {
         if (window._vtBookmarkedSet) window._vtBookmarkedSet.delete(videoId);
         if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
         notifySync();
+        chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{});
     }
 
     async function _isBookmarked(videoId) {
@@ -207,6 +209,40 @@ if (!window._vtBookmarksLoaded) {
         { key: 'snapshot', emoji: '📸', titleKey: 'btnSnapshot', titleDef: '拍攝/替換封面 (自動收藏)', id: 'vt-bmb-snapshot' },
         { key: 'open',     emoji: '📚', titleKey: 'btnManage', titleDef: '書籤管理', id: 'vt-bmb-open'  },
     ];
+
+    function _showLimitToast(target) {
+        if (!target) return;
+        const toast = document.createElement('div');
+        const lang = window._vtCurrentLang || 'zh-TW';
+        toast.textContent = typeof globalThis.getLangText === 'function' ? globalThis.getLangText(lang, 'toastUpgradePro') : '🔒 Upgrade to PRO';
+        toast.style.cssText = `
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffca28;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 2147483647;
+            font-family: sans-serif;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        `;
+        const panel = target.closest('#vt-bookmark-panel') || target;
+        const rect = panel.getBoundingClientRect();
+        toast.style.left = (rect.left + window.scrollX) + 'px';
+        toast.style.top = (rect.top + window.scrollY - 36) + 'px';
+        document.body.appendChild(toast);
+        toast.offsetHeight;
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 200);
+        }, 2500);
+    }
 
     function _createPanel() {
         if (window !== window.top) return;
@@ -331,22 +367,26 @@ if (!window._vtBookmarksLoaded) {
 
         // 事件
         p.querySelector('#vt-bmb-like').onclick = async () => {
-            if (!await _checkPro() || !_currentId) return;
+            if (!_currentId) return;
             _panelRating = await _setRating(_currentId, 'like');
             _renderPanelState();
         };
         p.querySelector('#vt-bmb-dislike').onclick = async () => {
-            if (!await _checkPro() || !_currentId) return;
+            if (!_currentId) return;
             _panelRating = await _setRating(_currentId, 'dislike');
             _renderPanelState();
         };
         p.querySelector('#vt-bmb-bm').onclick = async () => {
-            if (!await _checkPro() || !_currentId) return;
+            if (!_currentId) return;
             if (_panelBookmarked) {
                 await _removeBookmark(_currentId);
                 _panelBookmarked = false;
                 _renderPanelState();
             } else {
+                if (!window._vtIsPro && window._vtBookmarkedSet && window._vtBookmarkedSet.size >= 100) {
+                    _showLimitToast(p.querySelector('#vt-bmb-bm'));
+                    return;
+                }
                 _showFolderPicker(_currentId);
             }
         };
@@ -355,8 +395,12 @@ if (!window._vtBookmarksLoaded) {
         };
 
         p.querySelector('#vt-bmb-snapshot').onclick = async () => {
-            if (!await _checkPro() || !_currentId) return;
+            if (!_currentId) return;
             if (!_panelBookmarked) {
+                if (!window._vtIsPro && window._vtBookmarkedSet && window._vtBookmarkedSet.size >= 100) {
+                    _showLimitToast(p.querySelector('#vt-bmb-snapshot'));
+                    return;
+                }
                 await _addBookmark(_currentId, location.href, document.title, '', null);
                 _panelBookmarked = true;
                 _renderPanelState();

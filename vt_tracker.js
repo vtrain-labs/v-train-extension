@@ -433,6 +433,20 @@ if (!window._vtTrackerLoaded) {
         });
     };
 
+    // 全域：供 content.js 呼叫，當背景腳本清除舊紀錄時，同步移除畫面上的進度條
+    window._vtRemoveDeletedBars = function (deletedIds) {
+        if (!deletedIds || deletedIds.length === 0) return;
+        const idSet = new Set(deletedIds);
+        for (let [container, data] of activeOverlayBars.entries()) {
+            if (idSet.has(data.videoId)) {
+                if (data.barEl && data.barEl.isConnected) {
+                    data.barEl.remove();
+                }
+                activeOverlayBars.delete(container);
+            }
+        }
+    };
+
     function drawBar(container, pct, id) {
         if (!_overlaySyncLoop)
             window._overlaySyncLoop = requestAnimationFrame(syncOverlay);

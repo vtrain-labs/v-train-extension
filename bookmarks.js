@@ -47,9 +47,12 @@ chrome.storage.onChanged.addListener((changes) => {
     }
 });
 
+let _isPro = false;
+
 // ─── 載入資料 ─────────────────────────────────────────────────────────────
 async function loadData() {
-    const data = await new Promise(r => chrome.storage.local.get(['userLang'], r));
+    const data = await new Promise(r => chrome.storage.local.get(['userLang', 'isProVersion'], r));
+    _isPro = !!data.isProVersion;
     
     _allBookmarks = await window.vtDB.getAll('vt_bookmarks');
     
@@ -87,7 +90,11 @@ function applyLanguage(lang) {
             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
                 el.placeholder = translated;
             } else {
-                el.innerHTML = translated;
+                let finalHtml = translated;
+                if (!_isPro && finalHtml.includes('V-Train Pro')) {
+                    finalHtml = finalHtml.replace('V-Train Pro', 'V-Train Free');
+                }
+                el.innerHTML = finalHtml;
             }
         }
     });
@@ -111,7 +118,14 @@ function renderSidebarStats() {
     const total = _allBookmarks.length;
     const likes = Object.values(_allRatings).filter(v => v === 'like').length;
     const dislikes = Object.values(_allRatings).filter(v => v === 'dislike').length;
-    document.getElementById('bvTotalCount').textContent = total;
+    
+    document.getElementById('bvTotalCount').textContent = _isPro ? total : `${total} / 100`;
+    if (!_isPro && total >= 100) {
+        document.getElementById('bvTotalCount').style.color = '#ffca28';
+    } else {
+        document.getElementById('bvTotalCount').style.color = '';
+    }
+    
     document.getElementById('bvLikeCount').textContent = likes;
     document.getElementById('bvDislikeCount').textContent = dislikes;
 }
@@ -796,6 +810,7 @@ async function deleteBookmark(bookmarkId, title) {
             if (bm) {
                 await window.vtDB.delete('vt_bookmarks', bm.videoId);
                 notifySync();
+                chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{});
             }
             renderAll();
             showToast(getLang('bvToastBookmarkDel', '🗑 書籤已刪除'));
