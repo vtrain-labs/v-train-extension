@@ -195,7 +195,23 @@ async function runOptimizedGCInsideLock() {
             let maxLimit = items.isProVersion ? Infinity : 200;
             let dropCount = items.isProVersion ? 0 : 10;
             try {
-                await vtDB.runGC(maxLimit, dropCount);
+                const deletedIds = await vtDB.runGC(maxLimit, dropCount);
+                if (deletedIds && deletedIds.length > 0) {
+                    chrome.tabs.query({}, (tabs) => {
+                        tabs.forEach(tab => {
+                            chrome.tabs.sendMessage(tab.id, {
+                                action: "VT_RECORDS_DELETED",
+                                ids: deletedIds
+                            }).catch(() => {});
+                        });
+                    });
+                }
+                // [修復] GC 後重新計算正確的「已追蹤總數量」(包含收藏與歷史紀錄的聯集)
+                const recordKeys = await vtDB.getAllKeys('video_records');
+                const bookmarkKeys = await vtDB.getAllKeys('vt_bookmarks');
+                const uniqueIds = new Set([...(recordKeys || []), ...(bookmarkKeys || [])]);
+                const finalCount = uniqueIds.size;
+                chrome.storage.local.set({ vt_video_count: finalCount });
             } catch (e) {
                 console.error('[VTDatabase] GC Error:', e);
             }
@@ -374,7 +390,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     const mergedData = { ...oldData, ...data };
                     
                     await vtDB.putRecord(id, mergedData);
-                    const count = await vtDB.count();
+                    const recordKeys = await vtDB.getAllKeys('video_records');
+                    const bookmarkKeys = await vtDB.getAllKeys('vt_bookmarks');
+                    const uniqueIds = new Set([...(recordKeys || []), ...(bookmarkKeys || [])]);
+                    const count = uniqueIds.size;
                     chrome.storage.local.set({ vt_video_count: count });
                     
                     // [進度同步修復] 廣播進度給所有分頁，模擬過去 chrome.storage.onChanged 的全域跨分頁同步效果
@@ -388,7 +407,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         });
                     });
 
-                    const limit = _swCache.isPro ? 200000 : 200;
+                    const limit = _swCache.isPro ? Infinity : 200;
                     if (count > limit) {
                         await runOptimizedGCInsideLock();
                     }

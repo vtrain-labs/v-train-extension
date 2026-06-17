@@ -175,12 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Interaction Toggle Event
         if (toggleInteraction) {
             toggleInteraction.addEventListener('change', async (e) => {
-                if (!isPro) {
-                    e.preventDefault();
-                    toggleInteraction.checked = false;
-                    await showModal(getLangText(currentLang, 'msgProOnlyFeature'), getLangText(currentLang, 'msgProOnlyDesc'), false, "", true);
-                    return;
-                }
                 chrome.storage.local.set({ showInteraction: toggleInteraction.checked });
             });
         }
@@ -202,13 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnOpenBookmarks = document.getElementById('btnOpenBookmarks');
         if (btnOpenBookmarks) {
             btnOpenBookmarks.addEventListener('click', () => {
-                chrome.storage.local.get('isProVersion', async (items) => {
-                    if (!items.isProVersion) {
-                        await showModal(getLangText(currentLang, 'msgProOnlyFeature'), getLangText(currentLang, 'msgProOnlyDesc'), false, "", true);
-                        return;
-                    }
-                    chrome.tabs.create({ url: chrome.runtime.getURL('bookmarks.html') });
-                });
+                chrome.tabs.create({ url: chrome.runtime.getURL('bookmarks.html') });
             });
         }
 
@@ -764,10 +752,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm) {
             chrome.storage.local.get(['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_instance_id'], async (config) => {
                 await window.vtDB.clearRecords();
-                chrome.storage.local.clear(() => {
-                    config.vt_video_count = 0;
+                chrome.storage.local.clear(async () => {
+                    // [修復] 計算剩餘的書籤數量，而不是直接歸零
+                    const bookmarkKeys = await window.vtDB.getAllKeys('vt_bookmarks');
+                    config.vt_video_count = bookmarkKeys ? bookmarkKeys.length : 0;
                     chrome.storage.local.set(config, () => {
-                        videoCountLabel.textContent = "0";
+                        videoCountLabel.textContent = config.vt_video_count.toLocaleString();
                         showToast(btnClearData, getLangText(currentLang, 'msgCleared'));
                         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                             if (tabs.length > 0) chrome.tabs.sendMessage(tabs[0].id, { action: "RESET_BINDING" }).catch(() => { });
@@ -819,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnDonateUpgrade.innerHTML = `<span class="donate-icon">👑</span> ${getLangText(currentLang, 'proActive')}`;
             videoCountLabel.innerHTML = `${count.toLocaleString()} / &infin; <span style="font-size:10px;background:#ff007f;color:#fff;padding:2px 4px;border-radius:4px;margin-left:4px;">PRO</span>`;
             videoCountLabel.style.color = '#ffd700';
-            if (limitNote) limitNote.style.display = 'block';
+            if (limitNote) limitNote.style.display = 'none'; // [修復] Pro 版現在是真正的無限，不再顯示 20 萬筆的提示
             if (interactionToggleRow) interactionToggleRow.style.display = 'flex';
             if (upsellBadge) upsellBadge.style.display = 'none';
             if (interactionLabel && interactionLabel.querySelector('.pro-badge')) {
@@ -827,18 +817,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             const limit = 200;
-            videoCountLabel.textContent = `${count.toLocaleString()} / ${limit}`;
+            const displayCount = count > limit ? limit : count;
+            videoCountLabel.textContent = `${displayCount.toLocaleString()} / ${limit}`;
             if (count >= limit) videoCountLabel.style.color = '#ff5252';
             if (limitNote) limitNote.style.display = 'none';
             if (upsellBadge) upsellBadge.style.display = 'inline-block';
             if (interactionToggleRow) {
                 interactionToggleRow.style.display = 'flex';
-                if (interactionLabel && !interactionLabel.querySelector('.pro-badge')) {
-                    const badge = document.createElement('span');
-                    badge.className = 'pro-badge';
-                    badge.style.cssText = 'font-size:10px;background:#ff007f;color:#fff;padding:2px 4px;border-radius:4px;margin-left:8px;';
-                    badge.textContent = 'PRO';
-                    interactionLabel.appendChild(badge);
+                if (interactionLabel && interactionLabel.querySelector('.pro-badge')) {
+                    interactionLabel.querySelector('.pro-badge').remove();
                 }
             }
         }

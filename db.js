@@ -160,6 +160,17 @@ class VTDatabase {
         });
     }
 
+    async getAllKeys(storeName = this.storeName) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.getAllKeys();
+            request.onsuccess = (e) => resolve(e.target.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
+    }
+
     async runGC(limit, dropCount) {
         await this.init();
         return new Promise(async (resolve, reject) => {
@@ -170,24 +181,48 @@ class VTDatabase {
                 const currentCount = await this.count(this.storeName);
                 if (currentCount <= limit) return resolve(false);
 
-                const transaction = this.db.transaction([this.storeName], 'readwrite');
-                const store = transaction.objectStore(this.storeName);
-                const index = store.index('lastUpdated');
-                
-                const request = index.openCursor();
-                let deleted = 0;
+                // 先取得所有已被收藏的 videoId，保護它們的進度條不被洗掉
+                const bmTransaction = this.db.transaction(['vt_bookmarks'], 'readonly');
+                const bmStore = bmTransaction.objectStore('vt_bookmarks');
+                const bmRequest = bmStore.getAllKeys();
 
-                request.onsuccess = (e) => {
-                    const cursor = e.target.result;
-                    if (cursor && deleted < dropCount) {
-                        cursor.delete();
-                        deleted++;
-                        cursor.continue();
-                    } else {
-                        resolve(true);
-                    }
+                bmRequest.onsuccess = (e) => {
+                    const bookmarkedKeys = new Set(e.target.result || []);
+
+                    const transaction = this.db.transaction([this.storeName], 'readwrite');
+                    const store = transaction.objectStore(this.storeName);
+                    const index = store.index('lastUpdated');
+                    const request = index.openCursor(null, 'prev'); // 從最新到最舊
+                    
+                    // [修復] 收藏的數量直接佔用總額度！
+                    let keptCount = bookmarkedKeys.size;
+                    let deletedIds = [];
+
+                    request.onsuccess = (e) => {
+                        const cursor = e.target.result;
+                        if (cursor) {
+                            if (bookmarkedKeys.has(cursor.primaryKey)) {
+                                // 已經預先計算過額度了，直接保留
+                                cursor.continue();
+                            } else {
+                                // 如果保留的數量還沒達到 limit，就保留這個非收藏紀錄
+                                if (keptCount < limit) {
+                                    keptCount++;
+                                    cursor.continue();
+                                } else {
+                                    // 超過 limit 的舊非收藏紀錄，刪除！
+                                    deletedIds.push(cursor.primaryKey);
+                                    cursor.delete();
+                                    cursor.continue();
+                                }
+                            }
+                        } else {
+                            resolve(deletedIds);
+                        }
+                    };
+                    request.onerror = (e) => reject(e.target.error);
                 };
-                request.onerror = (e) => reject(e.target.error);
+                bmRequest.onerror = (e) => reject(e.target.error);
             } catch (e) {
                 reject(e);
             }

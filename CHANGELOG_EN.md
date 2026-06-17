@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.6] - 2026-06-17
+
+### Added
+- **Free Version Bookmark Features**: The Local Bookmark Vault is now fully available to Free version users (limited to 100 bookmarks).
+- **Infinite Records Architecture Breakthrough**: Thanks to the performance breakthroughs of the underlying IndexedDB engine, the previous 200,000 record limit for Pro versions has been completely removed. We have now achieved a true, physically "infinite" record tracking architecture.
+
+### Fixed
+- **Unified Quota Calculation (Free Version)**: Refactored the quota calculation logic for Free versions (Total Quota = Bookmarks + History = 200). Bookmarks will now correctly occupy the overall quota. When the quota is full, the system will accurately replace the oldest regular history records first, ensuring precious bookmarks are never lost.
+- **Dynamic Quota Sync**: Implemented cross-tab and dashboard broadcasting. Now, whether you click to bookmark on a video page or delete a bookmark inside the Bookmark Vault, the total quota and UI progress bars will instantly refresh across all windows in milliseconds.
+- **Clear Data Reset Logic**: Fixed a bug where clicking "Clear Data" in the control panel would incorrectly reset the tracking number to zero even though bookmarks were successfully retained. The system now accurately calculates remaining bookmarks and displays the correct occupied quota.
+
 ## [1.0.5] - 2026-06-15
 
 ### Added

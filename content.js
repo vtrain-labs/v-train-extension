@@ -57,6 +57,18 @@ if (!window._vtInjected) {
             return;
         }
 
+        if (request.action === "VT_RECORDS_DELETED") {
+            if (request.ids && Array.isArray(request.ids)) {
+                request.ids.forEach(id => {
+                    _vtProgressCache.delete(id);
+                });
+                if (typeof window._vtRemoveDeletedBars === 'function') {
+                    window._vtRemoveDeletedBars(request.ids);
+                }
+            }
+            return;
+        }
+
         if (request.action === "START_MARKING") {
             // 委派給 vt_trainer.js 處理
             window.vtHandleStartMarking();

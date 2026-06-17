@@ -135,7 +135,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ System Settings",
             toggleInteraction: "👍 Enable Like/Bookmark Buttons",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 Upgrade to PRO"
 ,
             bvEmptyTitle: "No Bookmarks Yet",
             bvEmptySub: "Click the ❤️ button while watching to start saving.",
@@ -292,7 +292,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ 系統設定",
             toggleInteraction: "👍 啟用按讚收藏按鈕",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 升級 PRO"
 ,
             bvEmptyTitle: "這裡還沒有收藏",
             bvEmptySub: "在影片播放時點擊 ❤️ 按鈕開始收藏",
@@ -449,7 +449,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ 系统设置",
             toggleInteraction: "👍 启用点赞收藏按钮",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 升级 PRO"
 ,
             bvEmptyTitle: "这里还没有收藏",
             bvEmptySub: "在影片播放时点击 ❤️ 按钮开始收藏",
@@ -606,7 +606,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ システム設定",
             toggleInteraction: "👍 いいね/お気に入りボタンを有効化",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 PRO にアップグレード"
 ,
             bvEmptyTitle: "まだブックマークがありません",
             bvEmptySub: "再生中に ❤️ ボタンをクリックして保存を開始します。",
@@ -763,7 +763,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ 시스템 설정",
             toggleInteraction: "👍 좋아요/북마크 버튼 활성화",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 PRO 로 업그레이드"
 ,
             bvEmptyTitle: "아직 북마크가 없습니다",
             bvEmptySub: "재생 중 ❤️ 버튼을 클릭하여 저장을 시작하세요.",
@@ -920,7 +920,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ Configuración del sistema",
             toggleInteraction: "👍 Habilitar botones de Me gusta/Marcador",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 Actualizar a PRO"
 ,
             bvEmptyTitle: "Aún no hay marcadores",
             bvEmptySub: "Haz clic en ❤️ durante la reproducción para guardar.",
@@ -1077,7 +1077,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ Paramètres du système",
             toggleInteraction: "👍 Activer les boutons J'aime/Signet",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 Passer à PRO"
 ,
             bvEmptyTitle: "Aucun favori pour le moment",
             bvEmptySub: "Cliquez sur ❤️ pendant la lecture pour enregistrer.",
@@ -1282,7 +1282,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             bvSettings: "⚙️ Systemeinstellungen",
             toggleInteraction: "👍 Like/Lesezeichen-Schaltflächen aktivieren",
             proOnly: "PRO",
-            openVaultPro: "Bookmark Vault PRO"
+            openVaultPro: "Bookmark Vault PRO", toastUpgradePro: "🔒 Auf PRO aktualisieren"
 
     };
 
