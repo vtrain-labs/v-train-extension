@@ -263,7 +263,7 @@ if (!window._vtInjected) {
                                                             : `https://x.com/v/${safeV}`,
                                                         rule,
                                                     );
-                                                    if (id) return `${baseDomain}/${id.toLowerCase()}`;
+                                                    if (id) return `${baseDomain}/${id}`;
                                                 }
                                             }
                                             let aEl =
@@ -283,7 +283,7 @@ if (!window._vtInjected) {
                                             if (aEl && aEl.href) {
                                                 let id = extractIdByUrlRule(aEl.href, rule);
                                                 if (id && id.length <= 150)
-                                                    return `${baseDomain}/${id.toLowerCase()}`;
+                                                    return `${baseDomain}/${id}`;
                                             }
                                         }
                                     }

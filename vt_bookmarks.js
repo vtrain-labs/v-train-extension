@@ -21,6 +21,12 @@ if (!window._vtBookmarksLoaded) {
         if (e.data.action === 'sync_bookmarks') {
             _loadCache().then(() => {
                 if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
+                // 同步更新當前面板的狀態
+                if (_currentId && window._vtBookmarkedSet) {
+                    _panelRating = window._vtRatingsCache[_currentId] || null;
+                    _panelBookmarked = window._vtBookmarkedSet.has(_currentId);
+                    if (typeof _renderPanelState === 'function') _renderPanelState();
+                }
             });
         }
     };
@@ -28,10 +34,34 @@ if (!window._vtBookmarksLoaded) {
     // ─── 資料庫代理 (DB Proxy) ──────────────────────────────────────────────────
     // 所有 DB 操作必須透過 Background Script 進行，確保寫入擴充功能的來源 (Origin)，而非當前網站 (Host) 的來源
     const vtDBProxy = {
-        get: (storeName, key) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_GET', storeName, key }, r)),
-        getAll: (storeName) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_GET_ALL', storeName }, r)),
-        put: (storeName, obj) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_PUT', storeName, obj }, r)),
-        delete: (storeName, key) => new Promise(r => chrome.runtime.sendMessage({ action: 'VT_DB_DELETE', storeName, key }, r))
+        get: (storeName, key) => new Promise(r => {
+            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_GET', storeName, key }, res => {
+                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                r(res || null);
+            });
+            send();
+        }),
+        getAll: (storeName) => new Promise(r => {
+            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_GET_ALL', storeName }, res => {
+                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                r(Array.isArray(res) ? res : []);
+            });
+            send();
+        }),
+        put: (storeName, obj) => new Promise(r => {
+            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_PUT', storeName, obj }, res => {
+                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                r(res || { ok: false });
+            });
+            send();
+        }),
+        delete: (storeName, key) => new Promise(r => {
+            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_DELETE', storeName, key }, res => {
+                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                r(res || { ok: false });
+            });
+            send();
+        })
     };
 
     // ─── 本地拉取圖片避免 Extension 報錯 ───────────────────────────────────────────
@@ -71,22 +101,7 @@ if (!window._vtBookmarksLoaded) {
         });
     }
 
-    // ─── 滑鼠移入移出觸發邏輯 ────────────────────────────────────────────
-    let _hoverTimer = null;
-    let _leaveTimer = null;
 
-    function _handleVideoHover(e) {
-        if (!window._vtShowInteraction) return;
-        const target = e.target;
-        const videoId = window._vtParseVideoId(target.closest('a')?.href || target.href);
-        if (!videoId) return;
-
-        clearTimeout(_leaveTimer);
-        _hoverTimer = setTimeout(() => {
-            const rect = target.getBoundingClientRect();
-            _showPanel(videoId, rect);
-        }, 150); // 稍微延遲避免快速滑過
-    }
 
     function _compressImage(dataUrl) {
         return new Promise(resolve => {
@@ -635,12 +650,56 @@ if (!window._vtBookmarksLoaded) {
         confirmBtn.onclick = async () => {
             const url = location.href;
             const title = document.title;
-            let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
-                        document.querySelector('meta[property="og:image:secure_url"]')?.content ||
-                        document.querySelector('meta[name="twitter:image"]')?.content || '';
+            let ogImg = '';
+            // [API 修復] YouTube 官方高品質縮圖 (繞過 SPA 造成的 og:image 錯誤)
+            if (location.hostname.includes('youtube.com')) {
+                // V-Train 內部 ID 已被全轉小寫，但 YouTube 縮圖 API 區分大小寫！
+                // 必須從當前網址或 meta 中提取最原始的、區分大小寫的 YouTube ID
+                let realYtId = new URLSearchParams(location.search).get('v');
+                if (!realYtId && location.pathname.startsWith('/shorts/')) {
+                    realYtId = location.pathname.split('/')[2];
+                }
+                if (!realYtId) {
+                    realYtId = document.querySelector('meta[itemprop="videoId"]')?.content;
+                }
+                
+                if (realYtId) {
+                    ogImg = `https://img.youtube.com/vi/${realYtId}/hqdefault.jpg`;
+                }
+            } else {
+                // 原本的 DOM 與 og:image 抓取邏輯 (針對其他非 SPA 網站)
+                const links = Array.from(document.querySelectorAll('a')).filter(a => a.href && a.href.includes(videoId));
+                for (const link of links) {
+                    const container = link.closest('ytd-thumbnail, .bili-video-card, .video-card, ytd-video-renderer, ytd-rich-item-renderer') || link.parentElement;
+                    if (!container) continue;
+                    
+                    const source = container.querySelector('source[srcset]');
+                    const img = container.querySelector('img');
+                    
+                    if (source && source.srcset) {
+                        ogImg = source.srcset.split(' ')[0];
+                    } else if (img) {
+                        ogImg = img.currentSrc || img.getAttribute('data-src') || img.src;
+                    }
+                    
+                    if (ogImg && ogImg.length > 10 && !ogImg.startsWith('data:image/gif')) break;
+                }
+
+                if (!ogImg || ogImg.includes('yt3.ggpht.com')) { // 排除頻道大頭貼
+                    ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+                            document.querySelector('meta[property="og:image:secure_url"]')?.content ||
+                            document.querySelector('meta[name="twitter:image"]')?.content || '';
+                }
+            }
+
             if (!ogImg) {
                 const imgs = Array.from(document.querySelectorAll('img')).filter(img => img.width > 200 && img.height > 100);
                 if (imgs.length > 0) ogImg = imgs[0].src;
+            }
+
+            // 若最終拿到的還是首頁通用 Logo (如 YouTube Logo)，則使用智能截圖備案
+            if (ogImg && (ogImg.includes('youtube_logo') || ogImg.includes('logo'))) {
+                _takeVideoSnapshot(videoId);
             }
 
             // [無痛快取機制] 擷取圖片轉換為二進位存入快取資料庫
@@ -787,7 +846,13 @@ if (!window._vtBookmarksLoaded) {
     // ─── 核心截圖引擎 (分離自 forceHeal 以供全域呼叫) ──────────────────
     async function _takeVideoSnapshot(targetVideoId) {
         try {
-            const videoEl = window.sysState?._activeEl || document.querySelector('video');
+            let videoEl = window.sysState?._activeEl;
+            // [Bug 修復] 在 Feed 頁面上，_activeEl 可能未更新，或是指向已被隱藏的舊預覽
+            if (!videoEl || !videoEl.isConnected || videoEl.offsetWidth === 0) {
+                const videos = Array.from(document.querySelectorAll('video')).filter(v => v.offsetWidth > 0 && v.videoWidth > 0);
+                // 優先抓取正在播放的（Feed 頁面上只有懸停的那部會播放），否則抓面積最大的
+                videoEl = videos.find(v => !v.paused) || videos.sort((a,b) => (b.offsetWidth*b.offsetHeight) - (a.offsetWidth*a.offsetHeight))[0];
+            }
             if (videoEl && videoEl.tagName === 'VIDEO') {
 
                 // [1] 嘗試使用 Canvas 直接繪製當前影片幀 (不受硬體加速黑屏影響，但可能受 CORS 阻擋)
@@ -903,74 +968,9 @@ if (!window._vtBookmarksLoaded) {
             _panelRating = window._vtRatingsCache[videoId] || null;
             _panelBookmarked = window._vtBookmarkedSet?.has(videoId) || false;
 
-            // [自癒機制 Self-Healing] 如果此影片已在書籤庫中，於背景靜默重新抓取縮圖並寫入快取庫。
-            // 加入溫和的重試機制，最多 3 次，避免被當作 DDoS 攻擊，同時能繞過廣告延遲。
-            if (_panelBookmarked) {
-                vtDBProxy.get('vt_thumbnails', videoId).then(existingThumb => {
-                    // [Bug 修復] 如果資料庫裡已經有一張正常的縮圖，就「絕對不要」發動自癒機制去覆蓋它
-                    if (existingThumb && existingThumb.thumbnail && existingThumb.thumbnail.length > 500) {
-                        return; 
-                    }
-
-                    const _heal = (attempt = 1) => {
-                        if (attempt > 3) return; // 最多嘗試 3 次
-                        setTimeout(() => {
-                            if (_currentId !== videoId) return; // [SPA 保護] 避免在延遲期間用戶切換了影片，導致張冠李戴
-                            let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
-                                        document.querySelector('meta[property="og:image:secure_url"]')?.content ||
-                                        document.querySelector('meta[name="twitter:image"]')?.content || '';
-                            if (ogImg && ogImg.startsWith('http')) {
-                                _fetchImageBase64Local(ogImg).then(async (res) => {
-                                    if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
-                                        const dataUrl = await _compressImage(res.dataUrl);
-                                        vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: dataUrl }).catch(()=>{});
-                                        notifySync(); 
-                                    } else {
-                                        if (await _takeVideoSnapshot(videoId)) { notifySync(); return; }
-                                        _heal(attempt + 1); 
-                                    }
-                                });
-                            } else {
-                                // [Iframe 跨域修復] 在 iframe 中找不到 og:image 時，改請求 Top Window 的 og:image
-                                if (window !== window.top && chrome.runtime?.id) {
-                                    chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
-                                        if (res && res.ogImg) {
-                                            _fetchImageBase64Local(res.ogImg).then(async (imgRes) => {
-                                                if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
-                                                    const compressed = await _compressImage(imgRes.dataUrl);
-                                                    vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: compressed }).catch(()=>{});
-                                                    notifySync();
-                                                    return;
-                                                } else {
-                                                    _takeVideoSnapshotFallback();
-                                                }
-                                            });
-                                        } else {
-                                            _takeVideoSnapshotFallback();
-                                        }
-                                    });
-                                } else {
-                                    _takeVideoSnapshotFallback();
-                                }
-                                
-                                function _takeVideoSnapshotFallback() {
-                                    _takeVideoSnapshot(videoId).then(success => {
-                                        if (success) {
-                                            notifySync();
-                                        } else {
-                                            _heal(attempt + 1);
-                                        }
-                                    });
-                                }
-                            }
-                        }, attempt === 1 ? 300 : 3000 * (attempt - 1)); // 第一次 0.3 秒，第二次 3 秒，第三次 6 秒
-                    };
-                    _heal();
-                }); // Close vtDBProxy.get
-            }
 
             _createPanel();
-            if (_panel) { _panel.style.display = 'flex'; _renderPanelState(); }
+            if (_panel) { _panel.style.display = document.fullscreenElement ? 'none' : 'flex'; _renderPanelState(); }
         },
         hide() {
             if (_panel) _panel.style.display = 'none';
@@ -979,6 +979,12 @@ if (!window._vtBookmarksLoaded) {
         async loadCache() { await _loadCache(); },
         takeSnapshot: _takeVideoSnapshot // Expose for cross-frame calls
     };
+
+    document.addEventListener('fullscreenchange', () => {
+        if (_panel && _currentId && window._vtShowInteraction !== false) {
+            _panel.style.display = document.fullscreenElement ? 'none' : 'flex';
+        }
+    });
 
     // [跨 Iframe 截圖修復] 聽取來自上層 Window 的截圖請求，並遞迴向下傳遞
     window.addEventListener('message', async (e) => {
@@ -1028,7 +1034,11 @@ if (!window._vtBookmarksLoaded) {
             const btn = document.getElementById('vt-bmb-snapshot');
             if (btn) {
                 // 為了避免硬體加速黑屏，套用微小的濾鏡來強制重新繪製 (破壞 Overlay)
-                const videoEl = window.sysState?._activeEl || document.querySelector('video');
+                let videoEl = window.sysState?._activeEl;
+                if (!videoEl || !videoEl.isConnected || videoEl.offsetWidth === 0) {
+                    const videos = Array.from(document.querySelectorAll('video')).filter(v => v.offsetWidth > 0 && v.videoWidth > 0);
+                    videoEl = videos.find(v => !v.paused) || videos.sort((a,b) => (b.offsetWidth*b.offsetHeight) - (a.offsetWidth*a.offsetHeight))[0];
+                }
                 let originalFilter = '';
                 if (videoEl) {
                     originalFilter = videoEl.style.filter || '';

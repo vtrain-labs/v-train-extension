@@ -14,6 +14,7 @@
 ## [1.0.7] - 2026-06-20
 
 ### Added (新增)
+- **內建 YouTube 專屬追蹤引擎 (Built-in YouTube Tracking Engine)**：現在 V-Train 出廠時將自動在背景注入並啟用針對 YouTube 的最佳化預設解析規則。用戶不需手動匯入設定，安裝後即可享受開箱即用的 YouTube 精準進度追蹤與縮圖抓取功能。
 - **專屬進度條顏色功能 (Exclusive Progress Bar Color)**：現在可以為「普通」、「喜歡」、「不喜歡」三種不同的影片評價狀態，分別設定專屬的進度條顏色，並且會在網頁畫面上即時切換套用。
 - **第二道截圖防線 (Fallback Snapshot via Context Menu)**：針對部分影片網站（如跨域廣告干擾、CORS 限制）導致點擊 📸 截圖失敗的問題，加入了自動偵測與「動態右鍵變身」機制。若一鍵截圖失敗，只需對網頁按右鍵並點擊「強制物理截圖」，即可利用 `activeTab` 權限穿透限制，確保截圖 100% 成功。
 
@@ -21,6 +22,8 @@
 - **通用化分享序號 (Generic Sharing Code)**：為了提升工具的中立性與社群分享的隱私，將匯出的設定檔序號前綴從 `VT-RULE-` 更改為通用的 `SYNC-`。舊版 `VT-RULE-` 序號依然可以無縫匯入且完全相容。
 
 ### Fixed (修復)
+- **YouTube ID 大小寫與 404 縮圖問題 (YouTube Case-Sensitivity & 404 Thumbnail Fix)**：徹底移除了早期針對 YouTube 影片 ID 的「強制小寫」舊規則。這確保了系統能使用 100% 正確大小寫的 ID 向 YouTube 官方 API 請求高畫質縮圖，完美解決了圖片抓不到 (404) 的問題；同時也修復了因主播放器與側邊欄 ID 大小寫比對失敗，導致的「愛心不同步」視覺 Bug。
+- **全螢幕面板遮擋修復 (Fullscreen Panel Interference)**：加入了 `fullscreenchange` 系統監聽機制。現在當您在觀看影片並進入全螢幕模式時，右下角的書籤互動面板會自動隱身，退出全螢幕時自動恢復，給您毫無遮擋的純淨觀影體驗。
 - **英文語系 Modal 文字顯示 (English i18n Fallback)**：修復了在純英文語系下，控制面板與救援模式 Modal 的變數名稱（如 `modalRescue`）因為缺少翻譯檔而直接顯示原始碼的介面錯誤。
 
 

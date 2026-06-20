@@ -183,7 +183,7 @@ if (!window._vtTrackerLoaded) {
                             cfg.pRule || cfg.urlRule,
                         );
                         if (id) {
-                            sysState._cachedId = `${sysState.currentDriver.key}/${id.toLowerCase()}`;
+                            sysState._cachedId = `${sysState.currentDriver.key}/${id}`;
                             break;
                         }
                     }

@@ -14,6 +14,7 @@
 ## [1.0.7] - 2026-06-20
 
 ### Added
+- **Built-in YouTube Tracking Engine**: V-Train now automatically injects and activates optimized default parsing rules for YouTube in the background upon installation. Users no longer need to manually import configurations and can enjoy out-of-the-box, precise progress tracking and thumbnail capturing for YouTube.
 - **Exclusive Progress Bar Color**: You can now set exclusive progress bar colors for three different video rating states: "Normal", "Like", and "Dislike". These colors will instantly switch and apply on the video page based on your rating.
 - **Fallback Snapshot via Context Menu**: To address screenshot failures (the red ❌) on certain video sites caused by cross-origin ad interference or strict CORS policies, we introduced a dynamic context menu fallback mechanism. If the 1-click snapshot fails, a tooltip will guide you to right-click the page and select "📸 V-Train: Force Physical Snapshot". This cleverly leverages the temporary `activeTab` permission to bypass all browser restrictions, guaranteeing a 100% snapshot success rate.
 
@@ -21,6 +22,8 @@
 - **Generic Sharing Code**: To enhance the tool's neutrality and privacy for community sharing, the exported configuration serial number prefix has been changed from `VT-RULE-` to a generic `SYNC-`. Legacy `VT-RULE-` serial numbers remain fully backwards compatible and can be seamlessly imported.
 
 ### Fixed
+- **YouTube Case-Sensitivity & 404 Thumbnail Fix**: Completely removed the legacy "forced lowercase" rule for YouTube video IDs. This ensures the system utilizes the 100% accurate, case-sensitive ID to request high-res thumbnails from the official YouTube API, perfectly resolving the 404 image missing issue. This also fixes the visual bug where the heart icon on the main player and the sidebar thumbnails were out of sync due to case mismatches.
+- **Fullscreen Panel Interference**: Implemented a `fullscreenchange` system listener. Now, when you enter fullscreen mode while watching a video, the bottom-right bookmark interaction panel will automatically hide itself. It restores automatically upon exiting fullscreen, giving you an unobstructed, pure viewing experience.
 - **English i18n Modal Fallback**: Fixed an issue where raw i18n variable keys (e.g., `modalRescue`) were displayed instead of human-readable text in the dashboard and rescue modals under the English locale.
 
 

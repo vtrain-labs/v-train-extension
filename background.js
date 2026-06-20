@@ -107,6 +107,27 @@ chrome.runtime.onInstalled.addListener((details) => {
         }
     });
 
+    // [架構師注入] 寫入預設影音平台規則 (例如 YouTube)
+    chrome.storage.local.get(['site_config'], (res) => {
+        let config = res.site_config || {};
+        let needUpdate = false;
+        
+        if (!config['www.youtube.com'] && !config['youtube.com']) {
+            config['www.youtube.com'] = [
+                {"hosts":["www.youtube.com"],"pRule":{"guard":{"isPositional":true},"key":"v","type":"q"},"s":"div.ytThumbnailViewModelImage","tRule":{"guard":{"isPositional":true},"key":"v","targetAttr":"href","type":"q","upLevel":2}},
+                {"hosts":["www.youtube.com"],"pRule":{"guard":{"isPositional":true},"key":"v","type":"q"},"s":"ytd-thumbnail.ytd-playlist-panel-video-renderer.style-scope","tRule":{"guard":{"isPositional":true},"key":"v","targetAttr":"href","type":"q","upLevel":3}},
+                null,
+                null
+            ];
+            needUpdate = true;
+        }
+
+        if (needUpdate) {
+            chrome.storage.local.set({ site_config: config });
+            console.log('[VT] Injected default rules for YouTube.');
+        }
+    });
+
     injectScriptToExistingTabs();
 
     // 這裡原本就正確使用了原生 i18n
