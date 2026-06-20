@@ -697,6 +697,11 @@ if (!window._vtBookmarksLoaded) {
                 if (imgs.length > 0) ogImg = imgs[0].src;
             }
 
+            // [協定補全] 修復 Bilibili 等網站 og:image 使用 // 開頭導致無法下載的問題
+            if (ogImg && ogImg.startsWith('//')) {
+                ogImg = 'https:' + ogImg;
+            }
+
             // 若最終拿到的還是首頁通用 Logo (如 YouTube Logo)，則使用智能截圖備案
             if (ogImg && (ogImg.includes('youtube_logo') || ogImg.includes('logo'))) {
                 _takeVideoSnapshot(videoId);
@@ -968,6 +973,75 @@ if (!window._vtBookmarksLoaded) {
             _panelRating = window._vtRatingsCache[videoId] || null;
             _panelBookmarked = window._vtBookmarkedSet?.has(videoId) || false;
 
+            // [自癒機制 Self-Healing] 如果此影片已在書籤庫中，於背景靜默重新抓取縮圖並寫入快取庫。
+            // 加入溫和的重試機制，最多 3 次，避免被當作 DDoS 攻擊，同時能繞過廣告延遲。
+            if (_panelBookmarked) {
+                vtDBProxy.get('vt_thumbnails', videoId).then(existingThumb => {
+                    // [Bug 修復] 如果資料庫裡已經有一張正常的縮圖，就「絕對不要」發動自癒機制去覆蓋它
+                    if (existingThumb && existingThumb.thumbnail && existingThumb.thumbnail.length > 500) {
+                        return; 
+                    }
+
+                    const _heal = (attempt = 1) => {
+                        if (attempt > 3) return; // 最多嘗試 3 次
+                        setTimeout(() => {
+                            if (_currentId !== videoId) return; // [SPA 保護] 避免在延遲期間用戶切換了影片，導致張冠李戴
+                            let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+                                        document.querySelector('meta[property="og:image:secure_url"]')?.content ||
+                                        document.querySelector('meta[name="twitter:image"]')?.content || '';
+                            if (ogImg && ogImg.startsWith('//')) {
+                                ogImg = 'https:' + ogImg;
+                            }
+                            
+                            if (ogImg && ogImg.startsWith('http')) {
+                                _fetchImageBase64Local(ogImg).then(async (res) => {
+                                    if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
+                                        const dataUrl = await _compressImage(res.dataUrl);
+                                        vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: dataUrl }).catch(()=>{});
+                                        notifySync(); 
+                                    } else {
+                                        if (await _takeVideoSnapshot(videoId)) { notifySync(); return; }
+                                        _heal(attempt + 1); 
+                                    }
+                                });
+                            } else {
+                                // [Iframe 跨域修復] 在 iframe 中找不到 og:image 時，改請求 Top Window 的 og:image
+                                if (window !== window.top && chrome.runtime?.id) {
+                                    chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
+                                        if (res && res.ogImg) {
+                                            _fetchImageBase64Local(res.ogImg).then(async (imgRes) => {
+                                                if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
+                                                    const compressed = await _compressImage(imgRes.dataUrl);
+                                                    vtDBProxy.put('vt_thumbnails', { videoId, thumbnail: compressed }).catch(()=>{});
+                                                    notifySync();
+                                                    return;
+                                                } else {
+                                                    _takeVideoSnapshotFallback();
+                                                }
+                                            });
+                                        } else {
+                                            _takeVideoSnapshotFallback();
+                                        }
+                                    });
+                                } else {
+                                    _takeVideoSnapshotFallback();
+                                }
+                                
+                                function _takeVideoSnapshotFallback() {
+                                    _takeVideoSnapshot(videoId).then(success => {
+                                        if (success) {
+                                            notifySync();
+                                        } else {
+                                            _heal(attempt + 1);
+                                        }
+                                    });
+                                }
+                            }
+                        }, attempt === 1 ? 300 : 3000 * (attempt - 1)); // 第一次 0.3 秒，第二次 3 秒，第三次 6 秒
+                    };
+                    _heal();
+                }); // Close vtDBProxy.get
+            }
 
             _createPanel();
             if (_panel) { _panel.style.display = document.fullscreenElement ? 'none' : 'flex'; _renderPanelState(); }
