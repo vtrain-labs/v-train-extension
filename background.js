@@ -107,8 +107,10 @@ chrome.runtime.onInstalled.addListener((details) => {
         }
     });
 
-    // [架構師注入] 寫入預設影音平台規則 (例如 YouTube, Bilibili)
-    chrome.storage.local.get(['site_config'], (res) => {
+    // [架構師注入] 寫入預設影音平台規則 (例如 YouTube, Bilibili) - 僅注入一次，允許用戶刪除
+    chrome.storage.local.get(['site_config', 'vt_injected_version'], (res) => {
+        if (res.vt_injected_version >= 1) return; // 已經注入過就不再強制覆蓋，把控制權還給用戶
+
         let config = res.site_config || {};
         let needUpdate = false;
         
@@ -133,8 +135,10 @@ chrome.runtime.onInstalled.addListener((details) => {
         }
 
         if (needUpdate) {
-            chrome.storage.local.set({ site_config: config });
+            chrome.storage.local.set({ site_config: config, vt_injected_version: 1 });
             console.log('[VT] Injected default rules for YouTube & Bilibili.');
+        } else {
+            chrome.storage.local.set({ vt_injected_version: 1 });
         }
     });
 
