@@ -110,6 +110,8 @@ body {
 .status-info {
     flex: 1;
     margin-right: 15px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .status-label {
@@ -262,7 +264,7 @@ input:checked+.slider:before {
 /* 💡 雙欄網格與分隔線 */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1px 1fr;
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
     gap: 20px;
     align-items: stretch;
 }

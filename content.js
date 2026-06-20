@@ -36,6 +36,7 @@ if (!window._vtInjected) {
         _cachedId: null,
         _showMonitor: true,
         barColor: "#ff0000",
+        barColors: { normal: "#ff0000", like: "#ff0000", dislike: "#ff0000" },
         _flashTimer: null,
         _actionTimer: null, // [新增] 用於暫停與跳轉的統一防抖計時器
     };
@@ -177,6 +178,7 @@ if (!window._vtInjected) {
                 "userLang",
                 "showMonitorPanel",
                 "barColor",
+                "barColors",
             ],
             (data) => {
                 if (chrome.runtime.lastError) return;
@@ -202,6 +204,8 @@ if (!window._vtInjected) {
                     }
                 }
                 sysState._showMonitor = data.showMonitorPanel !== false;
+                sysState.barColor = data.barColor || "#ff0000";
+                sysState.barColors = data.barColors || { normal: sysState.barColor, like: sysState.barColor, dislike: sysState.barColor };
                 const isStealth = !!data.isStealthMode;
                 sysState.isStealth = isStealth;
                 const savedDataArr = Array.isArray(savedDataRaw)
@@ -349,17 +353,22 @@ if (!window._vtInjected) {
                     if (data.labelEl) data.labelEl.style.display = sysState._showMonitor ? "block" : "none";
                 });
             }
-            if (changes.barColor) {
-                sysState.barColor = changes.barColor.newValue || "#ff0000";
-                document
-                    .querySelectorAll(".vt-progress-bar, .vt-fake-bar > div > div")
-                    .forEach((el) =>
-                        el.style.setProperty(
-                            "background-color",
-                            sysState.barColor,
-                            "important",
-                        ),
-                    );
+            if (changes.barColor || changes.barColors) {
+                if (changes.barColor) sysState.barColor = changes.barColor.newValue || "#ff0000";
+                if (changes.barColors) {
+                    sysState.barColors = changes.barColors.newValue || { normal: sysState.barColor, like: sysState.barColor, dislike: sysState.barColor };
+                } else if (!sysState.barColors) {
+                    sysState.barColors = { normal: sysState.barColor, like: sysState.barColor, dislike: sysState.barColor };
+                }
+                if (typeof activeOverlayBars !== 'undefined') {
+                    activeOverlayBars.forEach((data) => {
+                        let color = sysState.barColors.normal || sysState.barColor || "#ff0000";
+                        const rating = window._vtRatingsCache?.[data.videoId];
+                        if (rating === 'like' && sysState.barColors.like) color = sysState.barColors.like;
+                        if (rating === 'dislike' && sysState.barColors.dislike) color = sysState.barColors.dislike;
+                        if (data.barFill) data.barFill.style.setProperty("background-color", color, "important");
+                    });
+                }
             }
             if (changes.isStealthMode) {
                 sysState.isStealth = changes.isStealthMode.newValue;

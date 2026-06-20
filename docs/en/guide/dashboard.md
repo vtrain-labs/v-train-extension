@@ -92,13 +92,14 @@ When you train a new website, the rules might not work. Turn on the monitor pane
 
 ### 🎨 Progress Bar Color
 
-Do you want to change the **red** progress bar? Click the color square. A color picker will open. You can choose any color!
+Do you want to change the default red progress bar? You can set exclusive colors for three different video rating states: "Normal", "Like (👍)", and "Dislike (😤)"!
 
 > ![Progress Bar Color Picker](/assets/manual/12.png)
 
-- The color saves immediately.
-- All trained websites will use this new color.
-- To switch back to red, type `#ff0000` in the color picker.
+- Use the dropdown menu to select a state, and click the color square on the right to pick your favorite color.
+- Progress bars on all trained websites will instantly change to the corresponding color based on your rating for that video.
+- If you don't set specific colors for "Like" or "Dislike", the system will automatically use the "Normal" color.
+- To switch back to default red, type `#ff0000` in the color picker.
 
 ---
 

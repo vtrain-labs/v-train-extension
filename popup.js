@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginMsg = document.getElementById('loginMsg');
     const toggleVisibility = document.getElementById('toggleVisibility');
     const toggleMonitorPanel = document.getElementById('toggleMonitorPanel');
+    const barColorType = document.getElementById('barColorType');
     const progressBarColor = document.getElementById('progressBarColor');
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
@@ -129,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 初始化資料
-    const configKeys = ['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'vt_video_count', 'showInteraction'];
+    const configKeys = ['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'barColors', 'vt_video_count', 'showInteraction'];
     chrome.storage.local.get(configKeys, async (items) => {
         // [Data Migration] Aggressively clean up legacy bloated data without loading it
         chrome.storage.local.remove(['vt_bookmarks', 'vt_ratings', 'vt_bm_folders']);
@@ -169,7 +170,22 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleVisibility.checked = !isStealth; updateStatusUI(!isStealth);
         if (toggleMonitorPanel) toggleMonitorPanel.checked = items.showMonitorPanel !== false;
         if (toggleInteraction) toggleInteraction.checked = !!items.showInteraction;
-        if (progressBarColor) progressBarColor.value = items.barColor || '#ff0000';
+        let sysBarColors = items.barColors || {};
+        if (typeof sysBarColors !== 'object') sysBarColors = {};
+        if (!sysBarColors.normal) sysBarColors.normal = items.barColor || '#ff0000';
+        if (!sysBarColors.like) sysBarColors.like = sysBarColors.normal;
+        if (!sysBarColors.dislike) sysBarColors.dislike = sysBarColors.normal;
+
+        if (progressBarColor && barColorType) {
+            progressBarColor.value = sysBarColors[barColorType.value] || sysBarColors.normal;
+            barColorType.addEventListener('change', (e) => {
+                progressBarColor.value = sysBarColors[e.target.value] || sysBarColors.normal;
+            });
+            progressBarColor.addEventListener('input', (e) => {
+                sysBarColors[barColorType.value] = e.target.value;
+                chrome.storage.local.set({ barColors: sysBarColors, barColor: sysBarColors.normal });
+            });
+        }
         updateProUI(isPro, items.vt_video_count || 0);
 
         // Interaction Toggle Event
@@ -632,11 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (progressBarColor) {
-        progressBarColor.addEventListener('input', (e) => {
-            chrome.storage.local.set({ barColor: e.target.value });
-        });
-    }
+
 
     // ★★★ 核心修正：驗證邏輯與錯誤代碼接接 ★★★
     btnDonateUpgrade.addEventListener('click', async () => {

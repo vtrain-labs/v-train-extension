@@ -394,15 +394,25 @@ if (!window._vtTrackerLoaded) {
         } else window._overlaySyncLoop = null;
     }
 
-    // ─── 縮圖評分角標（Badge）─────────────────────────────────────────
+    // ─── 縮圖評分角標（Badge）與顏色同步 ─────────────────────────────────────────
     function _vtUpdateBadge(data, videoId) {
+        const rating = window._vtRatingsCache?.[videoId];
+        
+        // 1. 同步進度條顏色
+        if (data.barFill) {
+            let color = sysState.barColors?.normal || sysState.barColor || "#ff0000";
+            if (rating === 'like' && sysState.barColors?.like) color = sysState.barColors.like;
+            if (rating === 'dislike' && sysState.barColors?.dislike) color = sysState.barColors.dislike;
+            data.barFill.style.setProperty("background-color", color, "important");
+        }
+
         // 若關閉了互動按鈕，則連同角標一起隱藏，還原最乾淨的 UI
         if (window._vtShowInteraction === false) {
             if (data.badgeEl) data.badgeEl.style.display = 'none';
             return;
         }
 
-        const rating = window._vtRatingsCache?.[videoId];
+
         const isBookmarked = window._vtBookmarkedSet?.has(videoId);
         const SVG_LIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;display:inline-block;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
         const SVG_DISLIKE = `<svg viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;display:inline-block;"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>`;
@@ -477,7 +487,8 @@ if (!window._vtTrackerLoaded) {
         bar.className = "vt-progress-bar";
         bar.style.width = `${pct}%`;
         bar.style.borderRadius = "4px";
-        bar.style.setProperty("background-color", sysState.barColor, "important");
+        // 顏色將在建立後由 _vtUpdateBadge 統一設定
+        // bar.style.setProperty("background-color", sysState.barColor, "important");
         const infoContainer = document.createElement("div");
         infoContainer.style.cssText = `position:absolute;bottom:8px;left:2px;display:flex;align-items:center;gap:4px;pointer-events:none;z-index:2;max-width:90%;`;
         
