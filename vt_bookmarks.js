@@ -702,6 +702,11 @@ if (!window._vtBookmarksLoaded) {
                 ogImg = 'https:' + ogImg;
             }
 
+            // [畫質解鎖] 移除 Bilibili 等網站縮圖網址後面的 @100w_100h_1c.png 壓縮裁切參數，取得高畫質原圖
+            if (ogImg && ogImg.includes('@')) {
+                ogImg = ogImg.split('@')[0];
+            }
+
             // 若最終拿到的還是首頁通用 Logo (如 YouTube Logo)，則使用智能截圖備案
             if (ogImg && (ogImg.includes('youtube_logo') || ogImg.includes('logo'))) {
                 _takeVideoSnapshot(videoId);
@@ -991,6 +996,11 @@ if (!window._vtBookmarksLoaded) {
                                         document.querySelector('meta[name="twitter:image"]')?.content || '';
                             if (ogImg && ogImg.startsWith('//')) {
                                 ogImg = 'https:' + ogImg;
+                            }
+
+                            // [畫質解鎖] 移除 Bilibili 等網站縮圖網址後面的 @100w_100h_1c.png 壓縮裁切參數，取得高畫質原圖
+                            if (ogImg && ogImg.includes('@')) {
+                                ogImg = ogImg.split('@')[0];
                             }
                             
                             if (ogImg && ogImg.startsWith('http')) {
