@@ -9,6 +9,9 @@
   <a href="https://github.com/vtrain-labs/v-train-extension">
     <img src="https://img.shields.io/badge/GitHub-Open_Source-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
   </a>
+  <a href="https://vtrain-labs.github.io/v-train-extension/">
+    <img src="https://img.shields.io/badge/Docs-Online_Manual-blue?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Online Manual">
+  </a>
   
   <br>
   <p><b>🌍 Languages:</b> <a href="README.md">繁體中文</a> | <span>English</span></p>
