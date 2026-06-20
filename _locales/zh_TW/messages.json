@@ -10,5 +10,11 @@
   },
   "toastAuthSuccess": {
     "message": "☑️ 授權成功！請再次對著縮圖按右鍵"
+  },
+  "contextMenuForceSnapshot": {
+    "message": "📸 V-Train: 強制物理截圖 (解決紅X)"
+  },
+  "tooltipForceSnapshot": {
+    "message": "權限受限！請在 15 秒內按滑鼠右鍵 ➔ 點擊強制截圖"
   }
 }

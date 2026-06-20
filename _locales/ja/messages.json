@@ -10,5 +10,11 @@
   },
   "toastAuthSuccess": {
     "message": "☑️ 承認成功！再度右クリック"
+  },
+  "contextMenuForceSnapshot": {
+    "message": "📸 V-Train: 強制物理スナップショット (❌を解決)"
+  },
+  "tooltipForceSnapshot": {
+    "message": "権限が制限されています！15秒以内に右クリック ➔ 強制スナップショット"
   }
 }

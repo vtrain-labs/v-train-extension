@@ -418,7 +418,28 @@ if (!window._vtBookmarksLoaded) {
                     notifySync();
                     setTimeout(() => btn.textContent = '📸', 2000);
                 } else {
-                    setTimeout(() => btn.textContent = '📸', 2000);
+                    // [動態右鍵變身] 觸發右鍵選單變為強制截圖，並顯示 tooltip
+                    chrome.runtime.sendMessage({ action: "VT_TOGGLE_CONTEXT_MENU", mode: "snapshot" });
+                    
+                    let tooltip = btn.querySelector('.vt-snapshot-tooltip');
+                    if (!tooltip) {
+                        btn.style.position = 'relative';
+                        tooltip = document.createElement('div');
+                        tooltip.className = 'vt-snapshot-tooltip';
+                        tooltip.style.cssText = 'position:absolute; bottom:calc(100% + 10px); right:-5px; background:#d32f2f; color:#fff; padding:8px 12px; border-radius:6px; font-size:13px; font-weight:bold; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity 0.3s; z-index:2147483647; box-shadow:0 3px 10px rgba(0,0,0,0.5); letter-spacing:0.5px;';
+                        tooltip.textContent = chrome.i18n.getMessage("tooltipForceSnapshot") || 'Permission restricted! Right-click within 15s ➔ Force Snapshot';
+                        
+                        const arrow = document.createElement('div');
+                        arrow.style.cssText = 'position:absolute; top:100%; right:14px; border-width:6px; border-style:solid; border-color:#d32f2f transparent transparent transparent;';
+                        tooltip.appendChild(arrow);
+                        btn.appendChild(tooltip);
+                    }
+                    setTimeout(() => { tooltip.style.opacity = '1'; }, 10);
+                    
+                    setTimeout(() => {
+                        if(tooltip) tooltip.style.opacity = '0';
+                        setTimeout(() => { if(tooltip) tooltip.remove(); btn.textContent = '📸'; }, 300);
+                    }, 14500); // 15秒左右消失
                 }
                 btn.style.pointerEvents = 'auto';
             };
@@ -768,51 +789,8 @@ if (!window._vtBookmarksLoaded) {
         try {
             const videoEl = window.sysState?._activeEl || document.querySelector('video');
             if (videoEl && videoEl.tagName === 'VIDEO') {
-                
-                // [1] 嘗試抓取影片原生 poster
-                let posterUrl = videoEl.getAttribute('poster') || videoEl.poster;
 
-                if (posterUrl && posterUrl.startsWith('http')) {
-                    const success = await new Promise((resolve) => {
-                        let isResolved = false;
-                        const timer = setTimeout(() => { if (!isResolved) { isResolved = true; resolve(false); } }, 2500);
-                        _fetchImageBase64Local(posterUrl).then(async (res) => {
-                            if (isResolved) return;
-                            isResolved = true;
-                            clearTimeout(timer);
-                            if (res && res.dataUrl && (!res.type || !res.type.includes('html'))) {
-                                const compressed = await _compressImage(res.dataUrl);
-                                vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: compressed }).catch(()=>{});
-                                resolve(true);
-                            } else resolve(false);
-                        });
-                    });
-                    if (success) return true;
-                }
-
-                // 定義終極備案：抓取最上層網頁的 og:image
-                const fallbackToOgImage = () => new Promise((resolve) => {
-                    if (window !== window.top && chrome.runtime?.id) {
-                        chrome.runtime.sendMessage({ action: "VT_GET_TOP_OG_IMAGE" }, async (res) => {
-                            if (res && res.ogImg) {
-                                let isResolved = false;
-                                const timer = setTimeout(() => { if (!isResolved) { isResolved = true; resolve(false); } }, 2500);
-                                _fetchImageBase64Local(res.ogImg).then(async (imgRes) => {
-                                    if (isResolved) return;
-                                    isResolved = true;
-                                    clearTimeout(timer);
-                                    if (imgRes && imgRes.dataUrl && (!imgRes.type || !imgRes.type.includes('html'))) {
-                                        const compressed = await _compressImage(imgRes.dataUrl);
-                                        vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: compressed }).catch(()=>{});
-                                        resolve(true);
-                                    } else resolve(false);
-                                });
-                            } else resolve(false);
-                        });
-                    } else resolve(false);
-                });
-
-                // [2] 嘗試使用 Canvas 直接繪製當前影片幀 (不受硬體加速黑屏影響，但可能受 CORS 阻擋)
+                // [1] 嘗試使用 Canvas 直接繪製當前影片幀 (不受硬體加速黑屏影響，但可能受 CORS 阻擋)
                 if (videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
                     try {
                         const canvas = document.createElement('canvas');
@@ -829,7 +807,7 @@ if (!window._vtBookmarksLoaded) {
                     } catch (e) { /* CORS error */ }
                 }
 
-                // [3] 取得 Iframe 偏移量，準備截取整個瀏覽器畫面 (可能遇到黑屏)
+                // [2] 取得 Iframe 偏移量，準備截取整個瀏覽器畫面 (可能遇到黑屏)
                 const offset = await new Promise(resolve => {
                     if (window === window.top) return resolve({ left: 0, top: 0 });
                     try {
@@ -865,10 +843,10 @@ if (!window._vtBookmarksLoaded) {
                                     if (imgData[i] <= 2 && imgData[i+1] <= 2 && imgData[i+2] <= 2) pureBlackPixels++;
                                 }
                                 
-                                // 如果超過 98% 是純黑色 (2450/2500)，視為硬體加速黑屏，啟用 og:image 備案
+                                // 如果超過 98% 是純黑色 (2450/2500)，視為硬體加速黑屏，直接報錯
                                 if (pureBlackPixels > 2450) {
                                     console.error('[VT] Hardware acceleration black screen detected.');
-                                    resolve(await fallbackToOgImage());
+                                    resolve(false);
                                     return;
                                 }
 
@@ -879,22 +857,23 @@ if (!window._vtBookmarksLoaded) {
                                 const ctx = canvas.getContext('2d');
                                 ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
                                 const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                
                                 if (thumbUrl.length > 500) {
                                     vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
                                     resolve(true); 
                                 } else {
                                     console.error('[VT] Canvas generated empty image (length: ' + thumbUrl.length + '). dw=' + dw + ', dh=' + dh);
-                                    resolve(await fallbackToOgImage());
+                                    resolve(false);
                                 }
                             };
-                            img.onerror = async () => {
+                            img.onerror = () => {
                                 console.error('[VT] Image failed to load dataUrl');
-                                resolve(await fallbackToOgImage());
+                                resolve(false);
                             };
                             img.src = res.dataUrl;
                         } else {
                             console.error('[VT] captureVisibleTab failed:', res?.error || 'Unknown error');
-                            fallbackToOgImage().then(resolve);
+                            resolve(false);
                         }
                     });
                 });
@@ -1039,6 +1018,31 @@ if (!window._vtBookmarksLoaded) {
                         if (pending <= 0 && !resolved) { resolved = true; if(port) port.postMessage({ success: false }); }
                     }
                 });
+            }
+        }
+    });
+
+    // 監聽來自背景腳本的物理截圖請求 (取得 activeTab 後重試)
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === "VT_RETRY_SNAPSHOT") {
+            const btn = document.getElementById('vt-bmb-snapshot');
+            if (btn) {
+                // 為了避免硬體加速黑屏，套用微小的濾鏡來強制重新繪製 (破壞 Overlay)
+                const videoEl = window.sysState?._activeEl || document.querySelector('video');
+                let originalFilter = '';
+                if (videoEl) {
+                    originalFilter = videoEl.style.filter || '';
+                    videoEl.style.filter = originalFilter ? originalFilter + ' contrast(1.001)' : 'contrast(1.001)';
+                }
+                
+                // 等待 100ms 讓瀏覽器重新繪製，然後點擊截圖按鈕
+                setTimeout(() => {
+                    btn.click();
+                    // 截圖後恢復濾鏡
+                    setTimeout(() => {
+                        if (videoEl) videoEl.style.filter = originalFilter;
+                    }, 500);
+                }, 100);
             }
         }
     });

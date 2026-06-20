@@ -10,5 +10,11 @@
   },
   "toastAuthSuccess": {
     "message": "☑️ 승인 성공! 썸네일을 다시 우클릭하세요"
+  },
+  "contextMenuForceSnapshot": {
+    "message": "📸 V-Train: 물리적 스냅샷 강제 실행 (❌ 해결)"
+  },
+  "tooltipForceSnapshot": {
+    "message": "권한이 제한되었습니다! 15초 내에 우클릭 ➔ 강제 스냅샷"
   }
 }

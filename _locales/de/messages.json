@@ -10,5 +10,11 @@
   },
   "toastAuthSuccess": {
     "message": "☑️ Erfolg! Klicken Sie erneut mit der rechten Maustaste auf die Miniaturansicht"
+  },
+  "contextMenuForceSnapshot": {
+    "message": "📸 V-Train: Physischen Snapshot erzwingen (Fix ❌)"
+  },
+  "tooltipForceSnapshot": {
+    "message": "Berechtigung eingeschränkt! Rechtsklick innerhalb von 15s ➔ Snapshot erzwingen"
   }
 }

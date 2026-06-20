@@ -121,8 +121,21 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 // [架構師無障礙版] 色盲友善高對比藍色，動態判斷系統語言，加大字體
+let _contextMenuMode = "track";
+let _contextMenuResetTimer = null;
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "mark_vt_thumbnail" && tab.url && tab.url.startsWith('http')) {
+        if (_contextMenuMode === "snapshot") {
+            // 已透過右鍵取得 activeTab，通知 Content Script 重新執行原本的截圖邏輯
+            chrome.tabs.sendMessage(tab.id, { action: "VT_RETRY_SNAPSHOT" });
+            
+            _contextMenuMode = "track";
+            if (_contextMenuResetTimer) clearTimeout(_contextMenuResetTimer);
+            chrome.contextMenus.update("mark_vt_thumbnail", { title: chrome.i18n.getMessage("contextMenuTrack") || "V-Train" });
+            return;
+        }
+
         const originsToRequest = [];
         
         // 1. Top Window Origin
@@ -171,6 +184,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 chrome.tabs.onRemoved.addListener(() => setTimeout(checkAndLockIfAllClosed, 200));
+chrome.tabs.onActivated.addListener(() => {
+    if (_contextMenuMode === "snapshot") {
+        _contextMenuMode = "track";
+        if (_contextMenuResetTimer) clearTimeout(_contextMenuResetTimer);
+        chrome.contextMenus.update("mark_vt_thumbnail", { title: chrome.i18n.getMessage("contextMenuTrack") || "V-Train" });
+    }
+});
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'complete') {
         checkAndLockIfAllClosed();
@@ -227,6 +247,29 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'VT_TOGGLE_CONTEXT_MENU') {
+        _contextMenuMode = request.mode;
+        const title = request.mode === "snapshot" 
+            ? (chrome.i18n.getMessage("contextMenuForceSnapshot") || "📸 V-Train: Force Snapshot")
+            : (chrome.i18n.getMessage("contextMenuTrack") || "V-Train");
+        
+        chrome.contextMenus.update("mark_vt_thumbnail", { title: title });
+
+        if (_contextMenuResetTimer) {
+            clearTimeout(_contextMenuResetTimer);
+            _contextMenuResetTimer = null;
+        }
+
+        if (request.mode === "snapshot") {
+            _contextMenuResetTimer = setTimeout(() => {
+                _contextMenuMode = "track";
+                chrome.contextMenus.update("mark_vt_thumbnail", { title: chrome.i18n.getMessage("contextMenuTrack") || "V-Train" });
+            }, 15000);
+        }
+        sendResponse({ success: true });
+        return;
+    }
+
     if (request.action === 'VT_OPEN_BOOKMARKS') {
         chrome.tabs.create({ url: chrome.runtime.getURL('bookmarks.html') });
         return;

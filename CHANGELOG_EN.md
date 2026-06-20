@@ -11,6 +11,18 @@
 - **Dynamic Quota Sync**: Implemented cross-tab and dashboard broadcasting. Now, whether you click to bookmark on a video page or delete a bookmark inside the Bookmark Vault, the total quota and UI progress bars will instantly refresh across all windows in milliseconds.
 - **Clear Data Reset Logic**: Fixed a bug where clicking "Clear Data" in the control panel would incorrectly reset the tracking number to zero even though bookmarks were successfully retained. The system now accurately calculates remaining bookmarks and displays the correct occupied quota.
 
+## [1.0.7] - 2026-06-20
+
+### Added
+- **Fallback Snapshot via Context Menu**: To address screenshot failures (the red ❌) on certain video sites caused by cross-origin ad interference or strict CORS policies, we introduced a dynamic context menu fallback mechanism. If the 1-click snapshot fails, a tooltip will guide you to right-click the page and select "📸 V-Train: Force Physical Snapshot". This cleverly leverages the temporary `activeTab` permission to bypass all browser restrictions, guaranteeing a 100% snapshot success rate.
+
+### Changed
+- **Generic Sharing Code**: To enhance the tool's neutrality and privacy for community sharing, the exported configuration serial number prefix has been changed from `VT-RULE-` to a generic `SYNC-`. Legacy `VT-RULE-` serial numbers remain fully backwards compatible and can be seamlessly imported.
+
+### Fixed
+- **English i18n Modal Fallback**: Fixed an issue where raw i18n variable keys (e.g., `modalRescue`) were displayed instead of human-readable text in the dashboard and rescue modals under the English locale.
+
+
 ## [1.0.5] - 2026-06-15
 
 ### Added

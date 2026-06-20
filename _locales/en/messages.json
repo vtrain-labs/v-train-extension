@@ -10,5 +10,11 @@
   },
   "toastAuthSuccess": {
     "message": "☑️ Success! Right-click thumbnail again."
+  },
+  "contextMenuForceSnapshot": {
+    "message": "📸 V-Train: Force Physical Snapshot (Fix ❌)"
+  },
+  "tooltipForceSnapshot": {
+    "message": "Permission restricted! Right-click within 15s ➔ Force Snapshot"
   }
 }

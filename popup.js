@@ -15,7 +15,7 @@ function escapeHtml(str) {
 // ─────────────────────────────────────────────────────────────────────────────
 // VT Rule Serial 壓縮模組
 // 使用瀏覽器原生 CompressionStream / DecompressionStream（Chrome 80+ 均支援）。
-// 新版序號格式：VT-RULE-Z{deflate-raw base64}（'Z' 前綴為壓縮版本標記）
+// 新版序號格式：SYNC-Z{deflate-raw base64}（'Z' 前綴為壓縮版本標記）
 // 舊版序號（無 Z 前綴）解碼時自動 fallback，確保向下相容。
 // 壓縮效果：典型規則約縮短 35~50%（JSON 重複字串越多效果越好）。
 // ─────────────────────────────────────────────────────────────────────────────
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // [壓縮優化] 並行壓縮所有序號，再一次性渲染，避免逐列閃爍
             const shareCodes = await Promise.all(domains.map(async d => {
                 const payload = { d: d, r: shrink(config[d]) };
-                return `VT-RULE-Z${await _vtRuleCompress(JSON.stringify(payload))}`;
+                return `SYNC-Z${await _vtRuleCompress(JSON.stringify(payload))}`;
             }));
 
             domains.forEach((d, idx) => {
@@ -508,7 +508,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnPasteRule && inlineRuleInput) btnPasteRule.addEventListener('click', async () => {
         const inputCode = inlineRuleInput.value;
         if (!inputCode || !inputCode.trim()) return;
-        if (!inputCode.trim().startsWith('VT-RULE-')) return showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportFail'));
+        const trimmedCode = inputCode.trim();
+        if (!trimmedCode.startsWith('SYNC-') && !trimmedCode.startsWith('VT-RULE-')) {
+            return showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportFail'));
+        }
 
         const expand = (obj) => {
             if (!obj || typeof obj !== 'object') return obj;
@@ -520,8 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // [壓縮解碼] 自動偵測格式：VT-RULE-Z（新版壓縮）或 VT-RULE-（舊版相容）
-            const raw = inputCode.trim().replace('VT-RULE-', '');
+            // [壓縮解碼] 自動偵測格式：SYNC-Z / VT-RULE-Z（壓縮版）或 SYNC- / VT-RULE-（舊版未壓縮）
+            const raw = trimmedCode.replace(/^(SYNC-|VT-RULE-)/, '');
             let jsonStr;
             if (raw.startsWith('Z')) {
                 // 新版：deflate-raw 壓縮，'Z' 為版本前綴

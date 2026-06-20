@@ -10,5 +10,11 @@
   },
   "toastAuthSuccess": {
     "message": "☑️ ¡Éxito! Haz clic derecho en la miniatura de nuevo"
+  },
+  "contextMenuForceSnapshot": {
+    "message": "📸 V-Train: Forzar captura física (Solución ❌)"
+  },
+  "tooltipForceSnapshot": {
+    "message": "¡Permiso restringido! Clic derecho en 15s ➔ Forzar captura"
   }
 }

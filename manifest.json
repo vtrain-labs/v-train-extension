@@ -9,6 +9,7 @@
     "storage",
     "unlimitedStorage",
     "tabs",
+    "activeTab",
     "scripting",
     "contextMenus",
     "alarms",

@@ -1,1 +1,0 @@
-const s="/v-train-extension/assets/manual/training_mode_overview.png",n="/v-train-extension/assets/manual/visual_capture_box.png",a="/v-train-extension/assets/manual/bind_id.png";export{s as _,n as a,a as b};
