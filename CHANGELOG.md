@@ -14,7 +14,7 @@
 ## [1.0.7] - 2026-06-20
 
 ### Added (新增)
-- **內建 YouTube 專屬追蹤引擎 (Built-in YouTube Tracking Engine)**：現在 V-Train 出廠時將自動在背景注入並啟用針對 YouTube 的最佳化預設解析規則。用戶不需手動匯入設定，安裝後即可享受開箱即用的 YouTube 精準進度追蹤與縮圖抓取功能。
+- **內建 YouTube & Bilibili 專屬追蹤引擎 (Built-in Global Tracking Engine)**：現在 V-Train 出廠時將自動在背景注入並啟用針對 YouTube 與 Bilibili (B站) 的最佳化預設解析規則。用戶不需手動匯入設定，安裝後即可享受開箱即用的兩大平台精準進度追蹤與縮圖抓取功能。
 - **專屬進度條顏色功能 (Exclusive Progress Bar Color)**：現在可以為「普通」、「喜歡」、「不喜歡」三種不同的影片評價狀態，分別設定專屬的進度條顏色，並且會在網頁畫面上即時切換套用。
 - **第二道截圖防線 (Fallback Snapshot via Context Menu)**：針對部分影片網站（如跨域廣告干擾、CORS 限制）導致點擊 📸 截圖失敗的問題，加入了自動偵測與「動態右鍵變身」機制。若一鍵截圖失敗，只需對網頁按右鍵並點擊「強制物理截圖」，即可利用 `activeTab` 權限穿透限制，確保截圖 100% 成功。
 

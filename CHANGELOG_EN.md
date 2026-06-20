@@ -14,7 +14,7 @@
 ## [1.0.7] - 2026-06-20
 
 ### Added
-- **Built-in YouTube Tracking Engine**: V-Train now automatically injects and activates optimized default parsing rules for YouTube in the background upon installation. Users no longer need to manually import configurations and can enjoy out-of-the-box, precise progress tracking and thumbnail capturing for YouTube.
+- **Built-in Global Tracking Engine (YouTube & Bilibili)**: V-Train now automatically injects and activates optimized default parsing rules for YouTube and Bilibili in the background upon installation. Users no longer need to manually import configurations and can enjoy out-of-the-box, precise progress tracking and thumbnail capturing for these two major platforms.
 - **Exclusive Progress Bar Color**: You can now set exclusive progress bar colors for three different video rating states: "Normal", "Like", and "Dislike". These colors will instantly switch and apply on the video page based on your rating.
 - **Fallback Snapshot via Context Menu**: To address screenshot failures (the red ❌) on certain video sites caused by cross-origin ad interference or strict CORS policies, we introduced a dynamic context menu fallback mechanism. If the 1-click snapshot fails, a tooltip will guide you to right-click the page and select "📸 V-Train: Force Physical Snapshot". This cleverly leverages the temporary `activeTab` permission to bypass all browser restrictions, guaranteeing a 100% snapshot success rate.
 

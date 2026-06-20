@@ -107,7 +107,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         }
     });
 
-    // [架構師注入] 寫入預設影音平台規則 (例如 YouTube)
+    // [架構師注入] 寫入預設影音平台規則 (例如 YouTube, Bilibili)
     chrome.storage.local.get(['site_config'], (res) => {
         let config = res.site_config || {};
         let needUpdate = false;
@@ -122,9 +122,19 @@ chrome.runtime.onInstalled.addListener((details) => {
             needUpdate = true;
         }
 
+        if (!config['www.bilibili.com'] && !config['bilibili.com']) {
+            config['www.bilibili.com'] = [
+                {"hosts":["www.bilibili.com","space.bilibili.com"],"pRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"type":"p"},"s":"div.bili-video-card__image--wrap","tRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"targetAttr":"href","type":"p","upLevel":2}},
+                {"hosts":["www.bilibili.com","space.bilibili.com"],"pRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"type":"p"},"s":"div.bili-video-card__image--wrap","tRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"targetAttr":"data-target-url","type":"p","upLevel":2}},
+                {"hosts":["www.bilibili.com","space.bilibili.com"],"pRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"type":"p"},"s":"div.b-img","tRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"targetAttr":"href","type":"p","upLevel":1}},
+                {"hosts":["space.bilibili.com","www.bilibili.com"],"pRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"type":"p"},"s":"div.bili-cover-card__thumbnail","tRule":{"guard":{"isPositional":true,"kwPrefix":"video","segCount":2},"idx":-1,"targetAttr":"href","type":"p","upLevel":1}}
+            ];
+            needUpdate = true;
+        }
+
         if (needUpdate) {
             chrome.storage.local.set({ site_config: config });
-            console.log('[VT] Injected default rules for YouTube.');
+            console.log('[VT] Injected default rules for YouTube & Bilibili.');
         }
     });
 
