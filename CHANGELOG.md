@@ -23,6 +23,7 @@
 
 ### Fixed (修復)
 - **YouTube ID 大小寫與 404 縮圖問題 (YouTube Case-Sensitivity & 404 Thumbnail Fix)**：徹底移除了早期針對 YouTube 影片 ID 的「強制小寫」舊規則。這確保了系統能使用 100% 正確大小寫的 ID 向 YouTube 官方 API 請求高畫質縮圖，完美解決了圖片抓不到 (404) 的問題；同時也修復了因主播放器與側邊欄 ID 大小寫比對失敗，導致的「愛心不同步」視覺 Bug。
+- **YouTube 與 Bilibili 官方縮圖裁切與黑邊修復 (Thumbnail Cropping & Black Bars Fix)**：修復了 YouTube `hqdefault.jpg` 自帶上下黑邊，以及 Bilibili 官方 `og:image` 強制回傳 100x100 模糊小方塊圖片的問題。現在系統會精準請求 YouTube 無黑邊的高畫質 `mqdefault.jpg`，並自動剝除 B 站網址後面的 `@` 壓縮參數以取得原圖。同時配合書籤庫全新的 `object-fit: contain` 設定，確保兩大平台的封面都能以 100% 原比例、無裁切的最高畫質呈現。
 - **全螢幕面板遮擋修復 (Fullscreen Panel Interference)**：加入了 `fullscreenchange` 系統監聽機制。現在當您在觀看影片並進入全螢幕模式時，右下角的書籤互動面板會自動隱身，退出全螢幕時自動恢復，給您毫無遮擋的純淨觀影體驗。
 - **英文語系 Modal 文字顯示 (English i18n Fallback)**：修復了在純英文語系下，控制面板與救援模式 Modal 的變數名稱（如 `modalRescue`）因為缺少翻譯檔而直接顯示原始碼的介面錯誤。
 
