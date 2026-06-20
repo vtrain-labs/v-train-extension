@@ -664,7 +664,7 @@ if (!window._vtBookmarksLoaded) {
                 }
                 
                 if (realYtId) {
-                    ogImg = `https://img.youtube.com/vi/${realYtId}/hqdefault.jpg`;
+                    ogImg = `https://img.youtube.com/vi/${realYtId}/mqdefault.jpg`;
                 }
             } else {
                 // 原本的 DOM 與 og:image 抓取邏輯 (針對其他非 SPA 網站)
