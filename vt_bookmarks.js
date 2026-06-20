@@ -35,31 +35,47 @@ if (!window._vtBookmarksLoaded) {
     // 所有 DB 操作必須透過 Background Script 進行，確保寫入擴充功能的來源 (Origin)，而非當前網站 (Host) 的來源
     const vtDBProxy = {
         get: (storeName, key) => new Promise(r => {
-            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_GET', storeName, key }, res => {
-                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
-                r(res || null);
-            });
+            const send = (retryCount = 0) => {
+                try {
+                    chrome.runtime.sendMessage({ action: 'VT_DB_GET', storeName, key }, res => {
+                        if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                        r(res || null);
+                    });
+                } catch (e) { r(null); }
+            };
             send();
         }),
         getAll: (storeName) => new Promise(r => {
-            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_GET_ALL', storeName }, res => {
-                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
-                r(Array.isArray(res) ? res : []);
-            });
+            const send = (retryCount = 0) => {
+                try {
+                    chrome.runtime.sendMessage({ action: 'VT_DB_GET_ALL', storeName }, res => {
+                        if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                        r(Array.isArray(res) ? res : []);
+                    });
+                } catch (e) { r([]); }
+            };
             send();
         }),
         put: (storeName, obj) => new Promise(r => {
-            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_PUT', storeName, obj }, res => {
-                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
-                r(res || { ok: false });
-            });
+            const send = (retryCount = 0) => {
+                try {
+                    chrome.runtime.sendMessage({ action: 'VT_DB_PUT', storeName, obj }, res => {
+                        if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                        r(res || { ok: false });
+                    });
+                } catch (e) { r({ ok: false }); }
+            };
             send();
         }),
         delete: (storeName, key) => new Promise(r => {
-            const send = (retryCount = 0) => chrome.runtime.sendMessage({ action: 'VT_DB_DELETE', storeName, key }, res => {
-                if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
-                r(res || { ok: false });
-            });
+            const send = (retryCount = 0) => {
+                try {
+                    chrome.runtime.sendMessage({ action: 'VT_DB_DELETE', storeName, key }, res => {
+                        if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                        r(res || { ok: false });
+                    });
+                } catch (e) { r({ ok: false }); }
+            };
             send();
         })
     };
