@@ -41,7 +41,10 @@ if (!window._vtBookmarksLoaded) {
                         if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
                         r(res || null);
                     });
-                } catch (e) { r(null); }
+                } catch (e) {
+                    if (retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                    r(null);
+                }
             };
             send();
         }),
@@ -52,7 +55,10 @@ if (!window._vtBookmarksLoaded) {
                         if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
                         r(Array.isArray(res) ? res : []);
                     });
-                } catch (e) { r([]); }
+                } catch (e) {
+                    if (retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                    r([]);
+                }
             };
             send();
         }),
@@ -63,7 +69,10 @@ if (!window._vtBookmarksLoaded) {
                         if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
                         r(res || { ok: false });
                     });
-                } catch (e) { r({ ok: false }); }
+                } catch (e) {
+                    if (retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                    r({ ok: false });
+                }
             };
             send();
         }),
@@ -74,7 +83,10 @@ if (!window._vtBookmarksLoaded) {
                         if (chrome.runtime.lastError && retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
                         r(res || { ok: false });
                     });
-                } catch (e) { r({ ok: false }); }
+                } catch (e) {
+                    if (retryCount < 3) return setTimeout(() => send(retryCount + 1), 300);
+                    r({ ok: false });
+                }
             };
             send();
         })
@@ -177,7 +189,7 @@ if (!window._vtBookmarksLoaded) {
         if (window._vtBookmarkedSet) window._vtBookmarkedSet.add(videoId);
         if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
         notifySync();
-        chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{});
+        try { chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{}); } catch(e) {}
     }
 
     async function _removeBookmark(videoId) {
@@ -185,7 +197,7 @@ if (!window._vtBookmarksLoaded) {
         if (window._vtBookmarkedSet) window._vtBookmarkedSet.delete(videoId);
         if (window._vtRefreshAllBadges) window._vtRefreshAllBadges();
         notifySync();
-        chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{});
+        try { chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{}); } catch(e) {}
     }
 
     async function _isBookmarked(videoId) {
@@ -422,7 +434,7 @@ if (!window._vtBookmarksLoaded) {
             }
         };
         p.querySelector('#vt-bmb-open').onclick = () => {
-            chrome.runtime.sendMessage({ action: 'VT_OPEN_BOOKMARKS' }).catch(()=>{});
+            try { chrome.runtime.sendMessage({ action: 'VT_OPEN_BOOKMARKS' }).catch(()=>{}); } catch(e) {}
         };
 
         p.querySelector('#vt-bmb-snapshot').onclick = async () => {
@@ -450,7 +462,7 @@ if (!window._vtBookmarksLoaded) {
                     setTimeout(() => btn.textContent = '📸', 2000);
                 } else {
                     // [動態右鍵變身] 觸發右鍵選單變為強制截圖，並顯示 tooltip
-                    chrome.runtime.sendMessage({ action: "VT_TOGGLE_CONTEXT_MENU", mode: "snapshot" });
+                    try { chrome.runtime.sendMessage({ action: "VT_TOGGLE_CONTEXT_MENU", mode: "snapshot" }); } catch(e) {}
                     
                     let tooltip = btn.querySelector('.vt-snapshot-tooltip');
                     if (!tooltip) {
@@ -745,7 +757,7 @@ if (!window._vtBookmarksLoaded) {
                 try {
                     const imgHost = new URL(ogImg).hostname;
                     const pageOrigin = new URL(url).origin + "/";
-                    chrome.runtime.sendMessage({ action: 'VT_SYNC_CDNS', cdnMap: { [imgHost]: pageOrigin } }).catch(()=>{});
+                    try { chrome.runtime.sendMessage({ action: 'VT_SYNC_CDNS', cdnMap: { [imgHost]: pageOrigin } }).catch(()=>{}); } catch(e) {}
                 } catch(e) {}
             }
 
