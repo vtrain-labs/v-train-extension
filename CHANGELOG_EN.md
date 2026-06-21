@@ -1,16 +1,5 @@
 # Changelog
 
-## [1.0.6] - 2026-06-17
-
-### Added
-- **Free Version Bookmark Features**: The Local Bookmark Vault is now fully available to Free version users (limited to 100 bookmarks).
-- **Infinite Records Architecture Breakthrough**: Thanks to the performance breakthroughs of the underlying IndexedDB engine, the previous 200,000 record limit for Pro versions has been completely removed. We have now achieved a true, physically "infinite" record tracking architecture.
-
-### Fixed
-- **Unified Quota Calculation (Free Version)**: Refactored the quota calculation logic for Free versions (Total Quota = Bookmarks + History = 200). Bookmarks will now correctly occupy the overall quota. When the quota is full, the system will accurately replace the oldest regular history records first, ensuring precious bookmarks are never lost.
-- **Dynamic Quota Sync**: Implemented cross-tab and dashboard broadcasting. Now, whether you click to bookmark on a video page or delete a bookmark inside the Bookmark Vault, the total quota and UI progress bars will instantly refresh across all windows in milliseconds.
-- **Clear Data Reset Logic**: Fixed a bug where clicking "Clear Data" in the control panel would incorrectly reset the tracking number to zero even though bookmarks were successfully retained. The system now accurately calculates remaining bookmarks and displays the correct occupied quota.
-
 ## [1.0.7] - 2026-06-20
 
 ### Added
@@ -26,6 +15,18 @@
 - **YouTube & Bilibili Thumbnail Cropping & Black Bars Fix**: Resolved the issue where YouTube's `hqdefault.jpg` displayed built-in top/bottom black bars, and Bilibili's official `og:image` returned a blurry, 100x100 cropped square. The system now accurately requests YouTube's high-res, borderless `mqdefault.jpg`, and automatically strips the `@` compression suffix from Bilibili URLs to fetch the original image. Combined with the new `object-fit: contain` CSS in the Bookmark Vault, covers from both major platforms are now displayed at 100% original aspect ratio and maximum quality without unwanted cropping.
 - **Fullscreen Panel Interference**: Implemented a `fullscreenchange` system listener. Now, when you enter fullscreen mode while watching a video, the bottom-right bookmark interaction panel will automatically hide itself. It restores automatically upon exiting fullscreen, giving you an unobstructed, pure viewing experience.
 - **English i18n Modal Fallback**: Fixed an issue where raw i18n variable keys (e.g., `modalRescue`) were displayed instead of human-readable text in the dashboard and rescue modals under the English locale.
+
+
+## [1.0.6] - 2026-06-17
+
+### Added
+- **Free Version Bookmark Features**: The Local Bookmark Vault is now fully available to Free version users (limited to 100 bookmarks).
+- **Infinite Records Architecture Breakthrough**: Thanks to the performance breakthroughs of the underlying IndexedDB engine, the previous 200,000 record limit for Pro versions has been completely removed. We have now achieved a true, physically "infinite" record tracking architecture.
+
+### Fixed
+- **Unified Quota Calculation (Free Version)**: Refactored the quota calculation logic for Free versions (Total Quota = Bookmarks + History = 200). Bookmarks will now correctly occupy the overall quota. When the quota is full, the system will accurately replace the oldest regular history records first, ensuring precious bookmarks are never lost.
+- **Dynamic Quota Sync**: Implemented cross-tab and dashboard broadcasting. Now, whether you click to bookmark on a video page or delete a bookmark inside the Bookmark Vault, the total quota and UI progress bars will instantly refresh across all windows in milliseconds.
+- **Clear Data Reset Logic**: Fixed a bug where clicking "Clear Data" in the control panel would incorrectly reset the tracking number to zero even though bookmarks were successfully retained. The system now accurately calculates remaining bookmarks and displays the correct occupied quota.
 
 
 ## [1.0.5] - 2026-06-15
