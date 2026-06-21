@@ -151,12 +151,12 @@ If it still does not work, the website link might be difficult. Delete the rule 
 
 ---
 
-### Q: My friend gave me a VT-RULE serial number. How do I use it?
+### Q: My friend gave me a SYNC serial number. How do I use it?
 
 1. Open the Dashboard.
 2. Click the **"Trained Sites (Rules)"** button.
 3. Find the "Import Rule" box.
-4. Paste the `VT-RULE-Z...` number and click confirm.
+4. Paste the `SYNC-Z...` number and click confirm.
 5. The rule works immediately!
 
 ---

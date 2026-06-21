@@ -239,27 +239,26 @@ https://example.com/v/channel_abc123_hd
 :::
 
 ::: warning
-如果某個存槽已經有規則，覆寫前請確認你真的要替換它，因為目前沒有「還原」功能。建議先**到控制面板複製該規則的 VT-RULE 序號**備份，以防不時之需。
+如果某個存槽已經有規則，覆寫前請確認你真的要替換它，因為目前沒有「還原」功能。建議先**到控制面板複製該規則的 SYNC 序號**備份，以防不時之需。
 :::
 
 ---
 
-## 8. 規則序號分享（VT-RULE 格式）📋
+## 8. 規則序號分享（SYNC 格式）📋
 
 訓練完成後，每一條規則都有一個 **可分享的序號字串**，格式如下：
 
 ```
-VT-RULE-Z{deflate-raw base64 壓縮內容}
+SYNC-Z{deflate-raw base64 壓縮內容}
 ```
 
 例如：
 ```
-VT-RULE-ZeJyNjsEKwjAQRL...（後面接很長一串）
+SYNC-ZeJyNjsEKwjAQRL...（後面接很長一串）
 ```
 
-::: info VT-RULE-Z 格式說明
-- 前綴 `VT-RULE-Z` 表示這是使用 **deflate-raw + Base64** 壓縮的新格式
-- 相較於舊版純 JSON 格式，新格式的字串長度縮短約 **35%～50%**
+::: info SYNC-Z 格式說明
+- 前綴 `SYNC-Z` 表示這是使用 **deflate-raw + Base64** 壓縮的高效格式
 - 可以直接複製這串文字，貼給朋友，或貼到社群規則庫的 PR 中
 - 匯入時，在 V-Train 擴充功能的設定頁找到「匯入規則」功能，貼上序號即可
 :::
@@ -281,10 +280,10 @@ VT-RULE-ZeJyNjsEKwjAQRL...（後面接很長一串）
 
 > 🔗 **[https://github.com/vtrain-labs/community-rules](https://github.com/vtrain-labs/community-rules)**
 
-社群規則庫裡收錄了各種網站的 VT-RULE 序號，由社群用戶貢獻與維護。
+社群規則庫裡收錄了各種網站的 SYNC 序號，由社群用戶貢獻與維護。
 
 **你可以：**
-- 📥 **下載規則**：搜尋你想要支援的網站，複製 VT-RULE 序號匯入
+- 📥 **下載規則**：搜尋你想要支援的網站，複製 SYNC 序號匯入
 - 📤 **貢獻規則**：把你自己訓練好的規則序號提交 Pull Request 分享給大家
 - ⭐ **回報問題**：如果某個規則失效了（網站改版），可以開 Issue 告知維護者
 - 💬 **討論交流**：在 Discussions 區和其他用戶交流技巧

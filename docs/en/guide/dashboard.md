@@ -174,13 +174,13 @@ Click a website name to **see more details**:
 - **Slot Dots**: There are 4 training slots (Mod 1 ~ Mod 4). A red dot ● means a rule is saved here. A gray dot ○ means it is empty.
 - **Rule Description**: Explains how the rule works (like "Last segment of URL path").
 - **Raw JSON**: Click to see the code data.
-- **VT-RULE Serial Number**: Every rule has a special serial number you can share.
+- **SYNC Serial Number**: Every rule has a special serial number you can share.
 
 > ![Rule Detail Card](/assets/manual/14.png)
 
 ### 📤 Share Rules (Copy Serial)
 
-Click the **orange "📋 Share" button** on a rule card. The full `VT-RULE-Z...` serial number will copy to your clipboard. You can paste it to share with friends!
+Click the **orange "📋 Share" button** on a rule card. The full `SYNC-Z...` serial number will copy to your clipboard. You can paste it to share with friends!
 
 ::: tip 💡 Full Serial Number
 The dashboard only shows part of the serial number to save space. If you **hover your mouse** over it, you will see the full number. The Share button always copies the full number.
@@ -197,7 +197,7 @@ If you delete a rule, you cannot get it back. Use "Share" to copy the serial num
 ### 📥 Import Rules
 
 **Method 1: Paste Serial Number**
-Find the serial input box. Paste the `VT-RULE-Z...` serial number. Click the "**Import**" button.
+Find the serial input box. Paste the `SYNC-Z...` serial number. Click the "**Import**" button.
 
 **Method 2: Import JSON File**
 Click the "**Import File**" button. Choose a `VTrain_Rules_XXXX-XX-XX.json` file. The system will add these rules.

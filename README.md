@@ -85,7 +85,7 @@
 
 ### 3. 社群規則庫 (Community Rules)
 不想自己慢慢訓練？歡迎前往官方的 [社群規則庫 (Community Rules)](https://github.com/vtrain-labs/community-rules)！
-你可以在這裡找到其他玩家分享的 `VT-RULE-xxxx` 規則序號，直接複製並到擴充功能內的「Serial Import」貼上，一秒鐘無痛支援各大影音網站！
+你可以在這裡找到其他玩家分享的 `SYNC-Zxxxx` 規則序號，直接複製並到擴充功能內的「Serial Import」貼上，一秒鐘無痛支援各大影音網站！
 
 ---
 

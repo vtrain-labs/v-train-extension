@@ -227,12 +227,12 @@ If a slot already has a rule, saving will overwrite it. You cannot undo this. Yo
 
 ---
 
-## 8. Sharing Rules (VT-RULE) 📋
+## 8. Sharing Rules (SYNC) 📋
 
 Every rule has a **serial number**. It looks like this:
 
 ```
-VT-RULE-Z... (followed by a long string)
+SYNC-Z... (followed by a long string)
 ```
 
 You can copy this text and share it with friends!
