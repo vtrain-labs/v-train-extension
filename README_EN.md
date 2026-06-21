@@ -24,8 +24,9 @@
 2. [Installation](#installation)
 3. [Quick Start](#quick-start)
 4. [PRO Features](#pro-features)
-5. [Architecture Highlights](#architecture)
-6. [License](#license)
+5. [Supported Platforms & Guidelines](#disclaimer)
+6. [Architecture Highlights](#architecture)
+7. [License](#license)
 
 ---
 
@@ -112,6 +113,18 @@ Your viewing privacy is paramount. The PRO version allows you to set a custom pa
 <div align="center">
   <img src="assets/pro-password.png" alt="Passcode Protection" width="800">
 </div>
+
+---
+
+<a id="disclaimer"></a>
+## ⚠️ Supported Platforms & Community Guidelines
+
+Due to paid subscription and regional restrictions, **V-Train officially guarantees and maintains native support only for YouTube, Bilibili, and Odysee.**
+
+However, V-Train's built-in "Dynamic Training Engine" is highly flexible, allowing users to create progress tracking rules on almost any unsupported video website (including paid OTT platforms, private forums, or special streaming sites). Users can utilize third-party GitHub communities to exchange rule serial numbers for these conventional streaming platforms.
+
+> **[STRICT WARNING]**
+> To comply with extension store policies, this official repository (including Issues and PRs) **strictly prohibits posting or discussing any custom rules created for adult (NSFW), violent, or pirated websites.** The official team cannot interfere with what websites you use the VT engine for locally on your browser, but any rule sharing involving the aforementioned violating websites on this public forum will be deleted immediately.
 
 ---
 
