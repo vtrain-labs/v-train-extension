@@ -117,14 +117,16 @@ Your viewing privacy is paramount. The PRO version allows you to set a custom pa
 ---
 
 <a id="disclaimer"></a>
-## ⚠️ Supported Platforms & Community Guidelines
+## ⚠️ Official Support & Community Guidelines
 
-Due to paid subscription and regional restrictions, **V-Train officially guarantees and maintains native support only for YouTube, Bilibili, and Odysee.**
+Because of paid subscriptions and regional blocks, **V-Train officially supports only YouTube, Bilibili, and Odysee.** We only guarantee updates for these three platforms.
 
-However, V-Train's built-in "Dynamic Training Engine" is highly flexible, allowing users to create progress tracking rules on almost any unsupported video website (including paid OTT platforms, private forums, or special streaming sites). Users can utilize third-party GitHub communities to exchange rule serial numbers for these conventional streaming platforms.
+However, the V-Train "Dynamic Training Engine" is very flexible. You can use it to create progress tracking rules on almost any other video website (including paid platforms and private sites). For these unsupported sites, you can search GitHub for third-party community groups to share and find rule codes.
 
 > **[STRICT WARNING]**
-> To comply with extension store policies, this official repository (including Issues and PRs) **strictly prohibits posting or discussing any custom rules created for adult (NSFW), violent, or pirated websites.** The official team cannot interfere with what websites you use the VT engine for locally on your browser, but any rule sharing involving the aforementioned violating websites on this public forum will be deleted immediately.
+> To follow extension store rules, **you must not share or discuss rules for adult (NSFW), violent, or pirated websites in this official repository (including Issues and Pull Requests).**
+> 
+> The official team does not track or limit what you do locally on your own browser. However, if you share rules for restricted websites in this official public space, your post will be deleted immediately.
 
 ---
 
