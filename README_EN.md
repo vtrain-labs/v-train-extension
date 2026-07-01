@@ -6,6 +6,9 @@
   <a href="https://chromewebstore.google.com/detail/v-train-adaptive-video-ba/cikabjkegiefjgalfncfoehmkpmkoiaf">
     <img src="https://img.shields.io/badge/Chrome_Web_Store-Download-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Chrome Web Store">
   </a>
+  <a href="https://microsoftedge.microsoft.com/addons/detail/jllikhebbofonocjpmnmmmlihmeiigfl">
+    <img src="https://img.shields.io/badge/Edge_Add--ons-Download-0078D7?style=for-the-badge&logo=microsoftedge&logoColor=white" alt="Edge Add-ons">
+  </a>
   <a href="https://github.com/vtrain-labs/v-train-extension">
     <img src="https://img.shields.io/badge/GitHub-Open_Source-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
   </a>
