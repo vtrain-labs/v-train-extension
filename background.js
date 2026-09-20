@@ -247,8 +247,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 async function runOptimizedGCInsideLock() {
     return new Promise((resolve) => {
         chrome.storage.local.get(['isProVersion'], async (items) => {
-            let maxLimit = items.isProVersion ? Infinity : 200;
-            let dropCount = items.isProVersion ? 0 : 10;
+            let maxLimit = 200000;
+            let dropCount = 100;
             try {
                 const deletedIds = await vtDB.runGC(maxLimit, dropCount);
                 if (deletedIds && deletedIds.length > 0) {
