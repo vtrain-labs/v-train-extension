@@ -1,3 +1,15 @@
+## [1.0.9] - 2026-09-20
+
+### Added
+- **Cloud Community Rules**: Introduced an automatic sync mechanism. V-Train now automatically fetches community-shared website rules (Base64 encrypted) from the official GitHub, supporting major video sites seamlessly without manual import!
+- **Custom Cover Selector**: Added the `imgSelector` property to the rule engine. When the native `og:image` fails, the system can accurately capture custom video covers, significantly improving the image quality in the Bookmark Vault.
+- **Report & Share Button**: Added a button in the Control Panel that links to the "Community Rules" repository, fully supported in 8 languages (i18n) to encourage global user participation.
+
+## [1.0.8] - 2026-09-20
+
+### Changed
+- **Completely Free**: Removed the LemonSqueezy payment verification system. V-Train is now a 100% free tool, and all Pro advanced features are unlocked for everyone!
+
 ﻿## [1.0.7] - 2026-06-20
 
 ### Added
