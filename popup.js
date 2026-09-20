@@ -646,17 +646,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // [架構師防護邏輯] 若顯示購買連結，則強制顯示相容性警告
             const mWarning = document.getElementById('mWarning');
-            if (showBuyLink && mBtnBuy) {
-                mBtnBuy.classList.remove('hidden');
-                if (mWarning) {
-                    // [安全修復 #1] 翻譯字串為受信任靜態字典，但仍改用 textContent 以消除 innerHTML 使用
-                    mWarning.textContent = getLangText(currentLang, 'buyWarning');
-                    mWarning.classList.remove('hidden');
-                }
-            } else {
-                if (mBtnBuy) mBtnBuy.classList.add('hidden');
-                if (mWarning) mWarning.classList.add('hidden');
-            }
+            if (mWarning) mWarning.classList.add('hidden');
+            const mBtnBuy = document.getElementById('mBtnBuy');
+            if (mBtnBuy) mBtnBuy.classList.add('hidden');
 
             modal.classList.add('show');
 
