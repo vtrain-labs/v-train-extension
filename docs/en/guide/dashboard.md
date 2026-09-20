@@ -244,7 +244,7 @@ To learn more, read the [Backup Guide](./backup.md).
 
 ---
 
-## 10. Privacy Settings Area
+## 9. Privacy Settings Area
 
 ### 🗑️ Clear Data
 
