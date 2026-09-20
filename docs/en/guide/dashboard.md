@@ -244,6 +244,17 @@ To learn more, read the [Backup Guide](./backup.md).
 
 ---
 
+### 🔒 Setup Passcode
+
+Click "**🔒 Setup Passcode**". Type a password (like `1234`).
+
+Now, you must enter this password every time you open the Dashboard. This protects your privacy!
+
+::: danger ⚠️ Forgotten Passcode Warning
+To ensure the highest level of privacy, V-Train **does not** provide any backdoors to recover a forgotten passcode.
+If you forget your passcode, your only option is to click "**Forgot Passcode? (Wipe all data)**" on the lock screen. This will **permanently delete all your viewing records and bookmarks** and factory reset the extension. Please use caution and remember your passcode!
+:::
+
 ## 9. Privacy Settings Area
 
 ### 🗑️ Clear Data
