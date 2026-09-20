@@ -908,7 +908,7 @@ if (!window._vtBookmarksLoaded) {
                         const channel = new MessageChannel();
                         channel.port1.onmessage = (e) => resolve(e.data.rect || { left: 0, top: 0 });
                         window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
-                        setTimeout(() => resolve({ left: 0, top: 0 }), 300);
+                        setTimeout(() => resolve({ left: 0, top: 0 }), 3000);
                     } catch(err) { resolve({ left: 0, top: 0 }); }
                 });
 
@@ -926,11 +926,7 @@ if (!window._vtBookmarksLoaded) {
                                 let sw = rect.width * ratioX;
                                                                 let sh = rect.height * ratioY;
                                 
-                                alert("【VT 截圖座標診斷】\\n" + 
-                                      "Iframe Offset: X=" + offset.left + ", Y=" + offset.top + "\\n" +
-                                      "Video Rect: X=" + rect.left + ", Y=" + rect.top + "\\n" +
-                                      "最終裁切起點: sy=" + sy + "\\n" +
-                                      "螢幕高度: " + img.height);
+                                
                                 
                                 // [效能/防呆修復] 防止負數座標導致 Canvas 補黑邊
                                 if (sx < 0) { sw += sx; sx = 0; }
@@ -1179,6 +1175,8 @@ if (!window._vtBookmarksLoaded) {
     // 啟動時預載入快取
     _loadCache();
 }
+
+
 
 
 
