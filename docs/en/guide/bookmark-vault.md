@@ -1,12 +1,12 @@
 # ❤️ Bookmark Vault & Hover Panel
 
-> PRO Feature: Move your mouse over a video to open the control panel. Keep your favorite videos organized!
+>  Feature: Move your mouse over a video to open the control panel. Keep your favorite videos organized!
 
 ---
 
 ## 1. The Hover Panel 🎯
 
-The **Hover Panel** is a great feature in V-Train PRO. When you are on a **video playback page**, a small panel appears after you wait a tiny bit (150 milliseconds).
+The **Hover Panel** is a great feature in V-Train . When you are on a **video playback page**, a small panel appears after you wait a tiny bit (150 milliseconds).
 
 ::: info 📍 It does not appear on small pictures
 The panel only appears on the page where you watch the video. It does not appear when you hover over a small picture in a video list.
@@ -28,8 +28,8 @@ The panel has these buttons:
 You can click and drag the panel to anywhere on the screen. V-Train will remember where you put it.
 :::
 
-::: info PRO Feature
-The Hover Panel and the Bookmark Vault are **V-Train PRO** features. If you use the Free version, you must upgrade to use them.
+::: info  Feature
+The Hover Panel and the Bookmark Vault are **V-Train ** features. If you use the version, you must upgrade to use them.
 :::
 
 ---
@@ -208,13 +208,13 @@ This only works on the same computer. It does not sync to your phone or another 
 
 ---
 
-## 10. Free Version: Bookmarks are Never Deleted 🛡️
+## 10. version: Bookmarks are Never Deleted 🛡️
 
 V-Train automatically deletes very old video records to save space.
 
 **But V-Train will NEVER delete a video if you put it in the Bookmark Vault.**
 
-Even if you use the Free version, your saved videos are safe forever.
+Even if you use the version, your saved videos are safe forever.
 
 ---
 
