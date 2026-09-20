@@ -86,6 +86,7 @@ if (!window._vtTrackerLoaded) {
                     el.setAttribute("data-vt-observed", "true");
                     _vtObs.observe(el);
                 });
+            syncOverlay();
         };
         obsExisting();
         let _mutTimer = null,
@@ -392,8 +393,8 @@ if (!window._vtTrackerLoaded) {
                 }
             });
 
-            window._overlaySyncLoop = requestAnimationFrame(syncOverlay);
-        } else window._overlaySyncLoop = null;
+            }
+
     }
 
     // ─── 縮圖評分角標（Badge）與顏色同步 ─────────────────────────────────────────
@@ -460,8 +461,7 @@ if (!window._vtTrackerLoaded) {
     };
 
     function drawBar(container, pct, id) {
-        if (!_overlaySyncLoop)
-            window._overlaySyncLoop = requestAnimationFrame(syncOverlay);
+        syncOverlay();
         let data = activeOverlayBars.get(container);
         if (data && data.barEl.isConnected) {
             data.barFill.style.width = `${pct}%`;
@@ -641,4 +641,27 @@ if (!window._vtTrackerLoaded) {
 
         debugPanel.style.borderLeftColor = color;
     }
+}
+
+// [效能修復] 取代 60FPS 的 requestAnimationFrame 無窮迴圈，改用事件驅動更新 (Event-Driven)
+// 徹底解決在 Pornhub/YouTube 等重度變更 DOM 的網站上，因頻繁讀取 getBoundingClientRect 導致的 CPU 滿載與畫面卡頓
+if (!window._vtScrollPerfBound) {
+    window._vtScrollPerfBound = true;
+    let _scrollSyncTimer = null;
+    window.addEventListener('scroll', () => {
+        if (!sysState.isStealth && activeOverlayBars.size > 0) {
+            if (!_scrollSyncTimer) {
+                _scrollSyncTimer = requestAnimationFrame(() => {
+                    if (typeof syncOverlay === 'function') syncOverlay();
+                    _scrollSyncTimer = null;
+                });
+            }
+        }
+    }, true); // true = Capture phase, 攔截所有內部捲動事件
+
+    window.addEventListener('resize', () => {
+        if (!sysState.isStealth && activeOverlayBars.size > 0) {
+            if (typeof syncOverlay === 'function') syncOverlay();
+        }
+    });
 }
