@@ -52,6 +52,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const controlPanel = document.getElementById('controlPanel');
     const passwordInput = document.getElementById('passwordInput');
     const btnUnlock = document.getElementById('btnUnlock');
+    document.getElementById('btnFactoryResetLock').addEventListener('click', async () => {
+        const confirm = await showModal(getLangText(currentLang, 'modalClearData'), getLangText(currentLang, 'modalClearDesc'));
+        if (confirm) {
+            chrome.storage.local.get(['userLang'], async (config) => {
+                await window.vtDB.clearRecords();
+                chrome.storage.local.clear(async () => {
+                    const bookmarkKeys = await window.vtDB.getAllKeys('vt_bookmarks');
+                    if(bookmarkKeys) {
+                        for(const k of bookmarkKeys) await window.vtDB.delete('vt_bookmarks', k);
+                    }
+                    chrome.storage.local.set({ 
+                        vt_video_count: 0, 
+                        isProVersion: true,
+                        userLang: config.userLang || 'zh-TW'
+                    }, () => {
+                        window.close();
+                    });
+                });
+            });
+        }
+    });
+
     const loginMsg = document.getElementById('loginMsg');
     const toggleVisibility = document.getElementById('toggleVisibility');
     const toggleMonitorPanel = document.getElementById('toggleMonitorPanel');
