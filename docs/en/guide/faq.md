@@ -31,7 +31,7 @@ Do you have a problem? Look here first! If you cannot find the answer, please re
 
 ::: warning Free Version Limit
 The Free version only remembers **200 videos**. When you watch more than 200, it deletes the oldest ones.
-If you want to keep all your progress, please upgrade to the [Pro Version](./pro-features).
+The free version now supports unlimited records.
 :::
 
 If you have the Pro version, you might have accidentally cleared your data. Please backup your data often!
@@ -108,7 +108,7 @@ V-Train does not have a "trash bin". All data lives on your computer.
 
 ### Q: I forgot my passcode!
 
-Read the "I Forgot My Passcode!" section in the [Pro Features Guide](./pro-features.md).
+Read the "I Forgot My Passcode!" section in the Pro 版.
 
 Quick steps: Click **"Forgot Passcode?"** → Enter your **Pro License Key** → The passcode is removed.
 
@@ -205,4 +205,5 @@ V-Train shares data between normal mode and incognito mode. Your history in inco
    - Your V-Train version.
    - The website that has the problem.
    - What went wrong.
+
 
