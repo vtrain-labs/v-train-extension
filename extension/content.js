@@ -1,4 +1,4 @@
-// VT Core Entry Point V1.3
+﻿// VT Core Entry Point V1.3
 // 入口點：初始化全域共享狀態，協調各模組啟動
 // 依賴注入順序（由 background.js 確保）：
 //   db.js → shared_i18n.js → vt_utils.js → vt_url_parser.js → vt_tracker.js → vt_trainer.js → content.js
@@ -162,18 +162,32 @@ if (!window._vtInjected) {
         }
 
         // [終極截圖修復] 處理 iframe 請求自身絕對座標，以精確裁切 captureVisibleTab
-        if (e.data && e.data.type === 'VT_GET_IFRAME_RECT' && window === window.top) {
+                // [終極座標修復] 遞迴計算巢狀跨網域 Iframe 絕對座標
+        if (e.data && e.data.type === 'VT_GET_IFRAME_RECT') {
             try {
                 const iframes = document.querySelectorAll('iframe');
+                let myLeft = 0, myTop = 0;
                 for (let i = 0; i < iframes.length; i++) {
                     if (iframes[i].contentWindow === e.source) {
                         const rect = iframes[i].getBoundingClientRect();
-                        e.ports[0].postMessage({ rect: { left: rect.left, top: rect.top } });
-                        return;
+                        myLeft = rect.left;
+                        myTop = rect.top;
+                        break;
                     }
                 }
+                if (window === window.top) {
+                    if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: myLeft, top: myTop } });
+                } else {
+                    const channel = new MessageChannel();
+                    channel.port1.onmessage = (res) => {
+                        const pRect = res.data.rect || { left: 0, top: 0 };
+                        if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: myLeft + pRect.left, top: myTop + pRect.top } });
+                    };
+                    window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
+                }
+                return;
             } catch(err) {}
-            e.ports[0]?.postMessage({ rect: { left: 0, top: 0 } });
+            if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: 0, top: 0 } });
         }
     });
 
@@ -419,3 +433,4 @@ if (!window._vtInjected) {
 
     initSystem();
 }
+
