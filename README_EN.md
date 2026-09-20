@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
   <img src="icon-128.png" alt="V-Train Logo" width="128" height="128">
   <h1>V-Train (VT) Smart Video Bookmarks & Progress Tracker</h1>
   <p>A powerful and lightweight Chrome extension designed to elevate your web video browsing experience.</p>
@@ -90,16 +90,21 @@ Next, the system will automatically extract and parse the URL. If the system fai
 
 
 <a id="disclaimer"></a>
-## ⚠️ Official Support & Community Guidelines
+## ⚠️ Official Support & Disclaimer
 
-Because of paid subscriptions and regional blocks, **V-Train officially supports only YouTube, Bilibili, and Odysee.** We only guarantee updates for these three platforms.
+As a neutral progress management tool, V-Train natively guarantees updates and maintenance only for YouTube, Bilibili, and Odysee.
 
-However, the V-Train "Dynamic Training Engine" is very flexible. You can use it to create progress tracking rules on almost any other video website (including paid platforms and private sites). For these unsupported sites, you can search GitHub for third-party community groups to share and find rule codes.
+Due to the highly adaptable nature of V-Train's built-in "Visual Capture Engine," users can manually create tracking rules for almost any unsupported video website. **The official team cannot track, restrict, or record which websites you apply V-Train to on your local browser.**
 
-> **[STRICT WARNING]**
-> To follow extension store rules, **you must not share or discuss rules for adult (NSFW), violent, or pirated websites in this official repository (including Issues and Pull Requests).**
-> 
-> The official team does not track or limit what you do locally on your own browser. However, if you share rules for restricted websites in this official public space, your post will be deleted immediately.
+### 🌐 Community Rules Database
+If you need support for other websites, or if you want to share a rule you trained yourself, please visit the official third-party repository:
+👉 **[V-Train Community Rules](https://github.com/vtrain-labs/community-rules)**
+
+> **[Community Guidelines]**
+> To keep the forum clean and comply with the content policies of major platforms:
+> 1. The Issues section of this main repository is strictly for "Software Bugs & Feature Requests."
+> 2. All requests and code sharing regarding "specific website rules" must be posted in the **[Community Rules Database](https://github.com/vtrain-labs/community-rules)**.
+> 3. If the code you share involves sensitive, adult (NSFW), or pirated websites, **you must use asterisks to mask the URL in your post (e.g., p\*\*nhub.com)**. The official team only provides neutral technical code aggregation and does not endorse the content of any website shared by the community.
 
 ---
 
