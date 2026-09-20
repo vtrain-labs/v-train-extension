@@ -601,6 +601,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
+    // 匯入單站規則 (Paste Rule)
+    const btnPasteRule = document.getElementById('btnPasteRule');
+    if (btnPasteRule) {
+        btnPasteRule.addEventListener('click', async () => {
+            const title = getLangText(currentLang, 'modalShareTitle');
+            const desc = getLangText(currentLang, 'modalShareDesc');
+            const code = await showModal(title, desc, true, "SYNC-Z...");
+            if (!code) return;
+
+            if (!code.startsWith('SYNC-Z')) {
+                showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportFail'));
+                return;
+            }
+
+            try {
+                const raw = await _vtRuleDecompress(code.substring(6));
+                const payload = JSON.parse(raw);
+                if (!payload || !payload.d || !payload.r) throw new Error("Invalid payload");
+                
+                const expand = (obj) => {
+                    if (!obj || typeof obj !== 'object') return obj;
+                    if (Array.isArray(obj)) return obj.map(expand);
+                    const map = { h: 'hosts', p: 'pRule', t: 'tRule', ty: 'type', ix: 'idx', sp: 'sep', sx: 'sepIdx', k: 'key', ta: 'targetAttr', ul: 'upLevel', s: 's' };
+                    let newObj = {};
+                    for (let k in obj) {
+                        if (obj[k] === null || obj[k] === undefined) continue;
+                        newObj[map[k] || k] = expand(obj[k]);
+                    }
+                    return newObj;
+                };
+
+                const host = payload.d;
+                const newRule = expand(payload.r);
+                
+                chrome.storage.local.get('site_config', async (data) => {
+                    let config = data.site_config || {};
+                    
+                    if (config[host]) {
+                        const overwriteTitle = getLangText(currentLang, 'serialImport');
+                        const overwriteDesc = getLangText(currentLang, 'confirmOverwrite');
+                        const ok = await showModal(overwriteTitle, overwriteDesc);
+                        if (!ok) return;
+                    }
+
+                    config[host] = newRule;
+                    chrome.storage.local.set({ site_config: config }, () => {
+                        showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportSuccess'));
+                        _cachedSiteConfig = config;
+                        renderRulesList(document.getElementById('ruleSearchInput')?.value);
+                    });
+                });
+
+            } catch (err) {
+                console.error(err);
+                showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportFail'));
+            }
+        });
+    }
+
     // 輔助函式
     function showScreen(name) {
         if (name === 'lock') { lockScreen.style.display = 'block'; controlPanel.classList.add('hidden'); }
