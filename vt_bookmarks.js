@@ -1,4 +1,4 @@
-// vt_bookmarks.js - VT Bookmark Vault
+﻿// vt_bookmarks.js - VT Bookmark Vault
 // 付費功能：評分（👍😤）+ 收藏（❤️）+ 浮動操作面板 + 資料夾選擇器
 // 依賴注入順序：必須在 vt_tracker.js 之後、content.js 之前注入
 // 儲存方案：chrome.storage.local (不需要 IndexedDB 或後端)
@@ -425,10 +425,7 @@ if (!window._vtBookmarksLoaded) {
                 _panelBookmarked = false;
                 _renderPanelState();
             } else {
-                if (!window._vtIsPro && window._vtBookmarkedSet && window._vtBookmarkedSet.size >= 100) {
-                    _showLimitToast(p.querySelector('#vt-bmb-bm'));
-                    return;
-                }
+                
                 _showFolderPicker(_currentId);
             }
         };
@@ -439,10 +436,7 @@ if (!window._vtBookmarksLoaded) {
         p.querySelector('#vt-bmb-snapshot').onclick = async () => {
             if (!_currentId) return;
             if (!_panelBookmarked) {
-                if (!window._vtIsPro && window._vtBookmarkedSet && window._vtBookmarkedSet.size >= 100) {
-                    _showLimitToast(p.querySelector('#vt-bmb-snapshot'));
-                    return;
-                }
+                
                 await _addBookmark(_currentId, location.href, document.title, '', null);
                 _panelBookmarked = true;
                 _renderPanelState();
@@ -1169,3 +1163,4 @@ if (!window._vtBookmarksLoaded) {
     // 啟動時預載入快取
     _loadCache();
 }
+

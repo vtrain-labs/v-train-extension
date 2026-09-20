@@ -14,8 +14,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             enterPass: "Enter passcode to access history",
             unlockBtn: "Unlock",
             forgotPass: "Forgot Passcode? (Pro Only)",
-            unlockPro: "Enable V-Train Pro",
-            proActive: "V-Train Pro Active",
+            unlockPro: "Enable V-Train",
+            proActive: "V-Train Active",
             monitoring: "Tracking (ON)",
             stealth: "Paused (OFF)",
             autoHide: "Auto-pause on browser close",
@@ -40,7 +40,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             msgInvalidKey: "❌ Invalid Key",
             msgNetworkError: "❌ Network Error",
             msgProOnlyFeature: "⚡ Pro Feature",
-            msgProOnlyDesc: "Please upgrade to V-Train Pro to unlock this advanced feature.",
+            msgProOnlyDesc: "Please upgrade to V-Train to unlock this advanced feature.",
             msgSaved: "✅ Saved",
             msgCleared: "✅ Data Cleared",
             msgImportSuccess: "✅ Import Successful! Reloading...",
@@ -73,7 +73,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             msgShareImportFail: "❌ Invalid Serial Code",
             serialImport: "Serial Import",
             barColor: "🎨 Progress Bar Color", colorNormal: "Normal", colorLike: "Like (👍)", colorDislike: "Dislike (😤)",
-            modalEnablePro: "⚡ Enable V-Train Pro",
+            modalEnablePro: "⚡ Enable V-Train",
             modalClearData: "⚠️ Clear Data",
             modalClearDesc: "Are you sure you want to delete all watch records?<br>(Pro status and settings will be preserved)",
             modalImport: "📥 Import Backup",
@@ -133,7 +133,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "Bookmark Vault",
-            bvSubtitle: "V-Train Pro · Local Collection",
+            bvSubtitle: "V-Train · Local Collection",
             bvSearch: "Search title or URL...",
             bvFolders: "📁 Folders",
             bvAllBookmarks: "All Bookmarks",
@@ -218,7 +218,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Popup & System Keys ===
             securityLock: "安全鎖定", enterPass: "請輸入密碼以存取紀錄", unlockBtn: "解鎖", forgotPass: "忘記密碼？(限 Pro 版)",
-            unlockPro: "升級 V-Train Pro", proActive: "V-Train Pro 已啟用", monitoring: "自動監控 (ON)", stealth: "手動暫停 (OFF)",
+            unlockPro: "升級 V-Train", proActive: "V-Train 已啟用", monitoring: "自動監控 (ON)", stealth: "手動暫停 (OFF)",
             autoHide: "關閉瀏覽器即自動暫停", showMonitor: "👁️ 監控面板 + ID 標籤", setPasscode: "設定密碼", clearData: "清除資料",
             trackedVideos: "已追蹤影片：", localBackup: "完整資料備份", exportJson: "匯出完整備份 (含規則)", importJson: "匯入完整備份 (含規則)",
             policyTitle: "隱私權與資料政策",
@@ -229,8 +229,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "沒有序號？立即購買 ($4.99)", cancel: "取消", confirm: "確認",
             msgIncorrectPass: "❌ 密碼錯誤", msgVerifySuccess: "✅ 驗證成功！", msgLimitReached: "❌ 已達設備綁定上限",
             msgInvalidKey: "❌ 序號無效", msgNetworkError: "❌ 網路連線錯誤", msgProOnlyFeature: "⚡ Pro 限定功能",
-            msgProOnlyDesc: "請先升級至 V-Train Pro 才能解鎖此進階功能。", msgSaved: "✅ 已儲存", msgCleared: "✅ 資料已清除",
-            msgImportSuccess: "✅ 匯入成功！重新載入中...", msgImportFail: "❌ 格式錯誤", modalEnablePro: "⚡ 啟用 V-Train Pro",
+            msgProOnlyDesc: "請先升級至 V-Train 才能解鎖此進階功能。", msgSaved: "✅ 已儲存", msgCleared: "✅ 資料已清除",
+            msgImportSuccess: "✅ 匯入成功！重新載入中...", msgImportFail: "❌ 格式錯誤", modalEnablePro: "⚡ 啟用 V-Train",
             modalEnterKey: "請輸入您的授權序號：", modalSetPass: "🔐 設定密碼", modalSetPassDesc: "設定新密碼 (留空則移除鎖定)。",
             modalClearData: "⚠️ 清除資料", modalClearDesc: "確定刪除所有觀看紀錄？<br>(Pro資格與設定將會保留)",
             modalImport: "📥 匯入備份檔", modalImportDesc: "這將會覆蓋目前的紀錄。確定繼續？",
@@ -290,7 +290,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "本機書籤庫",
-            bvSubtitle: "V-Train Pro · 本機收藏管理",
+            bvSubtitle: "V-Train · 本機收藏管理",
             bvSearch: "搜尋書籤標題或網址...",
             bvFolders: "📁 資料夾",
             bvAllBookmarks: "全部收藏",
@@ -375,7 +375,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Popup & System Keys ===
             securityLock: "安全锁定", enterPass: "请输入密码以访问记录", unlockBtn: "解锁", forgotPass: "忘记密码？(限 Pro 版)",
-            unlockPro: "升级 V-Train Pro", proActive: "V-Train Pro 已激活", monitoring: "自动监控 (ON)", stealth: "手动暂停 (OFF)",
+            unlockPro: "升级 V-Train", proActive: "V-Train 已激活", monitoring: "自动监控 (ON)", stealth: "手动暂停 (OFF)",
             autoHide: "关闭浏览器即自动暂停", showMonitor: "👁️ 监控面板 + ID 标签", setPasscode: "设置密码", clearData: "清除数据",
             trackedVideos: "已追踪视频：", localBackup: "完整数据备份", exportJson: "导出完整备份 (含规则)", importJson: "导入完整备份 (含规则)",
             policyTitle: "隐私与数据政策",
@@ -386,8 +386,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "没有序列号？立即购买 ($4.99)", cancel: "取消", confirm: "确认",
             msgIncorrectPass: "❌ 密码错误", msgVerifySuccess: "✅ 验证成功！", msgLimitReached: "❌ 已达设备绑定上限",
             msgInvalidKey: "❌ 序列号无效", msgNetworkError: "❌ 网络连接错误", msgProOnlyFeature: "⚡ Pro 限定功能",
-            msgProOnlyDesc: "请先升级至 V-Train Pro 才能解锁此进阶功能。", msgSaved: "✅ 已保存", msgCleared: "✅ 数据已清除",
-            msgImportSuccess: "✅ 导入成功！重新加载中...", msgImportFail: "❌ 格式错误", modalEnablePro: "⚡ 启用 V-Train Pro",
+            msgProOnlyDesc: "请先升级至 V-Train 才能解锁此进阶功能。", msgSaved: "✅ 已保存", msgCleared: "✅ 数据已清除",
+            msgImportSuccess: "✅ 导入成功！重新加载中...", msgImportFail: "❌ 格式错误", modalEnablePro: "⚡ 启用 V-Train",
             modalEnterKey: "请输入您的授权序列号：", modalSetPass: "🔐 设置密码", modalSetPassDesc: "设置新密码 (留空则移除锁定)。",
             modalClearData: "⚠️ 清除数据", modalClearDesc: "确定删除所有观看记录？<br>(Pro资格与设置将会保留)",
             modalImport: "📥 导入备份文件", modalImportDesc: "这将会覆盖目前的记录。确定继续？",
@@ -447,7 +447,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "本地书签库",
-            bvSubtitle: "V-Train Pro · 本地收藏管理",
+            bvSubtitle: "V-Train · 本地收藏管理",
             bvSearch: "搜索书签标题或网址...",
             bvFolders: "📁 文件夹",
             bvAllBookmarks: "全部收藏",
@@ -532,7 +532,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Popup & System Keys ===
             securityLock: "セキュリティロック", enterPass: "パスコードを入力してアクセス", unlockBtn: "解除", forgotPass: "パスコードを忘れた場合 (Pro限定)",
-            unlockPro: "V-Train Proを解除", proActive: "V-Train Pro 有効", monitoring: "追跡中 (ON)", stealth: "一時停止 (OFF)",
+            unlockPro: "V-Trainを解除", proActive: "V-Train 有効", monitoring: "追跡中 (ON)", stealth: "一時停止 (OFF)",
             autoHide: "ブラウザを閉じると自動で一時停止", showMonitor: "👁️ 監視パネル + ID タグ", setPasscode: "パスコード設定", clearData: "データ消去",
             trackedVideos: "追跡中の動画:", localBackup: "完全データバックアップ", exportJson: "完全バックアップをエクスポート (ルールを含む)", importJson: "完全バックアップをインポート (ルールを含む)",
             policyTitle: "プライバシーとデータポリシー",
@@ -543,8 +543,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "ライセンスキーがない？ 購入 ($4.99)", cancel: "キャンセル", confirm: "確認",
             msgIncorrectPass: "❌ パスコードが違います", msgVerifySuccess: "✅ 認証成功！", msgLimitReached: "❌ デバイス制限に達しました",
             msgInvalidKey: "❌ 無効なキー", msgNetworkError: "❌ ネットワークエラー", msgProOnlyFeature: "⚡ Pro機能",
-            msgProOnlyDesc: "この高度な機能のロックを解除するには、V-Train Proにアップグレードしてください。", msgSaved: "✅ 保存しました", msgCleared: "✅ データを消去しました",
-            msgImportSuccess: "✅ インポート成功！リロード中...", msgImportFail: "❌ フォーマットエラー", modalEnablePro: "⚡ V-Train Proを有効化",
+            msgProOnlyDesc: "この高度な機能のロックを解除するには、V-Trainにアップグレードしてください。", msgSaved: "✅ 保存しました", msgCleared: "✅ データを消去しました",
+            msgImportSuccess: "✅ インポート成功！リロード中...", msgImportFail: "❌ フォーマットエラー", modalEnablePro: "⚡ V-Trainを有効化",
             modalEnterKey: "ライセンスキーを入力してください:", modalSetPass: "🔐 パスコード設定", modalSetPassDesc: "新しいパスコードを設定 (空欄でロック解除)。",
             modalClearData: "⚠️ データ消去", modalClearDesc: "すべての視聴履歴を削除しますか？<br>(Proステータスと設定は保持されます)",
             modalImport: "📥 バックアップをインポート", modalImportDesc: "現在の記録が上書きされます。続けますか？",
@@ -604,7 +604,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "ローカルブックマーク",
-            bvSubtitle: "V-Train Pro · ローカルコレクション",
+            bvSubtitle: "V-Train · ローカルコレクション",
             bvSearch: "タイトルやURLを検索...",
             bvFolders: "📁 フォルダ",
             bvAllBookmarks: "すべてのブックマーク",
@@ -689,7 +689,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Popup & System Keys ===
             securityLock: "보안 잠금", enterPass: "기록에 액세스하려면 비밀번호 입력", unlockBtn: "잠금 해제", forgotPass: "비밀번호를 잊으셨나요? (Pro 전용)",
-            unlockPro: "V-Train Pro 전용 잠금 해제", proActive: "V-Train Pro 활성화됨", monitoring: "추적 중 (ON)", stealth: "일시 정지 (OFF)",
+            unlockPro: "V-Train 전용 잠금 해제", proActive: "V-Train 활성화됨", monitoring: "추적 중 (ON)", stealth: "일시 정지 (OFF)",
             autoHide: "브라우저 종료 시 자동 일시 정지", showMonitor: "👁️ 모니터 패널 + ID 태그", setPasscode: "비밀번호 설정", clearData: "데이터 삭제",
             trackedVideos: "추적된 비디오:", localBackup: "전체 데이터 백업", exportJson: "전체 백업 내보내기 (규칙 포함)", importJson: "전체 백업 가져오기 (규칙 포함)",
             policyTitle: "개인정보 및 데이터 정책",
@@ -700,8 +700,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "라이선스 키가 없나요? 지금 구매 ($4.99)", cancel: "취소", confirm: "확인",
             msgIncorrectPass: "❌ 비밀번호가 틀렸습니다", msgVerifySuccess: "✅ 인증 성공!", msgLimitReached: "❌ 기기 제한 도달",
             msgInvalidKey: "❌ 잘못된 키", msgNetworkError: "❌ 네트워크 오류", msgProOnlyFeature: "⚡ Pro 기능",
-            msgProOnlyDesc: "이 고급 기능을 잠금 해제하려면 V-Train Pro로 업그레이드하세요.", msgSaved: "✅ 저장됨", msgCleared: "✅ 데이터 삭제됨",
-            msgImportSuccess: "✅ 가져오기 성공! 다시 로드 중...", msgImportFail: "❌ 형식 오류", modalEnablePro: "⚡ V-Train Pro 활성화",
+            msgProOnlyDesc: "이 고급 기능을 잠금 해제하려면 V-Train로 업그레이드하세요.", msgSaved: "✅ 저장됨", msgCleared: "✅ 데이터 삭제됨",
+            msgImportSuccess: "✅ 가져오기 성공! 다시 로드 중...", msgImportFail: "❌ 형식 오류", modalEnablePro: "⚡ V-Train 활성화",
             modalEnterKey: "라이선스 키를 입력하세요:", modalSetPass: "🔐 비밀번호 설정", modalSetPassDesc: "새 비밀번호 설정 (잠금을 해제하려면 비워 두세요).",
             modalClearData: "⚠️ 데이터 삭제", modalClearDesc: "모든 시청 기록을 삭제하시겠습니까?<br>(Pro 상태 및 설정은 유지됨)",
             modalImport: "📥 백업 가져오기", modalImportDesc: "현재 기록을 덮어씁니다. 계속하시겠습니까?",
@@ -761,7 +761,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "로컬 북마크",
-            bvSubtitle: "V-Train Pro · 로컬 컬렉션",
+            bvSubtitle: "V-Train · 로컬 컬렉션",
             bvSearch: "제목 또는 URL 검색...",
             bvFolders: "📁 폴더",
             bvAllBookmarks: "모든 북마크",
@@ -846,7 +846,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Popup & System Keys ===
             securityLock: "Bloqueo de Seguridad", enterPass: "Ingrese código para acceder", unlockBtn: "Desbloquear", forgotPass: "¿Olvidó su código? (Solo Pro)",
-            unlockPro: "Desbloquear V-Train Pro", proActive: "V-Train Pro Activo", monitoring: "Rastreando (ON)", stealth: "Pausado (OFF)",
+            unlockPro: "Desbloquear V-Train", proActive: "V-Train Activo", monitoring: "Rastreando (ON)", stealth: "Pausado (OFF)",
             autoHide: "Pausar al cerrar el navegador", showMonitor: "👁️ Panel de Monitor + Etiquetas ID", setPasscode: "Configurar Código", clearData: "Borrar Datos",
             trackedVideos: "Videos Rastreados:", localBackup: "Copia de Seguridad Completa", exportJson: "Exportar copia completa (incl. reglas)", importJson: "Importar copia completa (incl. reglas)",
             policyTitle: "Política de Privacidad y Datos",
@@ -857,8 +857,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "¿Sin clave? Comprar ahora ($4.99)", cancel: "Cancelar", confirm: "Confirmar",
             msgIncorrectPass: "❌ Código Incorrecto", msgVerifySuccess: "✅ ¡Verificado!", msgLimitReached: "❌ Límite de dispositivo alcanzado",
             msgInvalidKey: "❌ Clave Inválida", msgNetworkError: "❌ Error de Red", msgProOnlyFeature: "⚡ Función Pro",
-            msgProOnlyDesc: "Actualice a V-Train Pro para desbloquear esta función avanzada.", msgSaved: "✅ Guardado", msgCleared: "✅ Datos Borrados",
-            msgImportSuccess: "✅ ¡Importación Exitosa! Recargando...", msgImportFail: "❌ Error de Formato", modalEnablePro: "⚡ Activar V-Train Pro",
+            msgProOnlyDesc: "Actualice a V-Train para desbloquear esta función avanzada.", msgSaved: "✅ Guardado", msgCleared: "✅ Datos Borrados",
+            msgImportSuccess: "✅ ¡Importación Exitosa! Recargando...", msgImportFail: "❌ Error de Formato", modalEnablePro: "⚡ Activar V-Train",
             modalEnterKey: "Ingrese su clave de licencia:", modalSetPass: "🔐 Configurar Código", modalSetPassDesc: "Establecer nuevo código (vacío para eliminar).",
             modalClearData: "⚠️ Borrar Datos", modalClearDesc: "¿Seguro que desea borrar el historial?<br>(El estado Pro y ajustes se conservarán)",
             modalImport: "📥 Importar copia", modalImportDesc: "Esto sobrescribirá los registros actuales. ¿Continuar?",
@@ -918,7 +918,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "Bóveda de Marcadores",
-            bvSubtitle: "V-Train Pro · Colección Local",
+            bvSubtitle: "V-Train · Colección Local",
             bvSearch: "Buscar título o URL...",
             bvFolders: "📁 Carpetas",
             bvAllBookmarks: "Todos",
@@ -1003,7 +1003,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Popup & System Keys ===
             securityLock: "Verrouillage de sécurité", enterPass: "Entrez le code pour accéder", unlockBtn: "Déverrouiller", forgotPass: "Code oublié ? (Pro uniquement)",
-            unlockPro: "Débloquer V-Train Pro", proActive: "V-Train Pro Actif", monitoring: "Suivi (ON)", stealth: "En pause (OFF)",
+            unlockPro: "Débloquer V-Train", proActive: "V-Train Actif", monitoring: "Suivi (ON)", stealth: "En pause (OFF)",
             autoHide: "Mise en pause à la fermeture", showMonitor: "👁️ Panneau de surveillance + Tags ID", setPasscode: "Définir le code", clearData: "Effacer les données",
             trackedVideos: "Vidéos suivies :", localBackup: "Sauvegarde Complète", exportJson: "Exporter sauvegarde complète (règles incl.)", importJson: "Importer sauvegarde complète (règles incl.)",
             policyTitle: "Politique de confidentialité",
@@ -1014,8 +1014,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "Pas de clé ? Acheter ($4.99)", cancel: "Annuler", confirm: "Confirmer",
             msgIncorrectPass: "❌ Code incorrect", msgVerifySuccess: "✅ Vérifié avec succès !", msgLimitReached: "❌ Limite d'appareils atteinte",
             msgInvalidKey: "❌ Clé invalide", msgNetworkError: "❌ Erreur réseau", msgProOnlyFeature: "⚡ Fonction Pro",
-            msgProOnlyDesc: "Veuillez passer à V-Train Pro pour débloquer cette fonctionnalité avancée.", msgSaved: "✅ Enregistré", msgCleared: "✅ Données effacées",
-            msgImportSuccess: "✅ Importation réussie ! Rechargement...", msgImportFail: "❌ Erreur de format", modalEnablePro: "⚡ Activer V-Train Pro",
+            msgProOnlyDesc: "Veuillez passer à V-Train pour débloquer cette fonctionnalité avancée.", msgSaved: "✅ Enregistré", msgCleared: "✅ Données effacées",
+            msgImportSuccess: "✅ Importation réussie ! Rechargement...", msgImportFail: "❌ Erreur de format", modalEnablePro: "⚡ Activer V-Train",
             modalEnterKey: "Veuillez entrer votre clé de licence :", modalSetPass: "🔐 Définir le code", modalSetPassDesc: "Définir un nouveau code (laisser vide pour supprimer).",
             modalClearData: "⚠️ Effacer les données", modalClearDesc: "Voulez-vous vraiment supprimer tout l'historique ?<br>(Le statut Pro et les paramètres seront conservés)",
             modalImport: "📥 Importer la sauvegarde", modalImportDesc: "Cela écrasera les enregistrements actuels. Continuer ?",
@@ -1075,7 +1075,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "Coffre aux Signets",
-            bvSubtitle: "V-Train Pro · Collection locale",
+            bvSubtitle: "V-Train · Collection locale",
             bvSearch: "Rechercher titre ou URL...",
             bvFolders: "📁 Dossiers",
             bvAllBookmarks: "Tous les favoris",
@@ -1159,7 +1159,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Popup & System Keys ===
             securityLock: "Sicherheitssperre", enterPass: "Passcode eingeben", unlockBtn: "Entsperren", forgotPass: "Passcode vergessen? (Nur Pro)",
-            unlockPro: "V-Train Pro freischalten", proActive: "V-Train Pro Aktiv", monitoring: "Aufzeichnung (ON)", stealth: "Pausiert (OFF)",
+            unlockPro: "V-Train freischalten", proActive: "V-Train Aktiv", monitoring: "Aufzeichnung (ON)", stealth: "Pausiert (OFF)",
             autoHide: "Automatisch pausieren beim Schließen", showMonitor: "👁️ Überwachungspanel + ID-Tags", setPasscode: "Passcode setzen", clearData: "Daten löschen",
             trackedVideos: "Verfolgte Videos:", localBackup: "Vollständiges Daten-Backup", exportJson: "Vollständiges Backup exportieren (inkl. Regeln)", importJson: "Vollständiges Backup importieren (inkl. Regeln)",
             policyTitle: "Datenschutzrichtlinie",
@@ -1170,8 +1170,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             buyLink: "Kein Schlüssel? Jetzt kaufen ($4.99)", cancel: "Abbrechen", confirm: "Bestätigen",
             msgIncorrectPass: "❌ Falscher Passcode", msgVerifySuccess: "✅ Erfolgreich verifiziert!", msgLimitReached: "❌ Gerätelimit erreicht",
             msgInvalidKey: "❌ Ungültiger Schlüssel", msgNetworkError: "❌ Netzwerkfehler", msgProOnlyFeature: "⚡ Pro-Funktion",
-            msgProOnlyDesc: "Bitte auf V-Train Pro aktualisieren, um diese erweiterte Funktion freizuschalten.", msgSaved: "✅ Gespeichert", msgCleared: "✅ Daten gelöscht",
-            msgImportSuccess: "✅ Import erfolgreich! Wird neu geladen...", msgImportFail: "❌ Formatfehler", modalEnablePro: "⚡ V-Train Pro aktivieren",
+            msgProOnlyDesc: "Bitte auf V-Train aktualisieren, um diese erweiterte Funktion freizuschalten.", msgSaved: "✅ Gespeichert", msgCleared: "✅ Daten gelöscht",
+            msgImportSuccess: "✅ Import erfolgreich! Wird neu geladen...", msgImportFail: "❌ Formatfehler", modalEnablePro: "⚡ V-Train aktivieren",
             modalEnterKey: "Bitte geben Sie Ihren Lizenzschlüssel ein:", modalSetPass: "🔐 Passcode setzen", modalSetPassDesc: "Neuen Passcode setzen (leer lassen zum Entfernen).",
             modalClearData: "⚠️ Daten löschen", modalClearDesc: "Sind Sie sicher, dass Sie den Verlauf löschen wollen?<br>(Pro-Status und Einstellungen bleiben erhalten)",
             modalImport: "📥 Backup importieren", modalImportDesc: "Dies überschreibt aktuelle Aufzeichnungen. Fortfahren?",
@@ -1280,7 +1280,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
             // === Vault & Advanced UI ===
             bvTitle: "Lesezeichen-Tresor",
-            bvSubtitle: "V-Train Pro · Lokale Sammlung",
+            bvSubtitle: "V-Train · Lokale Sammlung",
             bvSearch: "Titel oder URL suchen...",
             bvFolders: "📁 Ordner",
             bvAllBookmarks: "Alle Lesezeichen",

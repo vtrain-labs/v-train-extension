@@ -52,7 +52,7 @@ let _isPro = false;
 // ─── 載入資料 ─────────────────────────────────────────────────────────────
 async function loadData() {
     const data = await new Promise(r => chrome.storage.local.get(['userLang', 'isProVersion'], r));
-    _isPro = !!data.isProVersion;
+    _isPro = true;
     
     _allBookmarks = await window.vtDB.getAll('vt_bookmarks');
     
@@ -91,8 +91,8 @@ function applyLanguage(lang) {
                 el.placeholder = translated;
             } else {
                 let finalHtml = translated;
-                if (!_isPro && finalHtml.includes('V-Train Pro')) {
-                    finalHtml = finalHtml.replace('V-Train Pro', 'V-Train Free');
+                if (!_isPro && finalHtml.includes('V-Train')) {
+                    finalHtml = finalHtml.replace('V-Train', 'V-Train');
                 }
                 el.innerHTML = finalHtml;
             }
@@ -119,12 +119,7 @@ function renderSidebarStats() {
     const likes = Object.values(_allRatings).filter(v => v === 'like').length;
     const dislikes = Object.values(_allRatings).filter(v => v === 'dislike').length;
     
-    document.getElementById('bvTotalCount').textContent = _isPro ? total : `${total} / 100`;
-    if (!_isPro && total >= 100) {
-        document.getElementById('bvTotalCount').style.color = '#ffca28';
-    } else {
-        document.getElementById('bvTotalCount').style.color = '';
-    }
+    document.getElementById('bvTotalCount').textContent = total;
     
     document.getElementById('bvLikeCount').textContent = likes;
     document.getElementById('bvDislikeCount').textContent = dislikes;

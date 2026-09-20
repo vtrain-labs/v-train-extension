@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
   <img src="icon-128.png" alt="V-Train Logo" width="128" height="128">
   <h1>V-Train (VT) Smart Video Bookmarks & Progress Tracker</h1>
   <p>A powerful and lightweight Chrome extension designed to elevate your web video browsing experience.</p>
@@ -88,35 +88,6 @@ Next, the system will automatically extract and parse the URL. If the system fai
 
 ---
 
-<a id="pro-features"></a>
-## 👑 PRO Features
-
-V-Train offers a one-time purchase PRO version, providing heavy users and privacy-conscious players with greater control and an enhanced bookmarking experience:
-
-### 1. Hover Operations Panel
-When watching videos on supported sites, a beautiful operations panel automatically appears in the bottom right corner.
-It includes progress tracking status (Recording), one-click bookmarking, ratings, and a quick screenshot tool.
-
-<div align="center">
-  <img src="assets/panel.png" alt="Hover Panel Demo" width="800">
-</div>
-
-### 2. Bookmark Vault
-Click the extension icon or the "Bookmark Vault" button on the hover panel to enter your personal video library.
-Supports folder categorization, chronological sorting, and an excellent dark mode visual experience.
-
-<div align="center">
-  <img src="assets/vault.png" alt="Bookmark Vault" width="800">
-</div>
-
-### 3. Passcode Protection
-Your viewing privacy is paramount. The PRO version allows you to set a custom passcode. Anyone attempting to open the **Extension Control Panel** must pass verification first, completely protecting your settings and vault from prying eyes.
-
-<div align="center">
-  <img src="assets/pro-password.png" alt="Passcode Protection" width="800">
-</div>
-
----
 
 <a id="disclaimer"></a>
 ## ⚠️ Official Support & Community Guidelines

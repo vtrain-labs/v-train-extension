@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
   <img src="icon-128.png" alt="V-Train Logo" width="128" height="128">
   <h1>V-Train (VT) 智慧影片收藏與進度追蹤</h1>
   <p>一個強大且輕量級的 Chrome 擴充功能，專為提升網頁影片瀏覽體驗所設計。</p>
@@ -26,7 +26,6 @@
 1. [特色介紹](#core-features)
 2. [安裝指南](#install-guide)
 3. [快速開始教學](#quick-start)
-4. [PRO 版專屬功能](#pro-features)
 5. [支援範圍與規範](#disclaimer)
 6. [系統架構亮點](#architecture)
 7. [授權條款](#license)
@@ -90,36 +89,6 @@
 ### 3. 社群規則庫 (Community Rules)
 不想自己慢慢訓練？歡迎前往官方的 [社群規則庫 (Community Rules)](https://github.com/vtrain-labs/community-rules)！
 你可以在這裡找到其他玩家分享的 `SYNC-Zxxxx` 規則序號，直接複製並到擴充功能內的「Serial Import」貼上，一秒鐘無痛支援各大影音網站！
-
----
-
-<a id="pro-features"></a>
-## 👑 PRO 版專屬功能
-
-V-Train 提供了一次性買斷的 PRO 版本，為重度使用者與注重隱私的玩家提供更強大的控制權與收藏體驗：
-
-### 1. 浮動收藏操作面板 (Hover Panel)
-當你在支援的影片網站上觀看影片時，右下角會自動浮現精美的操作面板。
-包含觀看進度 (Recording)、一鍵收藏、評分，以及快速擷取影片畫面的功能。
-
-<div align="center">
-  <img src="assets/panel.png" alt="浮動面板操作展示" width="800">
-</div>
-
-### 2. 書籤管理中心 (Vault)
-點擊擴充功能圖示，或是面板上的「書籤管理」按鈕，即可進入你的個人影片庫。
-支援資料夾分類、時間排序，以及絕佳的暗色模式視覺體驗。
-
-<div align="center">
-  <img src="assets/vault.png" alt="書籤管理中心" width="800">
-</div>
-
-### 3. 隱私密碼鎖定 (Passcode Protection)
-你的觀看隱私至關重要。PRO 版允許你設定專屬密碼，任何人在開啟**擴充功能主控面板**之前都必須先經過驗證，徹底保護你的設定與收藏庫不被窺探。
-
-<div align="center">
-  <img src="assets/pro-password.png" alt="隱私密碼保護" width="800">
-</div>
 
 ---
 
