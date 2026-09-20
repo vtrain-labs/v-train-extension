@@ -21,7 +21,9 @@ if (!window._vtTrackerLoaded) {
                 entries.forEach((e) => {
                     let el = e.target;
                     if (e.isIntersecting) {
-                        const hasLargePlayer = Array.from(el.querySelectorAll("video, iframe")).some(child => child.offsetWidth >= 340);
+                        // [效能修復] 避免 Array.from + querySelectorAll + offsetWidth 造成的 O(N^2) 佈局重算 (Layout Thrashing)
+                        // 改用直接判斷容器寬度並使用單一 querySelector，大幅減少 DOM 遍歷與強制重繪
+                        const hasLargePlayer = el.offsetWidth >= 340 && el.querySelector("video, iframe") !== null;
                         if (el.closest("video, .plyr, .vjs-tech, #player") || el.querySelector(".plyr, .vjs-tech, #player") || hasLargePlayer) return;
                         let w = driver.wrapper(el),
                             id = driver.idParser(el);
