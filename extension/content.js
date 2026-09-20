@@ -162,32 +162,65 @@ if (!window._vtInjected) {
         }
 
         // [終極截圖修復] 處理 iframe 請求自身絕對座標，以精確裁切 captureVisibleTab
-                // [終極座標修復] 遞迴計算巢狀跨網域 Iframe 絕對座標
+                        // [終極座標修復] 遞迴計算巢狀跨網域 Iframe 絕對座標 (Ping-Pong 演算法)
         if (e.data && e.data.type === 'VT_GET_IFRAME_RECT') {
             try {
-                const iframes = document.querySelectorAll('iframe');
-                let myLeft = 0, myTop = 0;
-                for (let i = 0; i < iframes.length; i++) {
-                    if (iframes[i].contentWindow === e.source) {
-                        const rect = iframes[i].getBoundingClientRect();
-                        myLeft = rect.left;
-                        myTop = rect.top;
-                        break;
+                const reqId = e.data.reqId || Math.random().toString();
+                const iframes = Array.from(document.querySelectorAll('iframe'));
+                if (iframes.length === 0) {
+                    if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: 0, top: 0 } });
+                    return;
+                }
+                
+                // 為了避免 e.source 跨網域比對失敗，我們對所有 iframe 廣播 PING，帶上索引
+                let pongHandler = (pongEvent) => {
+                    if (pongEvent.data && pongEvent.data.type === 'VT_PONG' && pongEvent.data.reqId === reqId) {
+                        window.removeEventListener('message', pongHandler);
+                        clearTimeout(pongTimeout);
+                        
+                        const matchedIframe = iframes[pongEvent.data.index];
+                        let myLeft = 0, myTop = 0;
+                        if (matchedIframe) {
+                            const rect = matchedIframe.getBoundingClientRect();
+                            myLeft = rect.left;
+                            myTop = rect.top;
+                        }
+                        
+                        if (window === window.top) {
+                            if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: myLeft, top: myTop } });
+                        } else {
+                            const channel = new MessageChannel();
+                            channel.port1.onmessage = (res) => {
+                                const pRect = res.data.rect || { left: 0, top: 0 };
+                                if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: myLeft + pRect.left, top: myTop + pRect.top } });
+                            };
+                            window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT', reqId: reqId + '_parent' }, '*', [channel.port2]);
+                        }
                     }
-                }
-                if (window === window.top) {
-                    if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: myLeft, top: myTop } });
-                } else {
-                    const channel = new MessageChannel();
-                    channel.port1.onmessage = (res) => {
-                        const pRect = res.data.rect || { left: 0, top: 0 };
-                        if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: myLeft + pRect.left, top: myTop + pRect.top } });
-                    };
-                    window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
-                }
+                };
+                window.addEventListener('message', pongHandler);
+                
+                let pongTimeout = setTimeout(() => {
+                    window.removeEventListener('message', pongHandler);
+                    if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: 0, top: 0 } });
+                }, 1000);
+                
+                iframes.forEach((ifr, idx) => {
+                    try { ifr.contentWindow.postMessage({ type: 'VT_PING', reqId, index: idx }, '*'); } catch(err) {}
+                });
                 return;
             } catch(err) {}
             if (e.ports && e.ports[0]) e.ports[0].postMessage({ rect: { left: 0, top: 0 } });
+        }
+        
+        // 接收上層的 PING，並回傳 PONG
+        if (e.data && e.data.type === 'VT_PING') {
+            try {
+                e.source.postMessage({ type: 'VT_PONG', reqId: e.data.reqId, index: e.data.index }, '*');
+            } catch(err) {
+                // 如果 e.source 失效，我們只能廣播回 parent
+                window.parent.postMessage({ type: 'VT_PONG', reqId: e.data.reqId, index: e.data.index }, '*');
+            }
         }
     });
 
@@ -433,4 +466,5 @@ if (!window._vtInjected) {
 
     initSystem();
 }
+
 
