@@ -108,9 +108,7 @@ V-Train does not have a "trash bin". All data lives on your computer.
 
 ### Q: I forgot my passcode!
 
-Read the "I Forgot My Passcode!" section in the Pro 版.
-
-Quick steps: Click **"Forgot Passcode?"** → Enter your **Pro License Key** → The passcode is removed.
+For maximum privacy, V-Train has **no backdoors** to recover a passcode. If you forget it, your only option is to click "**Forgot Passcode? (Wipe all data)**" on the lock screen. This will instantly factory reset the extension and permanently destroy all your viewing records and bookmarks. Please remember your passcode!
 
 ---
 
