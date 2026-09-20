@@ -15,10 +15,6 @@
         <input type="password" id="passwordInput" placeholder="Passcode" maxlength="10">
         <button id="btnUnlock" class="btn-unlock" data-i18n="unlockBtn">Unlock</button>
 
-        <p style="margin-top: 15px; font-size: 12px; color: #666;">
-            <span id="btnForgotPassword" style="cursor: pointer; text-decoration: underline;"
-                data-i18n="forgotPass">Forgot Passcode? (Pro Only)</span>
-        </p>
 
         <p id="loginMsg" class="error-msg"></p>
     </div>
@@ -102,24 +98,16 @@
                             <button id="btnOpenBookmarks" class="btn-action"
                                 style="width:100%;background:linear-gradient(135deg,#880e4f,#6a1b9a);border-color:#ad1457; position: relative;">
                                 <i>📚</i> <span data-i18n="bvTitle">Bookmark Vault</span>
-                                <span style="position:absolute; top:-6px; right:-6px; background:#e91e8c; color:white; font-size:9px; padding:1px 4px; border-radius:3px; font-weight:bold; line-height:1;" data-i18n="proOnly">PRO</span>
                             </button>
                         </div>
                         <div class="stats-compact" style="margin-bottom: 6px; position: relative;">
                             <span data-i18n="trackedVideos">Tracked Videos:</span>
                             <span class="stats-val" id="videoCount">0</span>
-                            <span id="upsellBadge" style="position:absolute; top:-10px; right:-6px; font-size:22px; color:#ff007f; font-weight:bold; display:none; line-height:1; transform:rotate(5deg); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-                                &infin; <span style="font-size:9px;background:#ff007f;color:#fff;padding:2px 4px;border-radius:3px;vertical-align:middle;margin-left:1px;font-family:sans-serif;letter-spacing:0.5px;">PRO</span>
-                            </span>
                         </div>
-                        <div id="limitNote" data-i18n="limitNoteTxt"
-                            style="font-size: 14px; color: #ccc; font-weight: bold; text-align: center; margin-bottom: 15px; display: none;">
-                            💡 達到 20 萬部上限時，將自動替換最舊的 100 部紀錄</div>
 
                         <div class="actions-row">
                             <button id="btnSetupPass" class="btn-action" style="position:relative;">
                                 <i>🔐</i> <span data-i18n="setPasscode">Set Passcode</span>
-                                <span style="position:absolute; top:-6px; right:-6px; background:#e91e8c; color:white; font-size:9px; padding:1px 4px; border-radius:3px; font-weight:bold; line-height:1;" data-i18n="proOnly">PRO</span>
                             </button>
                             <button id="btnClearData" class="btn-action"><i>🗑️</i> <span data-i18n="clearData">Clear
                                     Data</span></button>
@@ -161,14 +149,8 @@
                                         only.</span></li>
                                 <li><i>⚠️</i> <span data-i18n="policy2"><b>No Cloud:</b> Uninstalling = Data
                                         Loss.</span></li>
-                                <li><i>🔑</i> <span data-i18n="policy3"><b>Device Binding:</b> Local storage only (no
-                                        sync). To avoid data fragmentation, one active device per license is
-                                        recommended.</span></li>
                             </ul>
                         </div>
-                    </div>
-                    <div class="donate-section" style="margin-top: 20px;"><button id="btnDonateUpgrade" class="btn-donate"><span
-                                class="donate-icon">⚡</span> <span data-i18n="unlockPro">Unlock V-Train Pro</span></button>
                     </div>
                 </div>
             </div>
@@ -190,23 +172,6 @@
             <h3 style="flex:1;text-align:center;color:#4fc3f7;" data-i18n="ruleMgmt">規則管理</h3>
         </div>
         <div class="content">
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <button id="btnExportRules" class="btn-action" style="flex:1;background:#1565c0;font-size:14px;"
-                    data-i18n="exportRules">📥 匯出規則</button>
-                <button id="btnImportRules" class="btn-action" style="flex:1;background:#f57c00;font-size:14px;"
-                    data-i18n="importRules">📤 匯入規則</button>
-            </div>
-            <div style="margin-bottom:10px;">
-                <button id="btnCommunityRules" class="btn-action" style="width:100%;background:#444;font-size:14px;"
-                    data-i18n="communityRules">🌐 瀏覽社群共享規則 (GitHub)</button>
-            </div>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <input type="text" id="inlineRuleInput" placeholder="SYNC-..."
-                    style="flex:1; padding:10px; border-radius:6px; border:1px solid #6a1b9a; background:#1a1a1a; color:#fff; font-family:monospace; font-size:13px; outline:none;">
-                <button id="btnPasteRule" class="btn-action"
-                    style="width:100px; background:#8e24aa; border-color:#6a1b9a; font-size:14px; padding:0; height:40px; margin-bottom:0;"
-                    data-i18n="serialImport">序號導入</button>
-            </div>
             <input type="text" id="ruleSearchInput" data-i18n="searchRules"
                 style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #444; background:#2a2a2a; color:#fff; box-sizing:border-box;"
                 placeholder="🔍 Search rules...">
@@ -225,9 +190,6 @@
             <input type="text" id="mInput" class="modal-input hidden" placeholder="">
 
             <div id="mWarning" class="hidden" style="background:rgba(255,152,0,0.1); border:1px dashed #ff9800; padding:12px; border-radius:8px; margin-bottom:15px; font-size:14px; color:#ffb74d; line-height:1.4; text-align:left;"></div>
-
-            <a href="#" id="mBtnBuy" class="buy-link hidden" target="_blank" data-i18n="buyLink">No license key? Buy now
-                ($4.99)</a>
 
             <div class="modal-btns">
                 <button id="mBtnCancel" class="btn-modal btn-cancel" data-i18n="cancel">Cancel</button>

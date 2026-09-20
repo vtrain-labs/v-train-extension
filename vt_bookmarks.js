@@ -118,11 +118,10 @@ if (!window._vtBookmarksLoaded) {
 
             const bm = await vtDBProxy.getAll('vt_bookmarks');
             window._vtBookmarkedSet = new Set(bm.map(b => b.videoId).filter(Boolean));
-
-            chrome.storage.local.get(['vt_panel_pos', 'showInteraction', 'isProVersion', 'userLang'], data => {
+            chrome.storage.local.get(['vt_panel_pos', 'showInteraction', 'userLang'], data => {
                 window._vtPanelPos = data.vt_panel_pos || null;
                 window._vtShowInteraction = !!data.showInteraction;
-                window._vtIsPro = !!data.isProVersion;
+                window._vtIsPro = true;
                 window._vtCurrentLang = data.userLang || 'en';
                 resolve();
             });
@@ -873,9 +872,7 @@ if (!window._vtBookmarksLoaded) {
                 _panel.style.display = 'none';
             }
         }
-        if (changes.isProVersion) {
-            window._vtIsPro = !!changes.isProVersion.newValue;
-        }
+
         if (changes.userLang) {
             window._vtCurrentLang = changes.userLang.newValue;
         }

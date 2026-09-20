@@ -457,11 +457,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         _vtSaveLock = _vtSaveLock.then(() => new Promise((resolve) => {
             const checkAndSave = async () => {
                 try {
-                    if (!_swCache.isLoaded) {
-                        const res = await new Promise(r => chrome.storage.local.get(['isProVersion'], r));
-                        _swCache.isPro = !!res.isProVersion;
-                        _swCache.isLoaded = true;
-                    }
                     // [Partial Update 修復] 先讀取舊資料，再合併新的進度資料，避免進度自動存檔覆蓋掉截圖與書籤
                     const oldRecords = await vtDB.getRecords([id]);
                     const oldData = oldRecords[id] || {};
@@ -485,10 +480,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         });
                     });
 
-                    const limit = _swCache.isPro ? Infinity : 200;
-                    if (count > limit) {
-                        await runOptimizedGCInsideLock();
-                    }
+                    // No longer enforce limits, all users are Pro now.
+                    // const limit = Infinity;
                 } catch (e) {
                     console.error('[VTDatabase] Save Record Error:', e);
                 }
@@ -513,61 +506,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === "VT_REBUILD_INDEX") {
         // [架構師優化] 改用 IndexedDB 後不再需要手動重建本地記憶體索引，直接執行 GC 即可
         runOptimizedGC();
-    } else if (request.action === "VERIFY_LICENSE") {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        chrome.storage.local.get(['vt_instance_id'], (res) => {
-            let instanceId = res.vt_instance_id;
-            if (!instanceId) {
-                instanceId = 'VT_' + crypto.randomUUID(); // [CODE 修復] 改用密碼學安全的 UUID，避免碰撞
-                chrome.storage.local.set({ vt_instance_id: instanceId });
-            }
-
-            fetch('https://api.lemonsqueezy.com/v1/licenses/activate', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    'license_key': request.key,
-                    'instance_name': instanceId
-                }),
-                signal: controller.signal
-            })
-                .then(async res => {
-                    const text = await res.text();
-                    try { return JSON.parse(text); } catch (e) { throw new Error("Server response is not valid JSON"); }
-                })
-                .then(data => {
-                    clearTimeout(timeoutId);
-
-                    if (data.activated === true) {
-                        chrome.storage.local.set({
-                            isProVersion: true,
-                            storedLicenseKey: request.key,
-                            showInteraction: true
-                        }, () => {
-                            sendResponse({ success: true });
-                        });
-                    } else {
-                        // [架構師重構] 不再回傳寫死的英文，改回傳 Error Code (對應 shared_i18n.js)
-                        // 如果伺服器有自訂錯誤訊息 (data.error)，則原封不動傳回 (加上 ❌ 前綴)
-                        let code = 'msgInvalidKey';
-                        let dynamicMsg = data.error ? `❌ ${data.error}` : null;
-
-                        sendResponse({ success: false, errorCode: code, dynamicMsg: dynamicMsg });
-                    }
-                })
-                .catch(error => {
-                    clearTimeout(timeoutId);
-                    // [架構師重構] 網路錯誤也改為回傳 Error Code
-                    sendResponse({ success: false, errorCode: 'msgNetworkError' });
-                });
-        });
-
-        return true;
     }
 });
 

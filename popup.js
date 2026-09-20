@@ -1,6 +1,3 @@
-// [架構師更新] Lemon Squeezy 正式結帳連結 (VT Pro - $4.99)
-const BUY_URL = `https://v-train.lemonsqueezy.com/checkout/buy/3dbcb93a-052c-433c-9adb-5fdcf221cc17`;
-
 // [XSS 修復] HTML 安全轉義工具函式，封鎖所有來自 storage 的動態內容
 function escapeHtml(str) {
     if (typeof str !== 'string') return String(str ?? '');
@@ -65,14 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnOpenRules = document.getElementById('btnOpenRules');
     const rulesPanel = document.getElementById('rulesPanel');
     const btnBackToControl = document.getElementById('btnBackToControl');
-    const btnExportRules = document.getElementById('btnExportRules');
-    const btnImportRules = document.getElementById('btnImportRules');
     const rulesListContainer = document.getElementById('rulesListContainer');
     const ruleFileInput = document.getElementById('ruleFileInput');
     const btnSetupPass = document.getElementById('btnSetupPass');
     const btnClearData = document.getElementById('btnClearData');
     const videoCountLabel = document.getElementById('videoCount');
-    const btnDonateUpgrade = document.getElementById('btnDonateUpgrade');
     const btnExport = document.getElementById('btnExport');
     const btnImport = document.getElementById('btnImport');
     const fileInput = document.getElementById('fileInput');
@@ -114,20 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const mInput = document.getElementById('mInput');
     const mBtnCancel = document.getElementById('mBtnCancel');
     const mBtnConfirm = document.getElementById('mBtnConfirm');
-    const mBtnBuy = document.getElementById('mBtnBuy');
 
     // 語言選擇器
     const langSelect = document.getElementById('langSelect');
     let currentLang = 'en';
 
-    // 2. 購買連結
-    if (mBtnBuy) {
-        mBtnBuy.addEventListener('click', (e) => {
-            e.preventDefault();
-            const lsLocale = 'en'; // Lemon Squeezy does not support zh-CN/zh-TW; fallback to English to prevent locale mismatch
-            chrome.tabs.create({ url: BUY_URL + '?locale=' + lsLocale });
-        });
-    }
+
 
     // 初始化資料
     const configKeys = ['userPassword', 'isStealthMode', 'isProVersion', 'storedLicenseKey', 'enabledSites', 'remainingUses', 'userLang', 'site_config', 'showMonitorPanel', 'barColor', 'barColors', 'vt_video_count', 'showInteraction'];
@@ -495,121 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    if (btnExportRules) btnExportRules.addEventListener('click', () => {
-        chrome.storage.local.get(['site_config'], (res) => {
-            const rawConfig = res.site_config || {};
-            const cleanRules = {};
-            const sysBlackList = ['isProVersion', 'remainingUses', 'storedLicenseKey', 'userPassword', 'userLang', 'vt_video_count', 'isStealthMode', 'enabledSites', 'showMonitorPanel', 'barColor'];
 
-            Object.keys(rawConfig).forEach(k => {
-                if (!sysBlackList.includes(k)) cleanRules[k] = rawConfig[k];
-            });
-
-            const blob = new Blob([JSON.stringify(cleanRules)], { type: "application/json" });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `VTrain_Rules_${new Date().toISOString().split('T')[0]}.json`; a.click();
-        });
-    });
-
-    const btnCommunityRules = document.getElementById('btnCommunityRules');
-    if (btnCommunityRules) {
-        btnCommunityRules.addEventListener('click', () => {
-            // [架構師修復] 確保連結與實際 GitHub 倉庫路徑一致，防止 404
-            chrome.tabs.create({ url: 'https://github.com/vtrain-labs/community-rules' });
-        });
-    }
-
-    const btnPasteRule = document.getElementById('btnPasteRule');
-    const inlineRuleInput = document.getElementById('inlineRuleInput');
-    if (btnPasteRule && inlineRuleInput) btnPasteRule.addEventListener('click', async () => {
-        const inputCode = inlineRuleInput.value;
-        if (!inputCode || !inputCode.trim()) return;
-        const trimmedCode = inputCode.trim();
-        if (!trimmedCode.startsWith('SYNC-') && !trimmedCode.startsWith('VT-RULE-')) {
-            return showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportFail'));
-        }
-
-        const expand = (obj) => {
-            if (!obj || typeof obj !== 'object') return obj;
-            if (Array.isArray(obj)) return obj.map(expand);
-            const rMap = { h: 'hosts', p: 'pRule', t: 'tRule', ty: 'type', ix: 'idx', sp: 'sep', sx: 'sepIdx', k: 'key', ta: 'targetAttr', ul: 'upLevel', s: 's' };
-            let newObj = {};
-            for (let k in obj) newObj[rMap[k] || k] = expand(obj[k]);
-            return newObj;
-        };
-
-        try {
-            // [壓縮解碼] 自動偵測格式：SYNC-Z / VT-RULE-Z（壓縮版）或 SYNC- / VT-RULE-（舊版未壓縮）
-            const raw = trimmedCode.replace(/^(SYNC-|VT-RULE-)/, '');
-            let jsonStr;
-            if (raw.startsWith('Z')) {
-                // 新版：deflate-raw 壓縮，'Z' 為版本前綴
-                jsonStr = await _vtRuleDecompress(raw.slice(1));
-            } else {
-                // 舊版：直接 base64 → UTF-8 解碼
-                const binStr = atob(raw);
-                const arr = new Uint8Array(binStr.length);
-                for (let i = 0; i < binStr.length; i++) arr[i] = binStr.charCodeAt(i);
-                jsonStr = new TextDecoder().decode(arr);
-            }
-            const rawData = JSON.parse(jsonStr);
-            const data = { d: rawData.d, r: expand(rawData.r) };
-            if (!data.d || !data.r) throw new Error("Invalid format");
-            
-            // [架構師修復] 對於剪貼簿匯入的規則進行嚴格 XSS 阻擋，包含陣列與單一物件的檢查
-            const isSafe = (r) => !r || (typeof r.s === 'string' && !r.s.toLowerCase().includes('javascript:') && !r.s.toLowerCase().includes('onerror='));
-            const isRuleSafe = Array.isArray(data.r) ? data.r.every(isSafe) : isSafe(data.r);
-            if (!isRuleSafe) throw new Error("Security block: Malicious rule detected");
-
-            chrome.storage.local.get(['site_config', 'enabledSites'], async (res) => {
-                // [安全修復 #1] showModal 的 desc 使用純文字，不再拼接包含 data.d 的 HTML
-                let cMsg = `${getLangText(currentLang, 'modalShareDesc')} "${data.d}"`;
-                if (res.site_config && res.site_config[data.d]) cMsg += `\n\n${getLangText(currentLang, 'confirmOverwrite')}`;
-                if (await showModal(getLangText(currentLang, 'modalShareTitle'), cMsg)) {
-                    _cachedSiteConfig = null; // [效能修復 P4] 清除快取
-                    chrome.storage.local.set({ site_config: { ...res.site_config, [data.d]: data.r }, enabledSites: { ...res.enabledSites, [data.d]: true } }, () => {
-                        inlineRuleInput.value = '';
-                        showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportSuccess'));
-                        renderRulesList(ruleSearchInput?.value);
-                    });
-                }
-            });
-        } catch (err) { showToast(btnPasteRule, getLangText(currentLang, 'msgShareImportFail')); }
-    });
-
-    if (btnImportRules) btnImportRules.addEventListener('click', () => ruleFileInput.click());
-    if (ruleFileInput) ruleFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                const uploadedData = JSON.parse(ev.target.result);
-                let newRules = uploadedData.site_config ? uploadedData.site_config : uploadedData;
-
-                const blackList = ['isProVersion', 'remainingUses', 'storedLicenseKey', 'userPassword', 'userLang', 'vt_video_count', 'isStealthMode', 'enabledSites'];
-                const filteredRules = {};
-                Object.keys(newRules).forEach(k => { if (!blackList.includes(k)) filteredRules[k] = newRules[k]; });
-
-                chrome.storage.local.get(['site_config'], (res) => {
-                    // [架構師校驗] 確保匯入的規則不含 JavaScript 偽協議或惡意事件屬性
-                    const validatedRules = {};
-                    Object.keys(filteredRules).forEach(domain => {
-                        const rule = filteredRules[domain];
-                        // [架構師修復] 允許空槽位 (r 為 null 或 undefined)，否則只檢查有值的槽位
-                        const isSafe = (r) => !r || (typeof r.s === 'string' && !r.s.toLowerCase().includes('javascript:') && !r.s.toLowerCase().includes('onerror='));
-                        if (Array.isArray(rule) ? rule.every(isSafe) : isSafe(rule)) {
-                            validatedRules[domain] = rule;
-                        }
-                    });
-                    const mergedRules = { ...(res.site_config || {}), ...validatedRules };
-                    _cachedSiteConfig = null; // [效能修復 P4] 清除快取
-                    chrome.storage.local.set({ site_config: mergedRules }, () => {
-                        showToast(btnImportRules, getLangText(currentLang, 'msgRuleImportSuccess'));
-                        renderRulesList();
-                    });
-                });
-            } catch (err) { showToast(btnImportRules, getLangText(currentLang, 'msgRuleImportFail')); }
-        }; reader.readAsText(file); ruleFileInput.value = '';
-    });
 
     // 面板切換與規則渲染
     if (btnOpenRules) btnOpenRules.addEventListener('click', () => {
@@ -650,117 +522,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // ★★★ 核心修正：驗證邏輯與錯誤代碼接接 ★★★
-    btnDonateUpgrade.addEventListener('click', async () => {
-        if (btnDonateUpgrade.classList.contains('pro-active')) return;
 
-        const inputKey = await showModal(getLangText(currentLang, 'modalEnablePro'), getLangText(currentLang, 'modalEnterKey'), true, "XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX", true);
 
-        if (inputKey) {
-            const cleanKey = inputKey.trim();
-            const btnOldText = btnDonateUpgrade.innerHTML;
-
-            // [架構師修復] 移除寫死的 Verifying... 替換為通用沙漏
-            btnDonateUpgrade.textContent = "⏳...";
-            btnDonateUpgrade.disabled = true;
-
-            try {
-                chrome.runtime.sendMessage({ action: "VERIFY_LICENSE", key: cleanKey }, (response) => {
-                    if (chrome.runtime.lastError) {
-                        btnDonateUpgrade.innerHTML = btnOldText;
-                        btnDonateUpgrade.disabled = false;
-                        showToast(btnDonateUpgrade, getLangText(currentLang, 'msgNetworkError'));
-                        return;
-                    }
-
-                    if (response && response.success) {
-                        chrome.storage.local.get(['vt_video_count'], (res) => {
-                            updateProUI(true, res.vt_video_count || 0);
-                        });
-                        showToast(btnDonateUpgrade, getLangText(currentLang, 'msgVerifySuccess'));
-                        setTimeout(() => { location.reload(); }, 3000);
-                    } else {
-                        btnDonateUpgrade.innerHTML = btnOldText;
-                        btnDonateUpgrade.disabled = false;
-
-                        // [架構師修復] 解析 Error Code，如果 API 給了特定錯誤則組合，否則用字典
-                        let errorMsg = response?.dynamicMsg || getLangText(currentLang, response?.errorCode || 'msgNetworkError');
-                        if (!errorMsg.startsWith('❌')) errorMsg = `❌ ${errorMsg}`;
-
-                        showToast(btnDonateUpgrade, errorMsg);
-                    }
-                });
-            } catch (error) {
-                btnDonateUpgrade.innerHTML = btnOldText;
-                btnDonateUpgrade.disabled = false;
-                showToast(btnDonateUpgrade, getLangText(currentLang, 'msgNetworkError'));
+    // 設定密碼
+    btnSetupPass.addEventListener('click', async () => {
+        const newPass = await showModal(getLangText(currentLang, 'modalSetPass'), getLangText(currentLang, 'modalSetPassDesc'), true, "1234", false);
+        if (newPass !== null) {
+            if (newPass.trim() === "") {
+                chrome.storage.local.remove('userPassword');
+                showToast(btnSetupPass, getLangText(currentLang, 'msgCleared'));
+            } else {
+                chrome.storage.local.set({ userPassword: newPass.trim() });
+                showToast(btnSetupPass, getLangText(currentLang, 'msgSaved'));
             }
         }
     });
 
-    // 設定密碼
-    btnSetupPass.addEventListener('click', async () => {
-        chrome.storage.local.get('isProVersion', async (items) => {
-            if (!items.isProVersion) {
-                await showModal(getLangText(currentLang, 'msgProOnlyFeature'), getLangText(currentLang, 'msgProOnlyDesc'), false, "", true);
-                return;
-            }
-            const newPass = await showModal(getLangText(currentLang, 'modalSetPass'), getLangText(currentLang, 'modalSetPassDesc'), true, "1234", false);
-            if (newPass !== null) {
-                if (newPass.trim() === "") {
-                    chrome.storage.local.remove('userPassword');
-                    showToast(btnSetupPass, getLangText(currentLang, 'msgCleared'));
-                } else {
-                    chrome.storage.local.set({ userPassword: newPass.trim() });
-                    showToast(btnSetupPass, getLangText(currentLang, 'msgSaved'));
-                }
-            }
-        });
-    });
-
     // 忘記密碼 (救援)
-    const btnForgotPassword = document.getElementById('btnForgotPassword');
-    if (btnForgotPassword) {
-        btnForgotPassword.addEventListener('click', () => {
-            chrome.storage.local.get(['isProVersion', 'storedLicenseKey'], async (items) => {
-                if (!items.isProVersion || !items.storedLicenseKey) {
-                    loginMsg.textContent = getLangText(currentLang, 'msgProOnlyFeature');
-                    return;
-                }
-                const dynamicDesc = getLangText(currentLang, 'modalRescueDesc');
-                const inputKey = await showModal(getLangText(currentLang, 'modalRescue'), dynamicDesc, true, getLangText(currentLang, 'modalEnterKey'), false);
-
-                if (inputKey) {
-                    const cleanInput = inputKey.trim();
-                    if (cleanInput !== items.storedLicenseKey) {
-                        // [架構師修復] 移除寫死的 Key mismatch
-                        loginMsg.textContent = getLangText(currentLang, 'msgInvalidKey');
-                        return;
-                    }
-
-                    chrome.storage.local.remove('userPassword', async () => {
-                        passwordInput.value = '';
-                        loginMsg.textContent = "";
-
-                        const oldConfirmText = mBtnConfirm.innerHTML;
-                        mBtnConfirm.innerHTML = getLangText(currentLang, 'btnFullBackup');
-
-                        const desc = getLangText(currentLang, 'modalRescueSuccessDesc');
-                        const doBackup = await showModal(getLangText(currentLang, 'modalRescueSuccess'), desc);
-
-                        if (doBackup) {
-                            if (btnExport) btnExport.click();
-                            setTimeout(() => { if (btnExportRules) btnExportRules.click(); }, 500);
-                        }
-
-                        mBtnConfirm.innerHTML = oldConfirmText;
-                        setTimeout(() => { location.reload(); }, doBackup ? 1000 : 0);
-                    });
-                }
-            });
-        });
-    }
-
     // 清除資料
     btnClearData.addEventListener('click', async () => {
         const confirm = await showModal(getLangText(currentLang, 'modalClearData'), getLangText(currentLang, 'modalClearDesc'));
@@ -814,36 +592,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateProUI(isPro, count) {
-        const limitNote = document.getElementById('limitNote');
         const interactionToggleRow = document.getElementById('interactionToggleRow');
-        const interactionLabel = document.querySelector('#interactionToggleRow .status-label');
-        const upsellBadge = document.getElementById('upsellBadge');
         
-        if (isPro) {
-            btnDonateUpgrade.classList.add('pro-active');
-            btnDonateUpgrade.innerHTML = `<span class="donate-icon">👑</span> ${getLangText(currentLang, 'proActive')}`;
-            videoCountLabel.innerHTML = `${count.toLocaleString()} / &infin; <span style="font-size:10px;background:#ff007f;color:#fff;padding:2px 4px;border-radius:4px;margin-left:4px;">PRO</span>`;
-            videoCountLabel.style.color = '#ffd700';
-            if (limitNote) limitNote.style.display = 'none'; // [修復] Pro 版現在是真正的無限，不再顯示 20 萬筆的提示
-            if (interactionToggleRow) interactionToggleRow.style.display = 'flex';
-            if (upsellBadge) upsellBadge.style.display = 'none';
-            if (interactionLabel && interactionLabel.querySelector('.pro-badge')) {
-                interactionLabel.querySelector('.pro-badge').remove();
-            }
-        } else {
-            const limit = 200;
-            const displayCount = count > limit ? limit : count;
-            videoCountLabel.textContent = `${displayCount.toLocaleString()} / ${limit}`;
-            if (count >= limit) videoCountLabel.style.color = '#ff5252';
-            if (limitNote) limitNote.style.display = 'none';
-            if (upsellBadge) upsellBadge.style.display = 'inline-block';
-            if (interactionToggleRow) {
-                interactionToggleRow.style.display = 'flex';
-                if (interactionLabel && interactionLabel.querySelector('.pro-badge')) {
-                    interactionLabel.querySelector('.pro-badge').remove();
-                }
-            }
-        }
+        videoCountLabel.innerHTML = `${count.toLocaleString()}`;
+        videoCountLabel.style.color = '#ffd700';
+        
+        if (interactionToggleRow) interactionToggleRow.style.display = 'flex';
     }
 
     function showModal(title, desc, isPrompt = false, placeholder = "", showBuyLink = false) {

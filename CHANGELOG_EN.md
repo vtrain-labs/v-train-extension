@@ -1,6 +1,4 @@
-# Changelog
-
-## [1.0.7] - 2026-06-20
+﻿## [1.0.7] - 2026-06-20
 
 ### Added
 - **Built-in Global Tracking Engine (YouTube & Bilibili)**: V-Train now automatically injects and activates optimized default parsing rules for YouTube and Bilibili in the background upon installation. Users no longer need to manually import configurations and can enjoy out-of-the-box, precise progress tracking and thumbnail capturing for these two major platforms.
@@ -66,3 +64,5 @@
 - Initial release to the Chrome Web Store.
 - Support for PRO version features: "Bookmark Management Center" and "Privacy Passcode Lock".
 - Support for progress bar overlay and tracking on major video websites.
+
+

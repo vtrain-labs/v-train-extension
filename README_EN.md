@@ -26,7 +26,6 @@
 1. [Core Features](#core-features)
 2. [Installation](#installation)
 3. [Quick Start](#quick-start)
-4. [PRO Features](#pro-features)
 5. [Supported Platforms & Guidelines](#disclaimer)
 6. [Architecture Highlights](#architecture)
 7. [License](#license)
@@ -38,7 +37,7 @@
 
 * **🎥 Non-intrusive Progress Tracking**: Intelligently analyzes video player pages, records exact playback progress, and automatically overlays a progress bar on video thumbnails.
 * **🤖 Dynamic URL Parser (Training Mode)**: A powerful rule engine that allows users to manually select thumbnails. The extension automatically learns and creates custom parsing rules for that specific website.
-* **❤️ Video Bookmarks & Hover Panel (PRO)**: Hover over any video thumbnail to reveal a sleek operations panel. Supports "Like/Dislike" ratings, one-click bookmarking, and custom folder management.
+* **❤️ Video Bookmarks & Hover Panel **: Hover over any video thumbnail to reveal a sleek operations panel. Supports "Like/Dislike" ratings, one-click bookmarking, and custom folder management.
 * **📸 Built-in Thumbnail Caching**: Bypasses CDN hotlinking restrictions by capturing the current video frame as a custom cover with a single click, caching the binary image directly to the local database.
 
 ---
