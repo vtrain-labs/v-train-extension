@@ -907,7 +907,7 @@ if (!window._vtBookmarksLoaded) {
                     try {
                         const channel = new MessageChannel();
                         channel.port1.onmessage = (e) => resolve(e.data.rect || { left: 0, top: 0 });
-                        window.top.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
+                        window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
                         setTimeout(() => resolve({ left: 0, top: 0 }), 300);
                     } catch(err) { resolve({ left: 0, top: 0 }); }
                 });
@@ -921,10 +921,20 @@ if (!window._vtBookmarksLoaded) {
                                 const canvas = document.createElement('canvas');
                                 const ratioX = window.devicePixelRatio || 1;
                                 const ratioY = window.devicePixelRatio || 1;
-                                const sx = (offset.left + rect.left) * ratioX;
-                                const sy = (offset.top + rect.top) * ratioY;
-                                const sw = rect.width * ratioX;
-                                const sh = rect.height * ratioY;
+                                let sx = (offset.left + rect.left) * ratioX;
+                                let sy = (offset.top + rect.top) * ratioY;
+                                let sw = rect.width * ratioX;
+                                let sh = rect.height * ratioY;
+                                
+                                // [效能/防呆修復] 防止負數座標導致 Canvas 補黑邊
+                                if (sx < 0) { sw += sx; sx = 0; }
+                                if (sy < 0) { sh += sy; sy = 0; }
+                                if (sw <= 0 || sh <= 0) { resolve(false); return; }
+                                
+                                // 限制不超過原圖大小
+                                if (sx + sw > img.width) sw = img.width - sx;
+                                if (sy + sh > img.height) sh = img.height - sy;
+                                if (sw <= 0 || sh <= 0) { resolve(false); return; }
                                 
                                 // 檢查截圖是否為黑屏 (硬體加速導致的純黑)
                                 const testCanvas = document.createElement('canvas');
