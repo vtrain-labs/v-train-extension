@@ -1,4 +1,4 @@
-{
+﻿{
   "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extName__",
@@ -16,7 +16,9 @@
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
-  "host_permissions": [],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "optional_host_permissions": [
     "https://*/*",
     "http://*/*"
@@ -40,3 +42,6 @@
     "service_worker": "background.js"
   }
 }
+
+
+
