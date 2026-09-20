@@ -5,7 +5,6 @@ The V-Train Dashboard is the main control center. It is like an airplane's cockp
 > ![Dashboard Main Screen](/assets/manual/5.png)
 
 ::: info 📋 How to open the Dashboard?
-Click the **VT icon** on your Chrome toolbar. If you have a passcode, you must enter it first.
 :::
 
 ---
@@ -14,14 +13,13 @@ Click the **VT icon** on your Chrome toolbar. If you have a passcode, you must e
 
 From top to bottom, the dashboard has these main areas:
 
-| Area | Function |
-|------|----------|
-| 🔴 Status Area | Switch between Monitoring / Monitoring Off |
-| ⚙️ Settings | Hover Panel, Monitor Panel, Progress Bar Color, Language |
-| 🌐 Authorize | Authorize the current website |
-| 📊 Statistics | Number of recorded videos |
-| 🗂️ Quick Actions | Rules, Bookmark Vault, Backup, Unlock Pro |
-| 🔒 Privacy | Passcode, Clear Data |
+ Function |
+----------|
+ Switch between Monitoring / Monitoring Off |
+ Hover Panel, Monitor Panel, Progress Bar Color, Language |
+ Authorize the current website |
+ Number of recorded videos |
+ Rules, Bookmark Vault, Backup,  |
 
 ---
 
@@ -66,8 +64,7 @@ This small panel lets you:
 
 If you do not like this panel, you can turn it off here.
 
-::: info Free vs Pro Version
-Free users can use all buttons on the Hover Panel. Free users can save up to **100 bookmarks**. Upgrading to Pro gives you unlimited bookmarks.
+You can use all buttons on the Hover Panel to save your favorite videos. There is no limit to the number of bookmarks you can save.
 :::
 
 ---
@@ -107,10 +104,10 @@ Do you want to change the default red progress bar? You can set exclusive colors
 
 Use the menu at the top right to change the language.
 
-| Option | Language |
-|--------|----------|
-| `zh-TW` | Traditional Chinese |
-| `en` | English |
+ Language |
+----------|
+ Traditional Chinese |
+ English |
 
 The text changes immediately. You do not need to refresh the page.
 
@@ -147,7 +144,6 @@ V-Train uses Chrome's **Optional Permissions**. It only works on websites you al
 The middle of the dashboard shows how many **video progress records** V-Train has saved.
 
 - **Free Version**: Shows `{Count} / 200` (Maximum 200 records)
-- **Pro Version**: Shows `{Count} / ∞ PRO` (Unlimited, gold text)
 
 For free users, the number turns **red** when you get close to 200. When you reach 200, new records will delete the oldest records.
 
@@ -209,9 +205,7 @@ Click the "**Import File**" button. Choose a `VTrain_Rules_XXXX-XX-XX.json` file
 
 ## 7. Bookmark Vault Access
 
-::: warning 👑 Pro Feature
-The Bookmark Vault is a **V-Train Pro** feature.
-:::
+::: tip 🌟 Unlimited Bookmarks\r?\nYou can save an unlimited number of bookmarks and enjoy high-quality thumbnail covers.\r?\n:::
 
 Click the "**📚 Bookmark Vault**" button. A beautiful full-screen bookmark manager will open in a new tab.
 
@@ -250,61 +244,7 @@ To learn more, read the [Backup Guide](./backup.md).
 
 ---
 
-## 9. Pro Upgrade
-
-At the bottom of the dashboard is the "**⚡ Unlock V-Train Pro**" button.
-
-> ![Pro Upgrade Button](/assets/manual/16.png)
-
-### How to upgrade?
-
-1. Click the "**⚡ Unlock V-Train Pro**" button.
-2. Click "**Go to Purchase**". A new tab will open for payment ($4.99 USD, one-time payment).
-3. After payment, you get a License Key (like `XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX`).
-4. Go back to the dashboard. Click the upgrade button again. Paste your License Key and click confirm.
-5. Success! The button will turn **gold 👑** and say "Pro Enabled".
-
-### Pro Features Overview
-
-| Feature | Free Version | Pro Version |
-|---------|--------------|-------------|
-| Viewing History Limit | 200 records | **Unlimited** |
-| Bookmark Vault | ✅ Max 100 videos | ✅ **Unlimited** |
-| Floating Hover Panel | ✅ | ✅ |
-| Privacy Passcode | ❌ | ✅ |
-
-::: tip Where is my License Key saved?
-Your License Key is saved securely on your computer. We do not upload your personal data. You can use the same key on a new computer.
-:::
-
----
-
 ## 10. Privacy Settings Area
-
-### 🔒 Setup Passcode
-
-::: warning 👑 Pro Feature
-The passcode lock is a **V-Train Pro** feature.
-:::
-
-Click "**🔒 Setup Passcode**". Type a password (like `1234`).
-
-Now, you must enter this password every time you open the Dashboard. This protects your privacy!
-
-#### 🆘 Forgot your passcode?
-
-On the passcode screen, click "**Forgot Passcode?**".
-1. Enter your **Pro License Key**.
-2. The passcode will be removed.
-3. The system will ask if you want to backup your data (we recommend yes).
-
-> ![Passcode Rescue Screen](/assets/manual/17.png)
-
-::: tip Remove Passcode
-To remove the passcode, click "Setup Passcode". **Leave the box empty** and click confirm.
-:::
-
----
 
 ### 🗑️ Clear Data
 
@@ -315,7 +255,6 @@ It will delete:
 - ✅ Bookmarks and cover pictures
 
 It will **NOT** delete:
-- ❌ Your Pro license
 - ❌ Trained website rules
 - ❌ Extension settings (Language, Color, etc.)
 
@@ -335,4 +274,5 @@ The dashboard has many buttons, but you only need to use these the most:
 4. **Export Full Backup** — Backup often to protect your data.
 
 If you have questions, read the [FAQ](./faq.md) page!
+
 
