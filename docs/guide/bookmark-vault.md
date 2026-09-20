@@ -1,4 +1,4 @@
-# ❤️ 書籤庫與浮動互動面板（Bookmark Vault & Hover Panel）
+﻿# ❤️ 書籤庫與浮動互動面板（Bookmark Vault & Hover Panel）
 
 > PRO 功能：滑鼠停留即召喚互動面板，讓你的影片收藏井然有序。
 
@@ -312,4 +312,4 @@ V-Train 的觀看記錄資料庫會隨時間累積大量資料。為了控制儲
 
 ---
 
-*書籤庫是你的個人影片圖書館，愈用愈順手。如有功能建議，歡迎到 [社群規則庫](https://github.com/vtrain-labs/community-rules) 提出 Issue！*
+

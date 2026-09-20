@@ -1,4 +1,4 @@
-# 🧠 適應引擎（Adaptive Engine）
+﻿# 🧠 適應引擎（Adaptive Engine）
 
 > 讓 V-Train 學會識別任何網站的影片縮圖，自己動手教它！
 
@@ -216,7 +216,6 @@ https://example.com/v/channel_abc123_hd
 這時你可以選取整段，然後透過設定 `sepIdx`（分隔符號的第幾段）來精確定位 ID 的位置。
 
 ::: info
-如果網址太複雜或使用非標準格式，可以考慮到 [社群規則庫](https://github.com/vtrain-labs/community-rules) 看看有沒有現成的規則可以直接匯入。
 :::
 
 ---
@@ -278,7 +277,6 @@ SYNC-ZeJyNjsEKwjAQRL...（後面接很長一串）
 
 訓練很好玩，但你不必每個網站都自己從頭訓練——V-Train 有一個開放的社群規則庫：
 
-> 🔗 **[https://github.com/vtrain-labs/community-rules](https://github.com/vtrain-labs/community-rules)**
 
 社群規則庫裡收錄了各種網站的 SYNC 序號，由社群用戶貢獻與維護。
 
@@ -347,4 +345,4 @@ V-Train 的選擇器生成邏輯：
 
 ---
 
-*如有更多問題，歡迎到 [社群規則庫](https://github.com/vtrain-labs/community-rules) 開 Issue 討論！*
+

@@ -1,4 +1,4 @@
-# ❓ Frequently Asked Questions (FAQ)
+﻿# ❓ Frequently Asked Questions (FAQ)
 
 Do you have a problem? Look here first! If you cannot find the answer, please report it on [GitHub Issues](https://github.com/vtrain-labs/v-train-extension/issues).
 
@@ -119,7 +119,6 @@ Quick steps: Click **"Forgot Passcode?"** → Enter your **Pro License Key** →
 **No. Never.** V-Train does not use servers:
 
 - All your viewing history, bookmarks, and rules stay **on your computer**.
-- We only check your Pro License Key online. We do not send your personal data.
 - V-Train **does not have a database server**.
 
 ---
@@ -206,3 +205,4 @@ V-Train shares data between normal mode and incognito mode. Your history in inco
    - Your V-Train version.
    - The website that has the problem.
    - What went wrong.
+

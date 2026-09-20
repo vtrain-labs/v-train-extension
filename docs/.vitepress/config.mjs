@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+﻿import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: "V-Train",
@@ -33,7 +33,7 @@ export default defineConfig({
           {
             text: '進階',
             items: [
-              { text: 'Pro 版進階功能', link: '/guide/pro-features' },
+              ,
               { text: '常見問題 (FAQ)', link: '/guide/faq' }
             ]
           }
@@ -68,7 +68,7 @@ export default defineConfig({
           {
             text: 'Advanced',
             items: [
-              { text: 'Pro Features', link: '/en/guide/pro-features' },
+              ,
               { text: 'FAQ', link: '/en/guide/faq' }
             ]
           }
@@ -84,3 +84,4 @@ export default defineConfig({
     ]
   }
 })
+

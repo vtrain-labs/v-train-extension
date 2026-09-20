@@ -1,4 +1,4 @@
-# ❓ 常見問題 (FAQ)
+﻿# ❓ 常見問題 (FAQ)
 
 遇到怪問題嗎？先看看這裡有沒有解答！找不到答案再去 [GitHub Issues](https://github.com/vtrain-labs/v-train-extension/issues) 回報。
 
@@ -211,3 +211,4 @@ V-Train 的 manifest 設定了 `"incognito": "spanning"`，這表示在無痕模
    - V-Train 版本（在 `chrome://extensions/` 可以查看）
    - 問題發生的網站（若可以公開）
    - 重現步驟
+

@@ -1,4 +1,4 @@
-# 🎛️ Dashboard Overview
+﻿# 🎛️ Dashboard Overview
 
 The V-Train Dashboard is the main control center. It is like an airplane's cockpit where you find all the buttons and switches! This page explains what each part does.
 
@@ -203,7 +203,6 @@ Find the serial input box. Paste the `SYNC-Z...` serial number. Click the "**Imp
 Click the "**Import File**" button. Choose a `VTrain_Rules_XXXX-XX-XX.json` file. The system will add these rules.
 
 ::: info 📌 Community Rules Library
-Do you not want to train websites yourself? Visit the [Community Rules Library](https://github.com/vtrain-labs/community-rules). Copy a rule from there and import it!
 :::
 
 ---
@@ -336,3 +335,4 @@ The dashboard has many buttons, but you only need to use these the most:
 4. **Export Full Backup** — Backup often to protect your data.
 
 If you have questions, read the [FAQ](./faq.md) page!
+

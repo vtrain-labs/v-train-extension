@@ -1,4 +1,4 @@
-# 🎛️ 控制面板（Dashboard）詳解
+﻿# 🎛️ 控制面板（Dashboard）詳解
 
 V-Train 的控制面板是您管理所有設定的核心樞紐——就像是一架飛機的駕駛艙，所有的開關、儀表、按鈕都在這裡！本頁將逐一說明每個功能區塊的用途與操作方式。
 
@@ -206,7 +206,6 @@ V-Train 採用 Chrome 的 **Optional Permissions（可選權限）** 機制，�
 點擊「**Import File**」按鈕，選取您之前匯出的 `VTrain_Rules_XXXX-XX-XX.json` 規則檔，系統會將其中的規則合併到現有規則中（不會覆蓋）。
 
 ::: info 📌 關於社群規則庫
-沒有在訓練的心情？到 [GitHub 社群規則庫](https://github.com/vtrain-labs/community-rules) 看看有沒有好心人已經分享了您想要的網站規則，直接複製序號匯入就搞定！
 :::
 
 ---
@@ -346,3 +345,4 @@ V-Train 採用「**零伺服器架構**」——您的所有觀看紀錄、書�
 4. **Export Full Backup** — 定期備份，保護您的珍貴紀錄
 
 有任何疑問，歡迎到 [常見問題（FAQ）](./faq.md) 頁面查閱，或至 [GitHub Issues](https://github.com/vtrain-labs/v-train-extension/issues) 回報問題！
+

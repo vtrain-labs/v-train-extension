@@ -1,4 +1,4 @@
-# 🚀 Quick Start: Installation & First Setup
+﻿# 🚀 Quick Start: Installation & First Setup
 
 Welcome to V-Train! This guide will help you set up the extension in just a few minutes. Soon, you will see progress bars on your favorite video sites.
 
@@ -192,7 +192,6 @@ Please check these steps:
 1. ✅ Confirm the status toggle on the Dashboard says "🟢 Monitoring", not "Monitoring Off".
 2. ✅ Confirm the authorize button is green and says "Site Authorized".
 3. ✅ Refresh the webpage.
-4. If you checked all steps and still see no progress bars, V-Train probably does not support this site yet. You can use the [Adaptive Engine](./adaptive-engine.md) to train it, or check the [Community Rules Library](https://github.com/vtrain-labs/community-rules) to see if someone else has already trained it.
 
 ---
 
@@ -218,4 +217,5 @@ Congratulations on setting up V-Train! 🎉 To learn more about its features, pl
 
 - **[Dashboard Overview →](./dashboard.md)** — Learn what every button does.
 - **[Adaptive Engine: Train New Sites →](./adaptive-engine.md)** — Teach V-Train to support any video website.
-- **[Pro Features Guide →](./pro-features.md)** — Unlock infinite records and the Bookmark Vault.
+
+

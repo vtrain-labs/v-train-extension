@@ -1,4 +1,4 @@
-# 🧠 Adaptive Engine
+﻿# 🧠 Adaptive Engine
 
 > Teach V-Train how to find video thumbnails on any website!
 
@@ -199,7 +199,6 @@ https://example.com/v/channel_abc123_hd
 Select the whole part. Then, tell V-Train how to find the ID inside it.
 
 ::: info
-If the link is very difficult, check the [Community Rules Library](https://github.com/vtrain-labs/community-rules). Someone else might have made the rule for you!
 :::
 
 ---
@@ -247,7 +246,6 @@ Open the V-Train Dashboard → Click "Trained Sites (Rules)" → Find the websit
 
 You do not have to train every website yourself. We have a Community Rules Library:
 
-> 🔗 **[https://github.com/vtrain-labs/community-rules](https://github.com/vtrain-labs/community-rules)**
 
 **You can:**
 - 📥 **Download rules**: Find a website and copy the rule serial.
@@ -289,3 +287,4 @@ No. Rules are saved **only on this computer**. You must copy the rule serials an
 ### Q: How long does a rule take to work?
 
 It works immediately. Just refresh the page.
+

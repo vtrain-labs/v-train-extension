@@ -1,4 +1,4 @@
-# 📦 Backup & Restore
+﻿# 📦 Backup & Restore
 
 > [!IMPORTANT]
 > V-Train does not use any servers. All your data lives **only on your computer**. We do not have copies of your data.
@@ -128,10 +128,7 @@ V-Train does not sync your data to the cloud automatically. This keeps your data
 2. Move the ZIP file to **Computer B** (using a USB drive or Google Drive).
 3. Import the backup on **Computer B**.
 
-::: info Easy way to share rules
-Do you want to share a website rule with a friend? You do not need to make a full backup!
-Go to the Dashboard → Click "Trained Sites" → Click "Share" to copy the serial number. Give this number to your friend.
-:::
+
 
 ---
 
@@ -147,3 +144,4 @@ Go to the Dashboard → Click "Trained Sites" → Click "Share" to copy the seri
 ::: warning The most important rule
 **Always backup before you update Windows or macOS!** Sometimes system updates delete browser data.
 :::
+
