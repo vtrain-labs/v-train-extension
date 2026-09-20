@@ -155,6 +155,31 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.alarms.create('vt_init_count', { when: Date.now() + 3000 });
 });
 
+// [Ponytail] 雲端規則同步 (Lazy Architecture)
+// 直接從 GitHub Raw 下載，不用管後端伺服器
+async function fetchCloudRules() {
+    try {
+        const res = await fetch('https://raw.githubusercontent.com/vtrain-labs/community-rules/main/rules.json?t=' + Date.now());
+        if (!res.ok) return;
+        const cloudConfig = await res.json();
+        chrome.storage.local.get(['site_config'], (data) => {
+            let config = data.site_config || {};
+            // 直接覆蓋或合併
+            for (let domain in cloudConfig) config[domain] = cloudConfig[domain];
+            chrome.storage.local.set({ site_config: config });
+        });
+    } catch (e) {
+        console.log('[VT] Cloud Rules Sync failed', e);
+    }
+}
+
+// 每次啟動背景腳本就抓一次（最簡單的觸發方式，或者設定 Alarm 每天抓）
+fetchCloudRules();
+chrome.alarms.create('vt_sync_rules', { periodInMinutes: 1440 }); // 每天抓一次
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'vt_sync_rules') fetchCloudRules();
+});
+
 // [架構師無障礙版] 色盲友善高對比藍色，動態判斷系統語言，加大字體
 let _contextMenuMode = "track";
 let _contextMenuResetTimer = null;

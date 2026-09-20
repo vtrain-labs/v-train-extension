@@ -77,9 +77,26 @@ if (!window._vtInjected) {
         }
 
         if (request.action === "VT_EXTRACT_OG_IMAGE") {
-            let ogImg = document.querySelector('meta[property="og:image"]')?.content ||
+            let ogImg = '';
+            
+            // [Ponytail] Support custom cover image via cloud rules
+            if (window.sysState && sysState.currentDriver && sysState.currentDriver.savedConfigArr) {
+                for (let cfg of sysState.currentDriver.savedConfigArr) {
+                    if (cfg && cfg.imgSelector) {
+                        let imgEl = document.querySelector(cfg.imgSelector);
+                        if (imgEl) {
+                            ogImg = imgEl.getAttribute('poster') || imgEl.poster || imgEl.src || imgEl.getAttribute('data-src') || imgEl.getAttribute('content') || imgEl.href;
+                            if (ogImg) break;
+                        }
+                    }
+                }
+            }
+
+            if (!ogImg) {
+                ogImg = document.querySelector('meta[property="og:image"]')?.content ||
                         document.querySelector('meta[property="og:image:secure_url"]')?.content ||
                         document.querySelector('meta[name="twitter:image"]')?.content || '';
+            }
             if (!ogImg) {
                 try {
                     const ldJsons = document.querySelectorAll('script[type="application/ld+json"]');
@@ -186,7 +203,12 @@ if (!window._vtInjected) {
                 sysState.userLang = data.userLang || "en";
                 const baseDomain = getBaseDomain(location.hostname); // 由 vt_url_parser.js 提供
                 const config = data.site_config || {};
-                let savedDataRaw = config[baseDomain] || config[location.hostname];
+                
+                // [Ponytail] O(1) Base64 Lookup for Adult Domains
+                const b64Base = btoa(baseDomain);
+                const b64Host = btoa(location.hostname);
+                
+                let savedDataRaw = config[baseDomain] || config[location.hostname] || config[b64Base] || config[b64Host];
                 if (!savedDataRaw) {
                     for (let key in config) {
                         let arr = Array.isArray(config[key]) ? config[key] : [config[key]];
@@ -195,7 +217,9 @@ if (!window._vtInjected) {
                                 (r) =>
                                     r &&
                                     r.hosts &&
-                                    r.hosts.some((h) => getBaseDomain(h) === baseDomain),
+                                    r.hosts.some((h) => {
+                                        return h === baseDomain || h === location.hostname || h === b64Base || h === b64Host || getBaseDomain(h) === baseDomain;
+                                    })
                             )
                         ) {
                             savedDataRaw = config[key];
@@ -222,7 +246,9 @@ if (!window._vtInjected) {
                     let needUpdate = false;
                     validConfigs.forEach((c) => {
                         if (!c.hosts) c.hosts = [];
-                        if (!c.hosts.includes(location.hostname)) {
+                        const b64Host = btoa(location.hostname);
+                        const b64Base = btoa(baseDomain);
+                        if (!c.hosts.includes(location.hostname) && !c.hosts.includes(b64Host) && !c.hosts.includes(b64Base)) {
                             c.hosts.push(location.hostname);
                             needUpdate = true;
                         }

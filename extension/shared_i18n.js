@@ -86,7 +86,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             modalRescueSuccess: "✅ Rescue Successful!",
             modalRescueSuccessDesc: "Passcode cleared.<br><br>⚠️ To prevent future lockouts, please download a full backup (Records + Rules) now.",
             btnFullBackup: "📥 Download Full Backup",
-            communityRules: "🌐 Browse Community Rules (GitHub)",
+            communityRules: "🌐 Browse Community Rules (GitHub)", reportSite: "Report Site / Share Rules",
             modalFreeLimit: "⚠️ Free Version Limit",
             modalFreeLimitDesc: "Detected over 200 records. As a free user, only the newest 200 (auto-trimmed to 190) will be kept after import. Upgrade to Pro to keep all records. Continue?",
             exporting: "⏳ Exporting...",
@@ -129,7 +129,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Query Param',
             ruleFlank: 'Flank Match',
             rulePathLast: '(last segment)',
-            rulePathFirst: '(first segment)',
+            rulePathFirst: '(first segment)'
+,
 
             // === Vault & Advanced UI ===
             bvTitle: "Bookmark Vault",
@@ -245,7 +246,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             confirmOverwrite: "⚠️ 此操作將覆蓋現有規則。確定繼續？", msgShareImportSuccess: "✅ 規則匯入成功！", msgShareImportFail: "❌ 無效的序號分享碼",
             serialImport: "序號導入", barColor: "🎨 進度條顏色", colorNormal: "普通", colorLike: "喜歡 (👍)", colorDislike: "不喜歡 (😤)", modalRescueSuccess: "✅ 救援解鎖成功！",
             modalRescueSuccessDesc: "密碼已清除。<br><br>⚠️ 為防止未來發生無法預期的鎖定，強烈建議您立即下載完整備份 (觀看紀錄 + 訓練規則)。",
-            btnFullBackup: "📥 下載完整備份", communityRules: "🌐 瀏覽社群共享規則 (GitHub)", modalFreeLimit: "⚠️ 免費版容量限制",
+            btnFullBackup: "📥 下載完整備份", communityRules: "🌐 瀏覽社群共享規則 (GitHub)", reportSite: "回報未支援網站 / 分享你的規則", modalFreeLimit: "⚠️ 免費版容量限制",
             modalFreeLimitDesc: "偵測到備份含有超過 200 部紀錄。由於您目前使用的是免費版本，匯入後系統將僅保留最新的 200 部 (自動清理至 190 部)。若要保留完整紀錄，請先啟用 Pro 版。<br><br>確定要繼續匯入？",
             exporting: "⏳ 匯出中...", exported: "✅ 匯出完成！",
 
@@ -286,7 +287,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: '查詢參數',
             ruleFlank: '側翼匹配',
             rulePathLast: '(末段)',
-            rulePathFirst: '(首段)',
+            rulePathFirst: '(首段)'
+,
 
             // === Vault & Advanced UI ===
             bvTitle: "本機書籤庫",
@@ -402,7 +404,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             confirmOverwrite: "⚠️ 此操作将覆盖现有规则。确定继续？", msgShareImportSuccess: "✅ 规则导入成功！", msgShareImportFail: "❌ 无效的序号分享码",
             serialImport: "序号导入", barColor: "🎨 进度条颜色", colorNormal: "普通", colorLike: "喜欢 (👍)", colorDislike: "不喜欢 (😤)", modalRescueSuccess: "✅ 救援解锁成功！",
             modalRescueSuccessDesc: "密码已清除。<br><br>⚠️ 为防止未来发生无法预期的锁定，强烈建议您立即下载完整备份 (观看记录 + 训练规则)。",
-            btnFullBackup: "📥 下载完整备份", communityRules: "🌐 浏览社区共享规则 (GitHub)", modalFreeLimit: "⚠️ 免费版容量限制",
+            btnFullBackup: "📥 下载完整备份", communityRules: "🌐 浏览社区共享规则 (GitHub)", reportSite: "汇报未支持网站 / 分享你的规则", modalFreeLimit: "⚠️ 免费版容量限制",
             modalFreeLimitDesc: "侦测到备份含有超过 200 部记录。由于您目前使用的是免费版本，导入后系统将仅保留最新的 200 部 (自动清理至 190 部)。若要保留完整记录，请先激活 Pro 版。<br><br>确定要继续导入？",
             exporting: "⏳ 导出中...", exported: "✅ 导出完成！",
 
@@ -443,7 +445,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: '查询参数',
             ruleFlank: '侧翼匹配',
             rulePathLast: '(末段)',
-            rulePathFirst: '(首段)',
+            rulePathFirst: '(首段)'
+,
 
             // === Vault & Advanced UI ===
             bvTitle: "本地书签库",
@@ -559,7 +562,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             confirmOverwrite: "⚠️ 既存のルールが上書きされます。続行しますか？", msgShareImportSuccess: "✅ インポート成功！", msgShareImportFail: "❌ 無効なコード",
             serialImport: "シリアル導入", barColor: "🎨 プログレスバーの色", colorNormal: "普通", colorLike: "好き (👍)", colorDislike: "嫌い (😤)", modalRescueSuccess: "✅ 救出成功！",
             modalRescueSuccessDesc: "パスコードをクリアしました。<br><br>⚠️ 今後のロックアウトを防ぐため、完全なバックアップ（記録＋ルール）を今すぐダウンロードしてください。",
-            btnFullBackup: "📥 完全バックアップをダウンロード", communityRules: "🌐 コミュニティルールを表示 (GitHub)", modalFreeLimit: "⚠️ 無料版の制限",
+            btnFullBackup: "📥 完全バックアップをダウンロード", communityRules: "🌐 コミュニティルールを表示 (GitHub)", reportSite: "サイトを報告 / ルールを共有", modalFreeLimit: "⚠️ 無料版の制限",
             modalFreeLimitDesc: "200件以上の記録が検出されました。無料版を使用しているため、最新の200件（自動で190件に整理）のみが保持されます。すべての記録を保持するにはPro版を有効にしてください。続行しますか？",
             exporting: "⏳ エクスポート中...", exported: "✅ エクスポート完了！",
 
@@ -600,7 +603,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'クエリパラメータ',
             ruleFlank: 'フランクマッチ',
             rulePathLast: '(最後のセグメント)',
-            rulePathFirst: '(最初のセグメント)',
+            rulePathFirst: '(最初のセグメント)'
+,
 
             // === Vault & Advanced UI ===
             bvTitle: "ローカルブックマーク",
@@ -716,7 +720,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             confirmOverwrite: "⚠️ 기존 규칙을 덮어씁니다. 계속하시겠습니까?", msgShareImportSuccess: "✅ 가져오기 성공!", msgShareImportFail: "❌ 잘못된 코드",
             serialImport: "시리얼 가져오기", barColor: "🎨 진행률 표시줄 색상", colorNormal: "보통", colorLike: "좋아요 (👍)", colorDislike: "싫어요 (😤)", modalRescueSuccess: "✅ 구조 성공!",
             modalRescueSuccessDesc: "비밀번호가 삭제되었습니다。<br><br>⚠️ 향후 잠금을 방지하려면 지금 전체 백업(기록 + 규칙)을 다운로드하세요.",
-            btnFullBackup: "📥 전체 백업 다운로드", communityRules: "🌐 커뮤니티 규칙 보기 (GitHub)", modalFreeLimit: "⚠️ 무료 버전 제한",
+            btnFullBackup: "📥 전체 백업 다운로드", communityRules: "🌐 커뮤니티 규칙 보기 (GitHub)", reportSite: "사이트 신고 / 규칙 공유", modalFreeLimit: "⚠️ 무료 버전 제한",
             modalFreeLimitDesc: "200개 이상의 기록이 감지되었습니다. 무료 버전을 사용 중이므로 최신 200개(190개로 자동 정리)만 유지됩니다. 모든 기록을 유지하려면 Pro 버전을 활성화하세요. 계속하시겠습니까?",
             exporting: "⏳ 내보내는 중...", exported: "✅ 내보내기 완료!",
 
@@ -757,7 +761,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: '쿼리 매개변수',
             ruleFlank: '측면 매칭',
             rulePathLast: '(마지막 세그먼트)',
-            rulePathFirst: '(첫 번째 세그먼트)',
+            rulePathFirst: '(첫 번째 세그먼트)'
+,
 
             // === Vault & Advanced UI ===
             bvTitle: "로컬 북마크",
@@ -873,7 +878,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             confirmOverwrite: "⚠️ Esto sobrescribirá la regla existente. ¿Continuar?", msgShareImportSuccess: "✅ ¡Regla importada!", msgShareImportFail: "❌ Código inválido",
             serialImport: "Importar serie", barColor: "🎨 Color de la barra", colorNormal: "Normal", colorLike: "Me gusta (👍)", colorDislike: "No me gusta (😤)", modalRescueSuccess: "✅ ¡Rescate Exitoso!",
             modalRescueSuccessDesc: "Código borrado.<br><br>⚠️ Para evitar bloqueos, descargue una copia de seguridad completa (Registros + Reglas) ahora.",
-            btnFullBackup: "📥 Descargar Copia Completa", communityRules: "🌐 Ver reglas de la comunidad (GitHub)", modalFreeLimit: "⚠️ Límite de versión gratuita",
+            btnFullBackup: "📥 Descargar Copia Completa", communityRules: "🌐 Ver reglas de la comunidad (GitHub)", reportSite: "Reportar sitio / Compartir reglas", modalFreeLimit: "⚠️ Límite de versión gratuita",
             modalFreeLimitDesc: "Más de 200 registros detectados. Como usuario gratuito, solo se mantendrán los 200 más recientes (recortados a 190). Actualice a Pro para conservarlos todos. ¿Continuar?",
             exporting: "⏳ Exportando...", exported: "✅ ¡Exportado!",
 
@@ -914,7 +919,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Parámetro de consulta',
             ruleFlank: 'Coincidencia Lateral',
             rulePathLast: '(último segmento)',
-            rulePathFirst: '(primer segmento)',
+            rulePathFirst: '(primer segmento)'
+,
 
             // === Vault & Advanced UI ===
             bvTitle: "Bóveda de Marcadores",
@@ -1030,7 +1036,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             confirmOverwrite: "⚠️ Cela écrasera la règle existante. Continuer ?", msgShareImportSuccess: "✅ Règle importée !", msgShareImportFail: "❌ Code invalide",
             serialImport: "Importation de série", barColor: "🎨 Couleur de la barre", colorNormal: "Normal", colorLike: "J'aime (👍)", colorDislike: "Je n'aime pas (😤)", modalRescueSuccess: "✅ Sauvetage Réussi !",
             modalRescueSuccessDesc: "Code effacé.<br><br>⚠️ Pour éviter de futurs blocages, veuillez télécharger une sauvegarde complète (Enregistrements + Règles) maintenant.",
-            btnFullBackup: "📥 Télécharger la sauvegarde", communityRules: "🌐 Voir les règles de la communauté (GitHub)", modalFreeLimit: "⚠️ Limite de la version gratuite",
+            btnFullBackup: "📥 Télécharger la sauvegarde", communityRules: "🌐 Voir les règles de la communauté (GitHub)", reportSite: "Signaler le site / Partager les règles", modalFreeLimit: "⚠️ Limite de la version gratuite",
             modalFreeLimitDesc: "Plus de 200 enregistrements détectés. En tant qu'utilisateur gratuit, seuls les 200 plus récents (réduits à 190) seront conservés. Passez à Pro pour tout garder. Continuer ?",
             exporting: "⏳ Exportation...", exported: "✅ Exporté !",
 
@@ -1071,7 +1077,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Paramètre de requête',
             ruleFlank: 'Correspondance Latérale',
             rulePathLast: '(dernier segment)',
-            rulePathFirst: '(premier segment)',
+            rulePathFirst: '(premier segment)'
+,
 
             // === Vault & Advanced UI ===
             bvTitle: "Coffre aux Signets",
@@ -1186,7 +1193,7 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             confirmOverwrite: "⚠️ Dies überschreibt die bestehende Regel. Fortfahren?", msgShareImportSuccess: "✅ Regel importiert!", msgShareImportFail: "❌ Ungültiger Code",
             serialImport: "Seriennummer-Import", barColor: "🎨 Fortschrittsbalkenfarbe", colorNormal: "Normal", colorLike: "Mag ich (👍)", colorDislike: "Mag ich nicht (😤)", modalRescueSuccess: "✅ Rettung Erfolgreich!",
             modalRescueSuccessDesc: "Passcode gelöscht.<br><br>⚠️ Um zukünftige Sperren zu vermeiden, laden Sie bitte jetzt ein vollständiges Backup (Aufzeichnungen + Regeln) herunter.",
-            btnFullBackup: "📥 Vollständiges Backup herunterladen", communityRules: "🌐 Community-Regeln anzeigen (GitHub)", modalFreeLimit: "⚠️ Limit der kostenlosen Version",
+            btnFullBackup: "📥 Vollständiges Backup herunterladen", communityRules: "🌐 Community-Regeln anzeigen (GitHub)", reportSite: "Website melden / Regeln teilen", modalFreeLimit: "⚠️ Limit der kostenlosen Version",
             modalFreeLimitDesc: "Über 200 Datensätze erkannt. In der kostenlosen Version werden nur die neuesten 200 (automatisch auf 190 gekürzt) behalten. Upgrade auf Pro, um alle zu behalten. Fortfahren?",
             exporting: "⏳ Exportiere...", exported: "✅ Exportiert!",
 
@@ -1227,7 +1234,8 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             ruleQuery: 'Abfrage-Parameter',
             ruleFlank: 'Flanken-Match',
             rulePathLast: '(letztes Segment)',
-            rulePathFirst: '(erstes Segment)',
+            rulePathFirst: '(erstes Segment)'
+,
             bvEmptyTitle: "Noch keine Lesezeichen",
             bvEmptySub: "Klicken Sie während der Wiedergabe auf ❤️, um zu speichern.",
             bvNewFolder: "Neuer Ordner",
