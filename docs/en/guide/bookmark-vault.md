@@ -91,11 +91,27 @@ Why do we need this? Many websites stop showing covers after a few days. Taking 
 
 V-Train captures the cover using the following flow:
 
-1. **Prioritize Canvas/Video Capture**: Attempts to take a canvas screenshot directly from the video element on the page.
+1. **Prioritize Canvas/Video Capture (Clean version)**: Attempts to take a pure screenshot directly from the `<video>` element on the page. This method ignores UI elements like progress bars or your mouse cursor.
 2. **Fallback to OG Image**: If the first step fails, it tries to fetch the official sharing image from the page's `<meta property="og:image">` tag.
-3. **Fallback Screenshot via Context Menu**: Due to strict cross-origin ad interference or CORS policies on certain sites, the 1-click snapshot might fail and display a red "❌". When this happens, a red tooltip will pop up. Simply follow its instruction: right-click the page and select "📸 V-Train: Force Physical Snapshot". The system will temporarily request the `activeTab` permission to bypass all restrictions and force the screenshot capture.
+3. **Ultimate Fallback: Full-Screen Crop (Ponytail Fallback)**: For strictly protected adult sites where the video is locked inside an unreachable cross-origin iframe, V-Train will automatically trigger this fallback. It locates the largest iframe on your screen and uses Chrome's native screenshot API to capture the entire screen, then crops it precisely. This bypasses all protections, but because it takes a picture of your screen, any visible progress bars or mouse cursors will be included.
 4. **Compression**: The captured image is compressed into a **320px wide WebP format** to balance image quality and storage space.
-5. **Save to IndexedDB**: The compressed image is securely saved to your browser's local IndexedDB database (`vt_thumbnails` store).
+5. **Save to IndexedDB**: The compressed image is securely saved to your browser's local IndexedDB database.
+
+### Keyboard Shortcuts (Essential for Fullscreen) ⚡
+
+When a video goes **fullscreen**, the browser forces the video to the very top layer, hiding the Hover Panel behind a black background and making it unclickable. 
+To solve this, use **Keyboard Shortcuts**! They bypass fullscreen limitations completely.
+
+Default Shortcuts:
+- **`Alt + S`** (Mac: `Option + S`): **1-Click Screenshot**
+- **`Alt + B`** (Mac: `Option + B`): **1-Click Bookmark / Unbookmark**
+
+::: tip How to customize shortcuts?
+If the shortcuts conflict with other software or you prefer different keys (like `Ctrl + Shift + S`):
+1. Type `chrome://extensions/shortcuts` into your browser's address bar and press Enter.
+2. Find the **V-Train Control Panel** section.
+3. Click the input box and press your desired key combination to change it!
+:::
 
 ::: tip Where are the pictures saved?
 The pictures are saved on **your computer only**. They are not uploaded to the internet. They will not sync to your other computers.
