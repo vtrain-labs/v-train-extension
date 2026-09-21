@@ -519,10 +519,10 @@ if (!window._vtBookmarksLoaded) {
                 });
                 setTimeout(() => {
                     if (!answered) {
-                        console.warn('[VT] Iframe timeout (3s), falling back to Top Window.');
+                        console.warn('[VT] Iframe timeout (0.8s), falling back to Top Window.');
                         fallbackToTopWindow();
                     }
-                }, 3000); // 恢復 3 秒超時，透過 Ponytail fallback 加速處理
+                }, 800); // 縮短至 0.8 秒，讓 Ponytail 霸王硬上弓備案能瞬間無感啟動
             } else {
                 _takeVideoSnapshot(_currentId).then(success => handleResult(success));
             }
@@ -926,9 +926,9 @@ if (!window._vtBookmarksLoaded) {
                         channel.port1.onmessage = (e) => resolve(e.data.rect || { left: 0, top: 0 });
                         window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
                         setTimeout(() => {
-                            console.warn('[VT] VT_GET_IFRAME_RECT timed out (6s).');
+                            console.warn('[VT] VT_GET_IFRAME_RECT timed out (1s).');
                             resolve({ left: 0, top: 0 });
-                        }, 6000);
+                        }, 1000);
                     } catch(err) { resolve({ left: 0, top: 0 }); }
                 });
 
