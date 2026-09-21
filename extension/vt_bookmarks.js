@@ -1,4 +1,4 @@
-﻿// vt_bookmarks.js - VT Bookmark Vault
+// vt_bookmarks.js - VT Bookmark Vault
 // 付費功能：評分（👍😤）+ 收藏（❤️）+ 浮動操作面板 + 資料夾選擇器
 // 依賴注入順序：必須在 vt_tracker.js 之後、content.js 之前注入
 // 儲存方案：chrome.storage.local (不需要 IndexedDB 或後端)
@@ -518,8 +518,11 @@ if (!window._vtBookmarksLoaded) {
                     }
                 });
                 setTimeout(() => {
-                    if (!answered) fallbackToTopWindow();
-                }, 3000); // 縮短超時為 3 秒，提升體驗
+                    if (!answered) {
+                        console.warn('[VT] Iframe timeout (3s), falling back to Top Window.');
+                        fallbackToTopWindow();
+                    }
+                }, 3000); // 恢復 3 秒超時，透過 Ponytail fallback 加速處理
             } else {
                 _takeVideoSnapshot(_currentId).then(success => handleResult(success));
             }
@@ -876,16 +879,30 @@ if (!window._vtBookmarksLoaded) {
     async function _takeVideoSnapshot(targetVideoId) {
         try {
             let videoEl = window.sysState?._activeEl;
+            let isFallbackIframe = false;
+            
             // [Bug 修復] 在 Feed 頁面上，_activeEl 可能未更新，或是指向已被隱藏的舊預覽
             if (!videoEl || !videoEl.isConnected || videoEl.offsetWidth === 0) {
                 const videos = Array.from(document.querySelectorAll('video')).filter(v => v.offsetWidth > 0 && v.videoWidth > 0);
                 // 優先抓取正在播放的（Feed 頁面上只有懸停的那部會播放），否則抓面積最大的
                 videoEl = videos.find(v => !v.paused) || videos.sort((a,b) => (b.offsetWidth*b.offsetHeight) - (a.offsetWidth*a.offsetHeight))[0];
             }
-            if (videoEl && videoEl.tagName === 'VIDEO') {
+            
+            // [Ponytail 終極備案] 如果在 Top Window 還是找不到影片，這代表影片被包在跨網域 Iframe 裡，且通訊失敗
+            // 最懶但最有效的解法：直接抓畫面上最大的 Iframe 當作影片！
+            if ((!videoEl || videoEl.tagName !== 'VIDEO') && window === window.top) {
+                const iframes = Array.from(document.querySelectorAll('iframe')).filter(f => f.offsetWidth > 0 && f.offsetHeight > 0);
+                if (iframes.length > 0) {
+                    videoEl = iframes.sort((a,b) => (b.offsetWidth*b.offsetHeight) - (a.offsetWidth*a.offsetHeight))[0];
+                    isFallbackIframe = true;
+                    console.log('[VT] Using largest iframe as video container fallback.', videoEl);
+                }
+            }
+            
+            if (videoEl && (videoEl.tagName === 'VIDEO' || isFallbackIframe)) {
 
                 // [1] 嘗試使用 Canvas 直接繪製當前影片幀 (不受硬體加速黑屏影響，但可能受 CORS 阻擋)
-                if (videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
+                if (!isFallbackIframe && videoEl.videoWidth > 0 && videoEl.readyState >= 2) {
                     try {
                         const canvas = document.createElement('canvas');
                         let dw = 320;
@@ -908,12 +925,19 @@ if (!window._vtBookmarksLoaded) {
                         const channel = new MessageChannel();
                         channel.port1.onmessage = (e) => resolve(e.data.rect || { left: 0, top: 0 });
                         window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
-                        setTimeout(() => resolve({ left: 0, top: 0 }), 3000);
+                        setTimeout(() => {
+                            console.warn('[VT] VT_GET_IFRAME_RECT timed out (6s).');
+                            resolve({ left: 0, top: 0 });
+                        }, 6000);
                     } catch(err) { resolve({ left: 0, top: 0 }); }
                 });
 
                 return new Promise((resolve) => {
                     chrome.runtime.sendMessage({ action: "VT_CAPTURE_TAB" }, (res) => {
+                        if (chrome.runtime.lastError) {
+                            resolve(false);
+                            return;
+                        }
                         if (res && res.dataUrl) {
                             const rect = videoEl.getBoundingClientRect();
                             const img = new Image();
@@ -924,19 +948,21 @@ if (!window._vtBookmarksLoaded) {
                                 let sx = (offset.left + rect.left) * ratioX;
                                 let sy = (offset.top + rect.top) * ratioY;
                                 let sw = rect.width * ratioX;
-                                                                let sh = rect.height * ratioY;
-                                
-                                
+                                let sh = rect.height * ratioY;
                                 
                                 // [效能/防呆修復] 防止負數座標導致 Canvas 補黑邊
                                 if (sx < 0) { sw += sx; sx = 0; }
                                 if (sy < 0) { sh += sy; sy = 0; }
-                                if (sw <= 0 || sh <= 0) { resolve(false); return; }
+                                if (sw <= 0 || sh <= 0) {
+                                    resolve(false); return; 
+                                }
                                 
                                 // 限制不超過原圖大小
                                 if (sx + sw > img.width) sw = img.width - sx;
                                 if (sy + sh > img.height) sh = img.height - sy;
-                                if (sw <= 0 || sh <= 0) { resolve(false); return; }
+                                if (sw <= 0 || sh <= 0) {
+                                    resolve(false); return; 
+                                }
                                 
                                 // 檢查截圖是否為黑屏 (硬體加速導致的純黑)
                                 const testCanvas = document.createElement('canvas');
@@ -1169,6 +1195,9 @@ if (!window._vtBookmarksLoaded) {
                     }, 500);
                 }, 100);
             }
+        } else if (request.action === "VT_TOGGLE_BOOKMARK") {
+            const btn = document.getElementById('vt-bmb-bookmark');
+            if (btn) btn.click();
         }
     });
 

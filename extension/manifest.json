@@ -36,6 +36,22 @@
     "48": "icon-48.png",
     "128": "icon-128.png"
   },
+  "commands": {
+    "take_snapshot": {
+      "suggested_key": {
+        "default": "Alt+S",
+        "mac": "Alt+S"
+      },
+      "description": "Take video snapshot"
+    },
+    "toggle_bookmark": {
+      "suggested_key": {
+        "default": "Alt+B",
+        "mac": "Alt+B"
+      },
+      "description": "Toggle video bookmark"
+    }
+  },
   "background": {
     "service_worker": "background.js"
   }

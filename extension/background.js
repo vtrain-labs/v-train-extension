@@ -180,6 +180,19 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === 'vt_sync_rules') fetchCloudRules();
 });
 
+// [UX 升級] 支援全域鍵盤快捷鍵 (突破全螢幕限制)
+chrome.commands.onCommand.addListener((command) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs || !tabs.length) return;
+        const tabId = tabs[0].id;
+        
+        if (command === 'take_snapshot') {
+            chrome.tabs.sendMessage(tabId, { action: "VT_RETRY_SNAPSHOT" }).catch(() => {});
+        } else if (command === 'toggle_bookmark') {
+            chrome.tabs.sendMessage(tabId, { action: "VT_TOGGLE_BOOKMARK" }).catch(() => {});
+        }
+    });
+});
 // [架構師無障礙版] 色盲友善高對比藍色，動態判斷系統語言，加大字體
 let _contextMenuMode = "track";
 let _contextMenuResetTimer = null;
