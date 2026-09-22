@@ -695,6 +695,13 @@ function _makeCard(bm) {
 
     // 點擊卡片開啟連結
     card.onclick = () => chrome.tabs.create({ url: bm.url });
+    // [UX 升級] 支援滑鼠中鍵開啟 (背景分頁)
+    card.onauxclick = (e) => {
+        if (e.button === 1) {
+            e.preventDefault();
+            chrome.tabs.create({ url: bm.url, active: false });
+        }
+    };
 
     return card;
 }
