@@ -196,13 +196,9 @@ html, body {
     display: flex; align-items: center; gap: 8px; margin-bottom: 24px; position: relative;
 }
 .bv-subfolder-grid {
-    display: flex; gap: 16px; overflow-x: auto; scroll-behavior: smooth; flex: 1;
+    display: flex; flex-wrap: wrap; gap: 16px; flex: 1;
     padding-bottom: 8px;
 }
-.bv-subfolder-grid::-webkit-scrollbar { height: 8px; }
-.bv-subfolder-grid::-webkit-scrollbar-track { background: var(--bg3); border-radius: 4px; }
-.bv-subfolder-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-.bv-subfolder-grid::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
 .bv-subfolder-card {
     flex-shrink: 0; 

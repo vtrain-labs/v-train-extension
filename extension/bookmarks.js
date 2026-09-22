@@ -381,9 +381,6 @@ function renderSubfolders() {
             subContainer.classList.add('hidden');
         } else {
             subContainer.classList.remove('hidden');
-            setTimeout(() => {
-                if (window._updateSubfolderScrollBtns) window._updateSubfolderScrollBtns();
-            }, 50);
         }
     }
 }
