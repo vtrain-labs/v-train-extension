@@ -257,13 +257,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 chrome.tabs.onRemoved.addListener(() => setTimeout(checkAndLockIfAllClosed, 200));
-chrome.tabs.onActivated.addListener(() => {
-    if (_contextMenuMode === "snapshot") {
-        _contextMenuMode = "track";
-        if (_contextMenuResetTimer) clearTimeout(_contextMenuResetTimer);
-        chrome.contextMenus.update("mark_vt_thumbnail", { title: chrome.i18n.getMessage("contextMenuTrack") || "V-Train" });
-    }
-});
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'complete') {
         checkAndLockIfAllClosed();

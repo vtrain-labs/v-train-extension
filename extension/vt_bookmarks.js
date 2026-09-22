@@ -472,7 +472,8 @@ if (!window._vtBookmarksLoaded) {
                     }
                     setTimeout(() => { tooltip.style.opacity = '1'; }, 10);
                     
-                    setTimeout(() => {
+                    if (btn._resetTimer) clearTimeout(btn._resetTimer);
+                    btn._resetTimer = setTimeout(() => {
                         if(tooltip) tooltip.style.opacity = '0';
                         setTimeout(() => { if(tooltip) tooltip.remove(); btn.textContent = '📸'; }, 300);
                     }, 14500); // 15秒左右消失
