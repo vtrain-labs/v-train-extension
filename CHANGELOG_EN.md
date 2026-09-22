@@ -1,3 +1,16 @@
+## [1.1.0] - 2026-09-22
+
+### Added
+- **Bookmark Vault UI Overhaul**: The Subfolder row is now a beautiful wrapping grid instead of an annoying horizontal scroll. It automatically adapts to your screen size.
+- **Mouse Drag Selection (Marquee)**: Fully replicated the native Windows/Mac drag-to-select experience in the Bookmark Vault. You can now drag your mouse to select multiple videos instantly.
+- **Bulk Operations (Move / Delete)**: A new floating action bar appears when you select multiple videos. You can now move or delete dozens of videos at once!
+- **Middle-Click to Open in Background**: Fully supports standard browser behavior. Middle-clicking a video card in the Bookmark Vault will open it silently in a background tab without interrupting your flow.
+- **Keyboard Navigation Upgrades**: Added Backspace key support to quickly jump to the parent directory while browsing folders, making keyboard navigation even smoother.
+
+### Fixed
+- **Screenshot Ghost Frame Issue**: Fixed a rare bug where capturing a screenshot right after the page loads would result in a broken, half-cut image. The self-healing function has been optimized to prevent cross-origin iframe miscalculations.
+- **Native Drag Conflict**: Fixed a bug where native browser text/image dragging would interfere with the new Marquee selection, causing the selection box to get stuck.
+
 ## [1.0.9] - 2026-09-20
 
 ### Added
