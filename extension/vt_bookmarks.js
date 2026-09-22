@@ -923,14 +923,19 @@ if (!window._vtBookmarksLoaded) {
                     if (window === window.top) return resolve({ left: 0, top: 0 });
                     try {
                         const channel = new MessageChannel();
-                        channel.port1.onmessage = (e) => resolve(e.data.rect || { left: 0, top: 0 });
+                        channel.port1.onmessage = (e) => resolve(e.data.rect || null);
                         window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
                         setTimeout(() => {
                             console.warn('[VT] VT_GET_IFRAME_RECT timed out (1s).');
-                            resolve({ left: 0, top: 0 });
+                            resolve(null);
                         }, 1000);
-                    } catch(err) { resolve({ left: 0, top: 0 }); }
+                    } catch(err) { resolve(null); }
                 });
+
+                if (!offset) {
+                    console.warn('[VT] Aborting Iframe capture because exact coordinates are unknown. Deferring to Top Window fallback.');
+                    return false;
+                }
 
                 return new Promise((resolve) => {
                     chrome.runtime.sendMessage({ action: "VT_CAPTURE_TAB" }, (res) => {
@@ -988,30 +993,30 @@ if (!window._vtBookmarksLoaded) {
                                 canvas.width = dw; canvas.height = dh;
                                 const ctx = canvas.getContext('2d');
                                 ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
-                                const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                const thumbUrl = canvas.toDataURL('image/webp', 0.85); // 改用 WebP
                                 
                                 if (thumbUrl.length > 500) {
                                     vtDBProxy.put('vt_thumbnails', { videoId: targetVideoId, thumbnail: thumbUrl }).catch(()=>{});
                                     resolve(true); 
                                 } else {
-                                    console.error('[VT] Canvas generated empty image (length: ' + thumbUrl.length + '). dw=' + dw + ', dh=' + dh);
+                                    console.warn('[VT] Canvas generated empty image (length: ' + thumbUrl.length + '). dw=' + dw + ', dh=' + dh);
                                     resolve(false);
                                 }
                             };
                             img.onerror = () => {
-                                console.error('[VT] Image failed to load dataUrl');
+                                console.warn('[VT] Image failed to load dataUrl');
                                 resolve(false);
                             };
                             img.src = res.dataUrl;
                         } else {
-                            console.error('[VT] captureVisibleTab failed:', res?.error || 'Unknown error');
+                            console.warn('[VT] captureVisibleTab failed:', res?.error || 'Unknown error');
                             resolve(false);
                         }
                     });
                 });
             }
         } catch (e) {
-            console.error('[VT] Snapshot Error:', e);
+            console.warn('[VT] Snapshot Error:', e);
         }
         
         return false;
@@ -1037,7 +1042,7 @@ if (!window._vtBookmarksLoaded) {
 
             // [自癒機制 Self-Healing] 如果此影片已在書籤庫中，於背景靜默重新抓取縮圖並寫入快取庫。
             // 加入溫和的重試機制，最多 3 次，避免被當作 DDoS 攻擊，同時能繞過廣告延遲。
-            if (_panelBookmarked) {
+            if (_panelBookmarked && window === window.top) {
                 vtDBProxy.get('vt_thumbnails', videoId).then(existingThumb => {
                     // [Bug 修復] 如果資料庫裡已經有一張正常的縮圖，就「絕對不要」發動自癒機制去覆蓋它
                     if (existingThumb && existingThumb.thumbnail && existingThumb.thumbnail.length > 500) {
