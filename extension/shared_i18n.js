@@ -211,7 +211,10 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnBookmark: "Bookmark",
             btnSnapshot: "Take/Replace Cover (Auto Bookmark)",
             btnManage: "Manage Bookmarks",
-            dragHint: "Drag to move (Double click to reset)"
+            dragHint: "Drag to move (Double click to reset)",
+            bvSelected: "Selected",
+            bvBulkMoved: "✅ Moved {num} videos",
+            bvBulkDeleted: "🗑 Deleted {num} videos"
 
 
         },
@@ -369,7 +372,10 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
             btnBookmark: "收藏",
             btnSnapshot: "拍攝/替換封面 (自動收藏)",
             btnManage: "書籤管理",
-            dragHint: "拖曳移動 (點兩下恢復原位)"
+            dragHint: "拖曳移動 (點兩下恢復原位)",
+            bvSelected: "已選擇",
+            bvBulkMoved: "✅ 已移動 {num} 部影片",
+            bvBulkDeleted: "🗑 已刪除 {num} 部影片"
 
 
         },

@@ -718,12 +718,15 @@ function _makeCard(bm) {
         chrome.tabs.create({ url: bm.url });
     };
     // [UX 升級] 支援滑鼠中鍵開啟 (背景分頁)
-    card.onauxclick = (e) => {
+    card.addEventListener('mousedown', (e) => {
+        if (e.button === 1) e.preventDefault(); // 阻止 Windows 預設的滾動圖示
+    });
+    card.addEventListener('mouseup', (e) => {
         if (e.button === 1) {
             e.preventDefault();
             chrome.tabs.create({ url: bm.url, active: false });
         }
-    };
+    });
 
     return card;
 }
@@ -931,7 +934,7 @@ function showMoveModal(bookmarkIds, currentFolderId) {
             }
             notifySync();
             renderAll();
-            showToast(`✅ 已移動 ${movedCount} 部影片`);
+            showToast(getLang('bvBulkMoved', `✅ 已移動 ${movedCount} 部影片`).replace('{num}', movedCount));
         }
         overlay.remove();
     };
@@ -1357,7 +1360,7 @@ document.getElementById('bvBulkDelete')?.addEventListener('click', () => {
                 notifySync();
                 chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{});
                 renderAll();
-                showToast(`🗑 已刪除 ${ids.length} 部影片`);
+                showToast(getLang('bvBulkDeleted', `🗑 已刪除 ${ids.length} 部影片`).replace('{num}', ids.length));
             }
         );
     }
@@ -1374,9 +1377,12 @@ contentContainer.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     if (e.target.closest('.bv-card') || e.target.closest('.bv-subfolder-card') || e.target.closest('button')) return;
     
+    // Prevent default to prevent native text/image drag which causes getting stuck
+    e.preventDefault();
+    
     _isSelecting = true;
     _startX = e.clientX;
-    _startY = e.clientY + contentContainer.scrollTop;
+    _startY = e.clientY;
     
     if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
         _selectedBookmarks.clear();
@@ -1389,13 +1395,18 @@ contentContainer.addEventListener('mousedown', (e) => {
 
     _selectionBox = document.createElement('div');
     _selectionBox.className = 'bv-selection-box';
-    contentContainer.appendChild(_selectionBox);
+    _selectionBox.style.position = 'fixed';
+    _selectionBox.style.zIndex = '9999';
+    document.body.appendChild(_selectionBox);
 });
 
-contentContainer.addEventListener('mousemove', (e) => {
+window.addEventListener('mousemove', (e) => {
     if (!_isSelecting || !_selectionBox) return;
     
-    const currentY = e.clientY + contentContainer.scrollTop;
+    // Prevent default again during mousemove just in case
+    e.preventDefault();
+    
+    const currentY = e.clientY;
     const currentX = e.clientX;
     
     const left = Math.min(_startX, currentX);
