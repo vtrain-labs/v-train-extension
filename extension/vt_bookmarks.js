@@ -519,7 +519,7 @@ if (!window._vtBookmarksLoaded) {
                 });
                 setTimeout(() => {
                     if (!answered) {
-                        console.warn('[VT] Iframe timeout (0.8s), falling back to Top Window.');
+                        console.log('[VT] Iframe timeout (0.8s), falling back to Top Window.');
                         fallbackToTopWindow();
                     }
                 }, 800); // 縮短至 0.8 秒，讓 Ponytail 霸王硬上弓備案能瞬間無感啟動
@@ -926,14 +926,14 @@ if (!window._vtBookmarksLoaded) {
                         channel.port1.onmessage = (e) => resolve(e.data.rect || null);
                         window.parent.postMessage({ type: 'VT_GET_IFRAME_RECT' }, '*', [channel.port2]);
                         setTimeout(() => {
-                            console.warn('[VT] VT_GET_IFRAME_RECT timed out (1s).');
+                            console.log('[VT] VT_GET_IFRAME_RECT timed out (1s).');
                             resolve(null);
                         }, 1000);
                     } catch(err) { resolve(null); }
                 });
 
                 if (!offset) {
-                    console.warn('[VT] Aborting Iframe capture because exact coordinates are unknown. Deferring to Top Window fallback.');
+                    console.log('[VT] Aborting Iframe capture because exact coordinates are unknown. Deferring to Top Window fallback.');
                     return false;
                 }
 
@@ -1009,7 +1009,7 @@ if (!window._vtBookmarksLoaded) {
                             };
                             img.src = res.dataUrl;
                         } else {
-                            console.warn('[VT] captureVisibleTab failed:', res?.error || 'Unknown error');
+                            console.log('[VT] captureVisibleTab failed:', res?.error || 'Unknown error');
                             resolve(false);
                         }
                     });
