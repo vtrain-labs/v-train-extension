@@ -132,6 +132,15 @@
     </div>
 
     <script src="shared_i18n.js"></script>
+    <div id="bvBulkBar" class="bv-bulk-bar hidden">
+        <div class="bv-bulk-info"><span id="bvBulkCount">0</span> <span data-i18n="bvSelected">已選擇</span></div>
+        <div class="bv-bulk-actions">
+            <button id="bvBulkMove" class="bv-btn bv-btn-accent">🗂 <span data-i18n="bvMoveTitle">移動</span></button>
+            <button id="bvBulkDelete" class="bv-btn bv-btn-ghost danger">🗑 <span data-i18n="delete">刪除</span></button>
+            <button id="bvBulkCancel" class="bv-btn bv-btn-ghost">✕ <span data-i18n="cancel">取消</span></button>
+        </div>
+    </div>
+    
     <script src="db.js"></script>
     <script src="bookmarks.js"></script>
 </body>

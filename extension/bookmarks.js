@@ -690,8 +690,33 @@ function _makeCard(bm) {
     acts.append(renameBtn, moveBtn, delBtn);
     card.appendChild(acts);
 
-    // 點擊卡片開啟連結
-    card.onclick = () => chrome.tabs.create({ url: bm.url });
+    const check = document.createElement('div');
+    check.className = 'bv-card-check';
+    check.onclick = (e) => {
+        e.stopPropagation();
+        if (_selectedBookmarks.has(bm.id)) {
+            _selectedBookmarks.delete(bm.id);
+            card.classList.remove('selected');
+        } else {
+            _selectedBookmarks.add(bm.id);
+            card.classList.add('selected');
+        }
+        _updateBulkActionBar();
+    };
+    card.appendChild(check);
+
+    card.dataset.id = bm.id;
+    if (_selectedBookmarks.has(bm.id)) card.classList.add('selected');
+
+    // 點擊卡片開啟連結，或切換多選
+    card.onclick = (e) => {
+        if (e.ctrlKey || e.metaKey || _selectedBookmarks.size > 0) {
+            e.preventDefault();
+            check.click();
+            return;
+        }
+        chrome.tabs.create({ url: bm.url });
+    };
     // [UX 升級] 支援滑鼠中鍵開啟 (背景分頁)
     card.onauxclick = (e) => {
         if (e.button === 1) {
@@ -847,7 +872,10 @@ function showConfirm(title, desc, onOk) {
     ok.onclick = () => { cleanup(); onOk(); };
 }
 
-function showMoveModal(bookmarkId, currentFolderId) {
+function showMoveModal(bookmarkIds, currentFolderId) {
+    const isBulk = Array.isArray(bookmarkIds);
+    const idsToMove = isBulk ? bookmarkIds : [bookmarkIds];
+    
     let selectedFolderId = currentFolderId;
     const overlay = document.createElement('div');
     overlay.className = 'bv-modal-overlay';
@@ -864,7 +892,7 @@ function showMoveModal(bookmarkId, currentFolderId) {
     const hdr = document.createElement('div');
     hdr.style.cssText = 'padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;';
     const htitle = document.createElement('h3');
-    htitle.textContent = getLang('bvMoveTitle', '🗂 移動書籤');
+    htitle.textContent = isBulk ? `🗂 移動 ${idsToMove.length} 部影片` : getLang('bvMoveTitle', '🗂 移動書籤');
     htitle.style.margin = '0';
     const xBtn = document.createElement('button');
     xBtn.textContent = '✕';
@@ -887,13 +915,23 @@ function showMoveModal(bookmarkId, currentFolderId) {
     confirmBtn.textContent = getLang('bvBtnMove', '確認移動');
     confirmBtn.className = 'bv-btn bv-btn-accent';
     confirmBtn.onclick = async () => {
-        const bm = _allBookmarks.find(b => b.id === bookmarkId);
-        if (bm) {
-            bm.folderId = selectedFolderId;
-            await window.vtDB.put('vt_bookmarks', bm);
+        let movedCount = 0;
+        for (const id of idsToMove) {
+            const bm = _allBookmarks.find(b => b.id === id);
+            if (bm && bm.folderId !== selectedFolderId) {
+                bm.folderId = selectedFolderId;
+                await window.vtDB.put('vt_bookmarks', bm);
+                movedCount++;
+            }
+        }
+        if (movedCount > 0) {
+            if (window._selectedBookmarks) {
+                window._selectedBookmarks.clear();
+                window._updateBulkActionBar();
+            }
             notifySync();
             renderAll();
-            showToast(getLang('bvToastMoved', '✅ 書籤已移動'));
+            showToast(`✅ 已移動 ${movedCount} 部影片`);
         }
         overlay.remove();
     };
@@ -1136,9 +1174,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // 預設固定為 18 個一頁 (3排6列)
     _itemsPerPage = _viewMode === 'list' ? 12 : 18;
 
-    // 鍵盤左右切換分頁
+    // 鍵盤左右切換分頁，Backspace 回上層
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
+        if (e.key === 'Backspace') {
+            e.preventDefault();
+            if (_activeFolderId !== '__all__' && _activeFolderId !== null) {
+                const currentFolder = _allFolders.find(f => f.id === _activeFolderId);
+                if (currentFolder) {
+                    _activeFolderId = currentFolder.parentId || '__all__';
+                    renderFolderTree();
+                    renderBookmarks();
+                }
+            }
+            return;
+        }
+
         const totalItems = _getFilteredBookmarks().length;
         const totalPages = Math.ceil(totalItems / _itemsPerPage) || 1;
         
@@ -1262,4 +1314,128 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 載入資料
     loadData();
+});
+
+// ─── 多選與框選邏輯 ────────────────────────────────────────────────────────
+window._selectedBookmarks = new Set();
+window._updateBulkActionBar = () => {
+    const bar = document.getElementById('bvBulkBar');
+    if (!bar) return;
+    if (_selectedBookmarks.size > 0) {
+        document.getElementById('bvBulkCount').textContent = _selectedBookmarks.size;
+        bar.classList.remove('hidden');
+    } else {
+        bar.classList.add('hidden');
+    }
+};
+
+document.getElementById('bvBulkCancel')?.addEventListener('click', () => {
+    _selectedBookmarks.clear();
+    document.querySelectorAll('.bv-card.selected').forEach(el => el.classList.remove('selected'));
+    _updateBulkActionBar();
+});
+
+document.getElementById('bvBulkMove')?.addEventListener('click', () => {
+    if (_selectedBookmarks.size > 0) {
+        showMoveModal(Array.from(_selectedBookmarks), _activeFolderId);
+    }
+});
+
+document.getElementById('bvBulkDelete')?.addEventListener('click', () => {
+    if (_selectedBookmarks.size > 0) {
+        const ids = Array.from(_selectedBookmarks);
+        showConfirm(
+            getLang('bvDeleteBookmarkConfirm', '刪除書籤？'),
+            getLang('bvDeleteBookmarkDesc', `即將刪除 ${ids.length} 部影片。`),
+            async () => {
+                for (const id of ids) {
+                    await window.vtDB.delete('vt_bookmarks', id);
+                    _allBookmarks = _allBookmarks.filter(b => b.videoId !== id && b.id !== id);
+                }
+                _selectedBookmarks.clear();
+                _updateBulkActionBar();
+                notifySync();
+                chrome.runtime.sendMessage({ action: "VT_TRIGGER_GC" }).catch(()=>{});
+                renderAll();
+                showToast(`🗑 已刪除 ${ids.length} 部影片`);
+            }
+        );
+    }
+});
+
+// 滑鼠框選
+let _selectionBox = null;
+let _startX = 0, _startY = 0;
+let _isSelecting = false;
+let _initialSelection = new Set();
+const contentContainer = document.querySelector('.bv-content');
+
+contentContainer.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest('.bv-card') || e.target.closest('.bv-subfolder-card') || e.target.closest('button')) return;
+    
+    _isSelecting = true;
+    _startX = e.clientX;
+    _startY = e.clientY + contentContainer.scrollTop;
+    
+    if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        _selectedBookmarks.clear();
+        _initialSelection.clear();
+        document.querySelectorAll('.bv-card.selected').forEach(el => el.classList.remove('selected'));
+        _updateBulkActionBar();
+    } else {
+        _initialSelection = new Set(_selectedBookmarks);
+    }
+
+    _selectionBox = document.createElement('div');
+    _selectionBox.className = 'bv-selection-box';
+    contentContainer.appendChild(_selectionBox);
+});
+
+contentContainer.addEventListener('mousemove', (e) => {
+    if (!_isSelecting || !_selectionBox) return;
+    
+    const currentY = e.clientY + contentContainer.scrollTop;
+    const currentX = e.clientX;
+    
+    const left = Math.min(_startX, currentX);
+    const top = Math.min(_startY, currentY);
+    const width = Math.abs(currentX - _startX);
+    const height = Math.abs(currentY - _startY);
+    
+    _selectionBox.style.left = left + 'px';
+    _selectionBox.style.top = top + 'px';
+    _selectionBox.style.width = width + 'px';
+    _selectionBox.style.height = height + 'px';
+    
+    const boxRect = _selectionBox.getBoundingClientRect();
+    document.querySelectorAll('.bv-card').forEach(card => {
+        const cardRect = card.getBoundingClientRect();
+        const isIntersecting = !(
+            boxRect.right < cardRect.left || 
+            boxRect.left > cardRect.right || 
+            boxRect.bottom < cardRect.top || 
+            boxRect.top > cardRect.bottom
+        );
+        
+        const id = card.dataset.id;
+        if (!id) return;
+
+        if (isIntersecting) {
+            _selectedBookmarks.add(id);
+            card.classList.add('selected');
+        } else if (!_initialSelection.has(id)) {
+            _selectedBookmarks.delete(id);
+            card.classList.remove('selected');
+        }
+    });
+    _updateBulkActionBar();
+});
+
+window.addEventListener('mouseup', () => {
+    if (_isSelecting) {
+        _isSelecting = false;
+        if (_selectionBox) _selectionBox.remove();
+        _selectionBox = null;
+    }
 });
