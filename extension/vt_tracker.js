@@ -21,9 +21,7 @@ if (!window._vtTrackerLoaded) {
                 entries.forEach((e) => {
                     let el = e.target;
                     if (e.isIntersecting) {
-                        // [效能修復] 避免 Array.from + querySelectorAll + offsetWidth 造成的 O(N^2) 佈局重算 (Layout Thrashing)
-                        // 改用直接判斷容器寬度並使用單一 querySelector，大幅減少 DOM 遍歷與強制重繪
-                        const hasLargePlayer = el.offsetWidth >= 340 && el.querySelector("video, iframe") !== null;
+                        const hasLargePlayer = Array.from(el.querySelectorAll("video, iframe")).some(child => child.offsetWidth >= 340);
                         if (el.closest("video, .plyr, .vjs-tech, #player") || el.querySelector(".plyr, .vjs-tech, #player") || hasLargePlayer) return;
                         let w = driver.wrapper(el),
                             id = driver.idParser(el);
@@ -86,7 +84,6 @@ if (!window._vtTrackerLoaded) {
                     el.setAttribute("data-vt-observed", "true");
                     _vtObs.observe(el);
                 });
-            syncOverlay();
         };
         obsExisting();
         let _mutTimer = null,
@@ -194,8 +191,7 @@ if (!window._vtTrackerLoaded) {
             }
             if (window === window.top && sysState._cachedId) {
                 // [效能優化] 快取 iframe 清單，避免每 tick 重複 querySelectorAll
-                if (!_cachedIframes) window._cachedIframes = Array.from(document.querySelectorAll("iframe"));
-                _cachedIframes.forEach((f) => {
+                Array.from(document.getElementsByTagName("iframe")).forEach((f) => {
                     try {
                         f.contentWindow.postMessage(
                             { type: "VT_SYNC", id: sysState._cachedId },
@@ -206,7 +202,7 @@ if (!window._vtTrackerLoaded) {
             }
             let videos = Array.from(document.querySelectorAll("video")).filter(
                 (v) =>
-                    !v.closest('a, iframe, [class*="sponsor"]') &&
+                    !v.closest('iframe, [class*="sponsor"]') &&
                     (v.offsetWidth >= 340 || (v.offsetWidth === 0 && v.videoWidth >= 340)),
             );
             if (videos.length === 0) {
@@ -224,8 +220,12 @@ if (!window._vtTrackerLoaded) {
                 return;
             }
             let video = videos.sort(
-                (a, b) =>
-                    b.offsetWidth * b.offsetHeight - a.offsetWidth * a.offsetHeight,
+                (a, b) => {
+                    // [Ponytail] Prioritize playing videos over paused ones (fixes Flowplayer/KVS dual-video bug)
+                    let scoreA = (a.offsetWidth * a.offsetHeight) + (a.paused ? 0 : 10000000) + (a.duration || 0);
+                    let scoreB = (b.offsetWidth * b.offsetHeight) + (b.paused ? 0 : 10000000) + (b.duration || 0);
+                    return scoreB - scoreA;
+                }
             )[0];
             sysState._activeEl = video;
             
@@ -393,8 +393,8 @@ if (!window._vtTrackerLoaded) {
                 }
             });
 
-            }
-
+            window._overlaySyncLoop = requestAnimationFrame(syncOverlay);
+        } else window._overlaySyncLoop = null;
     }
 
     // ─── 縮圖評分角標（Badge）與顏色同步 ─────────────────────────────────────────
@@ -461,7 +461,8 @@ if (!window._vtTrackerLoaded) {
     };
 
     function drawBar(container, pct, id) {
-        syncOverlay();
+        if (!_overlaySyncLoop)
+            window._overlaySyncLoop = requestAnimationFrame(syncOverlay);
         let data = activeOverlayBars.get(container);
         if (data && data.barEl.isConnected) {
             data.barFill.style.width = `${pct}%`;
@@ -641,27 +642,4 @@ if (!window._vtTrackerLoaded) {
 
         debugPanel.style.borderLeftColor = color;
     }
-}
-
-// [效能修復] 取代 60FPS 的 requestAnimationFrame 無窮迴圈，改用事件驅動更新 (Event-Driven)
-// 徹底解決在 Pornhub/YouTube 等重度變更 DOM 的網站上，因頻繁讀取 getBoundingClientRect 導致的 CPU 滿載與畫面卡頓
-if (!window._vtScrollPerfBound) {
-    window._vtScrollPerfBound = true;
-    let _scrollSyncTimer = null;
-    window.addEventListener('scroll', () => {
-        if (!sysState.isStealth && activeOverlayBars.size > 0) {
-            if (!_scrollSyncTimer) {
-                _scrollSyncTimer = requestAnimationFrame(() => {
-                    if (typeof syncOverlay === 'function') syncOverlay();
-                    _scrollSyncTimer = null;
-                });
-            }
-        }
-    }, true); // true = Capture phase, 攔截所有內部捲動事件
-
-    window.addEventListener('resize', () => {
-        if (!sysState.isStealth && activeOverlayBars.size > 0) {
-            if (typeof syncOverlay === 'function') syncOverlay();
-        }
-    });
 }

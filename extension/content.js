@@ -366,11 +366,7 @@ if (!window._vtInjected) {
                                 _idCache.set(el, { id, href: _currentHref });
                                 return id;
                             },
-                            wrapper: (el) =>
-                                el.closest(".thumb-inside, .thumb") ||
-                                (["IMG", "PICTURE", "VIDEO"].includes(el.tagName)
-                                    ? el.parentElement
-                                    : el),
+                            wrapper: (el) => el, // [WYSIWYG Fix] Directly use the selected element!
                         },
                     };
                     updateDebugStatus("Init", `Driver: ${baseDomain}`); // 由 vt_tracker.js 提供

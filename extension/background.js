@@ -159,14 +159,18 @@ chrome.runtime.onInstalled.addListener((details) => {
 // 直接從 GitHub Raw 下載，不用管後端伺服器
 async function fetchCloudRules() {
     try {
-        const res = await fetch('https://raw.githubusercontent.com/vtrain-labs/community-rules/main/rules.json?t=' + Date.now());
+        const res = await fetch('https://raw.githubusercontent.com/vtrain-labs/community-rules/main/rules.json?t=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) return;
         const cloudConfig = await res.json();
-        chrome.storage.local.get(['site_config'], (data) => {
+        chrome.storage.local.get(['site_config', 'disabled_cloud_rules'], (data) => {
             let config = data.site_config || {};
-            // 直接覆蓋或合併
-            for (let domain in cloudConfig) config[domain] = cloudConfig[domain];
-            chrome.storage.local.set({ site_config: config });
+            let disabled = data.disabled_cloud_rules || {};
+            for (let domain in cloudConfig) {
+                if (!disabled[domain]) {
+                    config[domain] = cloudConfig[domain];
+                }
+            }
+            chrome.storage.local.set({ site_config: config, cloud_rules_cache: cloudConfig });
         });
     } catch (e) {
         console.log('[VT] Cloud Rules Sync failed', e);
@@ -559,3 +563,8 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 function runOptimizedGC() {
     _vtSaveLock = _vtSaveLock.then(runOptimizedGCInsideLock).catch(() => {});
 }
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "REFETCH_CLOUD_RULES") {
+        fetchCloudRules();
+    }
+});

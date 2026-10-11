@@ -8,6 +8,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
     const VT_I18N = {
         "en": {
+            cloudRuleActive: "🌐 Cloud Rule Active",
+            cloudRuleNone: "🔴 No Cloud Rule (Train Manually)",
+            cloudRuleDisabled: "⚪ Cloud Rule Disabled",
+            deleteCloudRule: "Delete",
+            confirmDelCloudTitle: "⚠️ Disable Cloud Rule",
+            confirmDelCloudDesc: "Are you sure you want to disable the cloud rule for this site? You can train custom rules manually after disabling.",
 
             // === Popup & System Keys ===
             securityLock: "Privacy Lock",
@@ -219,6 +225,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
         },
         "zh-TW": {
+            cloudRuleActive: "🌐 已套用雲端規則",
+            cloudRuleNone: "🔴 無雲端規則 (請自行訓練)",
+            cloudRuleDisabled: "⚪ 雲端規則已停用",
+            deleteCloudRule: "刪除",
+            confirmDelCloudTitle: "⚠️ 停用雲端規則",
+            confirmDelCloudDesc: "確定要停用此網站的雲端規則嗎？停用後可自行手動訓練自訂規則。",
 
             // === Popup & System Keys ===
             securityLock: "安全鎖定", enterPass: "請輸入密碼以存取紀錄", unlockBtn: "解鎖", forgotPass: "忘記密碼？(限 Pro 版)",
@@ -380,6 +392,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
         },
         "zh-CN": {
+            cloudRuleActive: "🌐 已应用云端规则",
+            cloudRuleNone: "🔴 无云端规则 (请自行训练)",
+            cloudRuleDisabled: "⚪ 云端规则已停用",
+            deleteCloudRule: "删除",
+            confirmDelCloudTitle: "⚠️ 停用云端规则",
+            confirmDelCloudDesc: "确定要停用此网站的云端规则吗？停用后可自行手动训练自定义规则。",
 
             // === Popup & System Keys ===
             securityLock: "安全锁定", enterPass: "请输入密码以访问记录", unlockBtn: "解锁", forgotPass: "忘记密码？(限 Pro 版)",
@@ -538,6 +556,12 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
         },
         "ja": {
+            cloudRuleActive: "🌐 クラウドルール適用中",
+            cloudRuleNone: "🔴 クラウドルールなし (手動訓練)",
+            cloudRuleDisabled: "⚪ クラウドルール無効",
+            deleteCloudRule: "削除",
+            confirmDelCloudTitle: "⚠️ クラウド規則を無効化",
+            confirmDelCloudDesc: "このサイトのクラウド規則を無効化してもよろしいですか？無効化後は手動で規則を訓練できます。",
 
             // === Popup & System Keys ===
             securityLock: "セキュリティロック", enterPass: "パスコードを入力してアクセス", unlockBtn: "解除", forgotPass: "パスコードを忘れた場合 (Pro限定)",
@@ -697,6 +721,13 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
         },
         "ko": {
 
+            cloudRuleActive: "🌐 클라우드 규칙 적용됨",
+            cloudRuleNone: "🔴 클라우드 규칙 없음 (수동 훈련)",
+            cloudRuleDisabled: "⚪ 클라우드 규칙 비활성화됨",
+            deleteCloudRule: "삭제",
+            confirmDelCloudTitle: "⚠️ 클라우드 규칙 비활성화",
+            confirmDelCloudDesc: "이 사이트의 클라우드 규칙을 비활성화하시겠습니까? 비활성화 후 직접 수동으로 규칙을 훈련할 수 있습니다。",
+
             // === Popup & System Keys ===
             securityLock: "보안 잠금", enterPass: "기록에 액세스하려면 비밀번호 입력", unlockBtn: "잠금 해제", forgotPass: "비밀번호를 잊으셨나요? (Pro 전용)",
             unlockPro: "V-Train 전용 잠금 해제", proActive: "V-Train 활성화됨", monitoring: "추적 중 (ON)", stealth: "일시 정지 (OFF)",
@@ -854,6 +885,13 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
         },
         "es": {
+
+            cloudRuleActive: "🌐 Regla en la nube activa",
+            cloudRuleNone: "🔴 Sin regla en la nube (Entrenar manual)",
+            cloudRuleDisabled: "⚪ Regla en la nube desactivada",
+            deleteCloudRule: "Eliminar",
+            confirmDelCloudTitle: "⚠️ Desactivar regla en la nube",
+            confirmDelCloudDesc: "¿Seguro que deseas desactivar la regla en la nube para este sitio? Podrás entrenar reglas personalizadas manualmente。",
 
             // === Popup & System Keys ===
             securityLock: "Bloqueo de Seguridad", enterPass: "Ingrese código para acceder", unlockBtn: "Desbloquear", forgotPass: "¿Olvidó su código? (Solo Pro)",
@@ -1013,6 +1051,13 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
         },
         "fr": {
 
+            cloudRuleActive: "🌐 Règle cloud active",
+            cloudRuleNone: "🔴 Aucune règle cloud (Entraînement manuel)",
+            cloudRuleDisabled: "⚪ Règle cloud désactivée",
+            deleteCloudRule: "Supprimer",
+            confirmDelCloudTitle: "⚠️ Désactiver la règle cloud",
+            confirmDelCloudDesc: "Voulez-vous vraiment désactiver la règle cloud pour ce site ? Vous pourrez entraîner des règles personnalisées manuellement。",
+
             // === Popup & System Keys ===
             securityLock: "Verrouillage de sécurité", enterPass: "Entrez le code pour accéder", unlockBtn: "Déverrouiller", forgotPass: "Code oublié ? (Pro uniquement)",
             unlockPro: "Débloquer V-Train", proActive: "V-Train Actif", monitoring: "Suivi (ON)", stealth: "En pause (OFF)",
@@ -1169,6 +1214,13 @@ if (typeof globalThis._vt_i18n_loaded === 'undefined') {
 
         },
         "de": {
+
+            cloudRuleActive: "🌐 Cloud-Regel aktiv",
+            cloudRuleNone: "🔴 Keine Cloud-Regel (Manuelles Training)",
+            cloudRuleDisabled: "⚪ Cloud-Regel deaktiviert",
+            deleteCloudRule: "Löschen",
+            confirmDelCloudTitle: "⚠️ Cloud-Regel deaktivieren",
+            confirmDelCloudDesc: "Möchten Sie die Cloud-Regel für diese Website wirklich deaktivieren? Sie können danach manuell eigene Regeln trainieren。",
 
             // === Popup & System Keys ===
             securityLock: "Sicherheitssperre", enterPass: "Passcode eingeben", unlockBtn: "Entsperren", forgotPass: "Passcode vergessen? (Nur Pro)",

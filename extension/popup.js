@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnImport = document.getElementById('btnImport');
     const fileInput = document.getElementById('fileInput');
     const btnAuthorizeCurrentSite = document.getElementById('btnAuthorizeCurrentSite');
+    let currentLang = 'en';
+    let checkAndRenderCloudUI = () => {};
 
     // 權限檢查與授權按鈕邏輯
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -100,8 +102,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tab || !tab.url.startsWith('http')) return btnAuthorizeCurrentSite.classList.add('hidden');
 
         const urlObj = new URL(tab.url);
-        const baseDomain = urlObj.hostname.replace(/^(www\.|m\.)/i, '');
-        const origin = `${urlObj.protocol}//*.${baseDomain}/*`;
+        const originDomain = urlObj.hostname.replace(/^(www\.|m\.)/i, "");
+        const origin = `${urlObj.protocol}//*.${originDomain}/*`;
+        let pts = urlObj.hostname.replace(/^(www\.|m\.|cn\.)/i, "").split(".");
+        let parsedBase = "";
+        if (pts.length >= 3 && ["com", "co", "net", "org", "edu", "gov"].includes(pts[pts.length - 2].toLowerCase())) {
+            parsedBase = pts[pts.length - 3].toLowerCase();
+        } else {
+            parsedBase = pts.length >= 2 ? pts[pts.length - 2].toLowerCase() : pts[0];
+        }
+        const baseDomain = parsedBase;
+
 
         const updateAuthBtn = (hasPerm) => {
             if (hasPerm) {
@@ -118,9 +129,128 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnAuthorizeCurrentSite.onclick = () => {
             chrome.permissions.request({ origins: [origin] }, (granted) => {
-                if (granted) updateAuthBtn(true);
+                if (granted) {
+                    updateAuthBtn(true);
+                    chrome.runtime.sendMessage({ action: "REFETCH_CLOUD_RULES" });
+                    setTimeout(checkAndRenderCloudUI, 500);
+                }
             });
         };
+        checkAndRenderCloudUI = () => {
+            chrome.storage.local.get(['cloud_rules_cache', 'disabled_cloud_rules', 'site_config'], (data) => {
+                const cache = data.cloud_rules_cache || {};
+                const disabled = data.disabled_cloud_rules || {};
+                const siteCfg = data.site_config || {};
+                const container = document.getElementById('cloudRuleStatusContainer');
+                const label = document.getElementById('cloudRuleLabel');
+                const btnDel = document.getElementById('btnDeleteCloudRule');
+
+                if (!container) return;
+                container.style.display = 'flex';
+
+                const b64Base = btoa(baseDomain);
+                const b64Host = btoa(urlObj.hostname);
+
+                let hasCloudRule = false;
+                let activeKey = null;
+
+                const searchConfig = (source) => {
+                    if (source[b64Base]) return b64Base;
+                    if (source[b64Host]) return b64Host;
+                    if (source[baseDomain]) return baseDomain;
+                    if (source[urlObj.hostname]) return urlObj.hostname;
+                    for (let key in source) {
+                        let arr = Array.isArray(source[key]) ? source[key] : [source[key]];
+                        let found = arr.some(r => r && r.hosts && r.hosts.some(h => 
+                            h === baseDomain || h === urlObj.hostname || h === b64Base || h === b64Host
+                        ));
+                        if (found) return key;
+                    }
+                    return null;
+                };
+
+                activeKey = searchConfig(cache);
+                if (activeKey) {
+                    hasCloudRule = true;
+                }
+
+                if (hasCloudRule && activeKey) {
+                    if (disabled[activeKey]) {
+                        label.textContent = getLangText(currentLang, 'cloudRuleDisabled') || "Cloud Rule Disabled";
+                        label.style.color = '#9e9e9e';
+                        btnDel.style.display = 'none';
+                    } else {
+                        label.textContent = getLangText(currentLang, 'cloudRuleActive') || "Cloud Rule Active";
+                        label.style.color = '#4caf50';
+                        btnDel.style.display = 'block';
+                        btnDel.textContent = getLangText(currentLang, 'deleteCloudRule') || "Delete";
+                        
+                        btnDel.onclick = async () => {
+                            const isConfirm = await showModal(
+                                getLangText(currentLang, 'confirmDelCloudTitle') || "⚠️ Disable Cloud Rule",
+                                getLangText(currentLang, 'confirmDelCloudDesc') || "Are you sure you want to disable the cloud rule for this site?"
+                            );
+                            if (!isConfirm) return;
+
+                            chrome.storage.local.get(['site_config', 'cloud_rules_cache', 'disabled_cloud_rules'], (cfgData) => {
+                                let sc = cfgData.site_config || {};
+                                let disabled = cfgData.disabled_cloud_rules || {};
+                                let cache = cfgData.cloud_rules_cache || {};
+
+                                const keysToDisable = new Set();
+                                if (activeKey) keysToDisable.add(activeKey);
+                                if (cache[b64Base]) keysToDisable.add(b64Base);
+                                if (cache[b64Host]) keysToDisable.add(b64Host);
+                                for (let key in cache) {
+                                    let arr = Array.isArray(cache[key]) ? cache[key] : [cache[key]];
+                                    if (arr.some(r => r && r.hosts && r.hosts.some(h => 
+                                        h === baseDomain || h === urlObj.hostname || h === b64Base || h === b64Host
+                                    ))) {
+                                        keysToDisable.add(key);
+                                    }
+                                }
+
+                                keysToDisable.forEach(k => {
+                                    delete sc[k];
+                                    disabled[k] = true;
+                                });
+
+                                delete sc[baseDomain];
+                                delete sc[urlObj.hostname];
+
+                                chrome.storage.local.set({ 
+                                    disabled_cloud_rules: disabled,
+                                    site_config: sc
+                                }, () => {
+                                    checkAndRenderCloudUI();
+                                    if (typeof showToast === 'function') showToast(btnDel, getLangText(currentLang, 'toastSuccess') || "Deleted!");
+                                    chrome.tabs.sendMessage(tab.id, { action: "RESET_BINDING" }).catch(() => {});
+                                });
+                            });
+                        };
+                    }
+                } else {
+                    label.textContent = getLangText(currentLang, 'cloudRuleNone') || "No Cloud Rule";
+                    label.style.color = '#f44336';
+                    btnDel.style.display = 'none';
+                }
+            });
+        };
+
+        checkAndRenderCloudUI();
+
+        chrome.storage.local.get(['cloud_rules_cache'], (data) => {
+            if (!data.cloud_rules_cache || Object.keys(data.cloud_rules_cache).length === 0) {
+                chrome.runtime.sendMessage({ action: "REFETCH_CLOUD_RULES" });
+            }
+        });
+
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area === 'local' && (changes.cloud_rules_cache || changes.disabled_cloud_rules || changes.site_config)) {
+                checkAndRenderCloudUI();
+            }
+        });
+
     });
 
     // 彈窗元素
@@ -133,7 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 語言選擇器
     const langSelect = document.getElementById('langSelect');
-    let currentLang = 'en';
 
 
 
@@ -151,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentLang = 'en';
             chrome.storage.local.set({ userLang: currentLang });
         }
+        checkAndRenderCloudUI();
 
         if (langSelect) {
             langSelect.value = currentLang;
@@ -158,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentLang = e.target.value;
                 chrome.storage.local.set({ userLang: currentLang });
                 applyLanguage(currentLang);
+                checkAndRenderCloudUI();
                 // [BUG 修復] 重新讀取最新狀態，避免使用 chrome.storage.local.get 的過時閉包快照
                 chrome.storage.local.get(['isStealthMode', 'isProVersion', 'vt_video_count'], (fresh) => {
                     const isStealth = fresh.isStealthMode === undefined ? true : !!fresh.isStealthMode;
@@ -250,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // popup 生命週期通常僅數秒，快取安全無副作用。
     // 所有寫入 site_config 的地方都會先設 null 清除快取，確保一致性。
     let _cachedSiteConfig = null;
+    let _cachedCloudRules = null;
 
     const ruleSearchInput = document.getElementById('ruleSearchInput');
     // 搜尋 Debounce (200ms)
@@ -266,11 +398,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderRulesList(searchTerm = '') {
         // [效能修復 P4] 命中記憶體快取時直接渲染，跳過 storage.get
-        const _doRender = async (config) => {
+        const _doRender = async (config, cloudCache = {}) => {
             const fragment = document.createDocumentFragment(); // [效能修復 P4] 用 Fragment 批次插入，單次 reflow
             const sysBlackList = ['isProVersion', 'remainingUses', 'storedLicenseKey', 'userPassword', 'userLang', 'vt_video_count', 'isStealthMode', 'enabledSites', 'showMonitorPanel', 'barColor'];
 
-            let allDomains = Object.keys(config).filter(d => !sysBlackList.includes(d)).sort((a, b) => a.localeCompare(b));
+            // [Lazy UX] 隱藏 Base64 雲端規則，只保留使用者「手動訓練」或「貼上匯入」的自訂規則
+            let allDomains = Object.keys(config).filter(d => !sysBlackList.includes(d) && !cloudCache[d]).sort((a, b) => a.localeCompare(b));
             if (searchTerm) allDomains = allDomains.filter(d => d.toLowerCase().includes(searchTerm.toLowerCase()));
             
             const totalItems = allDomains.length;
@@ -452,12 +585,13 @@ document.addEventListener('DOMContentLoaded', () => {
             renderPagination(totalPages, searchTerm);
         };
 
-        if (_cachedSiteConfig !== null) {
-            _doRender(_cachedSiteConfig);
+        if (_cachedSiteConfig !== null && _cachedCloudRules !== null) {
+            _doRender(_cachedSiteConfig, _cachedCloudRules);
         } else {
-            chrome.storage.local.get(['site_config'], (res) => {
+            chrome.storage.local.get(['site_config', 'cloud_rules_cache'], (res) => {
                 _cachedSiteConfig = res.site_config || {};
-                _doRender(_cachedSiteConfig);
+                _cachedCloudRules = res.cloud_rules_cache || {};
+                _doRender(_cachedSiteConfig, _cachedCloudRules);
             });
         }
     }
