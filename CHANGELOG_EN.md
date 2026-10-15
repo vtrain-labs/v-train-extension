@@ -1,3 +1,18 @@
+## [1.1.1] - 2026-10-11
+
+### Added
+- **Reactive Cloud Rule Sync**: Implemented real-time storage event listeners in the control panel. When community rules are updated in the background, the UI immediately updates its status without being affected by browser caching.
+- **Cloud Rule Deletion Guard**: Added a confirmation dialog when disabling or deleting a cloud rule to prevent accidental clicks. Fully supported across 8 languages, with automatic page binding refresh to cleanly remove active overlays upon deletion.
+- **Dynamic Video Tracker Sorting**: Introduced dynamic video element sorting in the core tracking engine. When a complex player or page embeds multiple `<video>` elements, the engine automatically prioritizes and locks onto the actively playing video, preventing tracking stalls caused by paused intro tags.
+
+### Changed
+- **Clean Rule Management UI**: Refactored the Adapter Rule Management modal. Cloud-synced rules are now automatically hidden from the management list, which now exclusively displays user-trained or manually imported custom rules for a clutter-free experience.
+- **Full-Width Responsive Status Bar**: Redesigned the cloud rule status container into a 100% full-width flexbox layout, ensuring optimal spacing and preventing button overlap across all supported languages.
+
+### Fixed
+- **Embed & Multi-depth URL Parsing**: Enhanced path extraction and guard rules to accurately identify both top-level video pages and embedded iframe players across diverse site layouts.
+- **Site Authorization Domain Scope**: Resolved an origin resolution conflict when requesting site permissions for specific domain levels, ensuring dynamic permissions apply reliably and immediately.
+
 ## [1.1.0] - 2026-09-22
 
 ### Added
